@@ -1,24 +1,20 @@
 package com.shyNkindguy.bingo.game;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class BingoCard {
-    private final BingoObjective[][] grid = new BingoObjective[5][5];
-    private final Map<UUID, boolean[][]> completed = new HashMap<>();
+    private final Map<UUID, Set<String>> objectives = new HashMap<>();
 
     public void initPlayer(UUID uuid){
-        completed.put(uuid, new boolean[5][5]);
+        objectives.put(uuid, new HashSet<>());
     }
 
-    public boolean complete(UUID uuid, int x, int y){
-        boolean[][] state = completed.get(uuid);
-        if(!state[x][y]){
-            state[x][y] = true;
-            return true;
-        }
-        return false;
+    public void complete(UUID uuid, String objective){
+        objectives.get(uuid).add(objective);
+    }
+
+    public int getProgress(UUID uuid){
+        return objectives.get(uuid).size();
     }
 
 }
