@@ -4,6 +4,8 @@ main: com.shyNkindguy.bingo.AdaptiveBingo
 api-version: 1.20
 
 commands:
+  bingo:
+    description: Controlar el Bingo
   bingotest:
     description: Comando de prueba
     usage: /bingotest

@@ -11,20 +11,21 @@ import java.util.UUID;
 
 public class BingoGame {
 
-    private final Map<UUID, PlayerProgress> players = new HashMap<>();
     private GameState state = GameState.WAITING;
-    private final BingoCard card;
+    private final Map<UUID, PlayerProgress> players = new HashMap<>();
+    private final BingoCard card = new BingoCard();
 
-    public BingoGame (JavaPlugin plugin){
-        card = new BingoCard();
-    }
-
-    public void startGame(Collection<Player> onlineplayers){
+    public boolean start(Collection<? extends Player> onlinePlayers){
+        if (state != GameState.WAITING || onlinePlayers.size() < 1) return false;
         state = GameState.RUNNING;
-        for (Player p : onlineplayers){
-            players.put(p.getUniqueId(), new PlayerProgress());
-            card. initPlayer(p.getUniqueId());
-        }
 
+        for (Player p : onlinePlayers){
+            players.put(p.getUniqueId(), new PlayerProgress());
+            card.initPlayer(p.getUniqueId());
+        }
+        return true;
+    }
+    public GameState getState(){
+        return state;
     }
 }

@@ -1,11 +1,13 @@
 package com.shyNkindguy.bingo.player;
 
 public class PlayerProgress {
-    private int completedObjectives;
-    private long lastCompletionTime;
+   private int completed = 0;
 
-    public void increment(){
-        completedObjectives++;
-        lastCompletionTime = System.currentTimeMillis();
+   public void increment(){
+       completed++;
+   }
+
+   public int getcompleted(){
+        return completed;
     }
 }
