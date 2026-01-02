@@ -13,3 +13,4 @@ https://fill-ui.papermc.io/projects/paper/version/1.20.4
 INTELLIJ IDEA (IDE JAVA RECOMENDADO):
 https://www.jetbrains.com/es-es/idea/download/?section=windows
 
+Luego, configuramos todo el IDE de preferencia INTELLIJ para utilizar la versión 17 de JAVA y elegimos MAVEN como libreria
