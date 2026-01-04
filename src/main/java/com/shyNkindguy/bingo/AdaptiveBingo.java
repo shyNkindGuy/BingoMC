@@ -3,6 +3,7 @@ package com.shyNkindguy.bingo;
 import com.shyNkindguy.bingo.commands.BingoCommand;
 import com.shyNkindguy.bingo.events.ObjectiveListener;
 import com.shyNkindguy.bingo.game.BingoGame;
+import com.shyNkindguy.bingo.ui.BingoScoreBoard;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class AdaptiveBingo extends JavaPlugin {
@@ -20,10 +21,12 @@ public final class AdaptiveBingo extends JavaPlugin {
             getLogger().severe("El comando /bingotest no está definido en plugin.yml");
         }
         BingoGame game = new BingoGame();
+        BingoScoreBoard scoreboard = new BingoScoreBoard(game);
 
-        if (getCommand("bingo") != null) {
-            getCommand("bingo").setExecutor(new BingoCommand(game));
-        }
+        getCommand("bingo").setExecutor(new BingoCommand(game, scoreboard));
+
+        getServer().getPluginManager()
+                .registerEvents(new ObjectiveListener(game, scoreboard), this);
     }
 
     }
