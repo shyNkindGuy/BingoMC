@@ -25,6 +25,21 @@ public class BingoGame {
         }
         return true;
     }
+    public int getProgress(UUID uuid){
+        return players.containsKey(uuid)
+                ? players.get(uuid).getcompleted()
+                : 0;
+    }
+    public boolean isRunning(){
+        return state == GameState.RUNNING;
+    }
+    public boolean completeObjective(UUID uuid, String objective){
+        if (!players.containsKey(uuid)) return false;
+        card.complete(uuid, objective);
+        players.get(uuid).increment();
+        return true;
+    }
+
     public GameState getState(){
         return state;
     }
