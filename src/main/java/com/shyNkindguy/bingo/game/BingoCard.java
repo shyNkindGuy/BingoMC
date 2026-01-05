@@ -1,20 +1,43 @@
 package com.shyNkindguy.bingo.game;
 
+import org.bukkit.Material;
+
 import java.util.*;
 
 public class BingoCard {
-    private final Map<UUID, Set<String>> objectives = new HashMap<>();
+    private static final int SIZE = 5;
+    private final BingoCell[][] grid = new BingoCell[SIZE][SIZE];
 
-    public void initPlayer(UUID uuid){
-        objectives.put(uuid, new HashSet<>());
+    public BingoCard(List<BingoObjective> objectives){
+        Collections.shuffle(objectives);
+
+        int index = 0;
+
+        for (int row = 0; row < SIZE; row++){
+            for (int col=0; col < SIZE; col++){
+                grid[row][col] = new BingoCell(objectives.get(index++));
+            }
+        }
+    }
+    public boolean completeByMaterial(Material material) {
+        for (BingoCell[] row : grid) {
+            for (BingoCell cell : row) {
+
+                if (!cell.isCompleted()
+                        && cell.getObjective().getMaterial() == material) {
+
+                    cell.setCompleted(true);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
-    public void complete(UUID uuid, String objective){
-        objectives.get(uuid).add(objective);
+    public BingoCell[][] getGrid(){
+        return grid;
+    }
     }
 
-    public int getProgress(UUID uuid){
-        return objectives.get(uuid).size();
-    }
 
-}
+
