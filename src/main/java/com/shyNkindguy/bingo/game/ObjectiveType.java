@@ -4,5 +4,6 @@ public enum ObjectiveType {
     ITEM,
     MOB_KILL,
     ADVANCEMENT,
-    CHOICE
+    CHOICE,
+    PICKUP
 }
