@@ -12,6 +12,7 @@ import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.FurnaceExtractEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
@@ -40,6 +41,18 @@ public class ObjectiveListener implements Listener {
 
         if (game.checkWin(player)) {
             game.end(player);
+        }
+    }
+    @EventHandler
+    public void onBucketFill(PlayerBucketFillEvent event){
+        if (!game.isRunning()) return;
+        Player player = event.getPlayer();
+        Material result = event.getItemStack().getType();
+        //cubos lava, leche, agua
+        boolean completed = game.completePickup(player, result);
+        if (completed){
+            player.sendMessage("§a✔ Objetivo completado: §f" + result.name());
+            scoreboard.update(player);
         }
     }
     @EventHandler
