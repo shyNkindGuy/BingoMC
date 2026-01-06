@@ -6,7 +6,7 @@
 
     <groupId>com.shyNkindguy.bingo</groupId>
     <artifactId>AdaptiveBingo</artifactId>
-    <version>${project.parent.version}-${$maven.build.timestamp}</version>
+    <version>1.0.0</version>
     <properties>
         <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
