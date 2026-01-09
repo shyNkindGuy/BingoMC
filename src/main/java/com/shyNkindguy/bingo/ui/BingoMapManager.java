@@ -17,6 +17,16 @@ public class BingoMapManager {
     public BingoMapManager(BingoGame game) {
         this.game = game;
     }
+    public void invalidate(Player player) {
+        MapView map = maps.get(player.getUniqueId());
+        if (map == null) return;
+
+        map.getRenderers().forEach(renderer -> {
+            if (renderer instanceof BingoMapRenderer br) {
+                br.invalidate();
+            }
+        });
+    }
 
     public void giveMap(Player player) {
 
@@ -36,7 +46,7 @@ public class BingoMapManager {
         MapMeta meta = (MapMeta) mapItem.getItemMeta();
 
         meta.setMapView(map);
-        meta.setDisplayName("§aBINGO HUMILDE XD");
+        meta.setDisplayName("§aBINGO HUMILDE");
         mapItem.setItemMeta(meta);
 
         // offhand

@@ -38,6 +38,7 @@ public class ObjectiveListener implements Listener {
 
         player.sendMessage("§a✔ Objetivo completado: §f" + mat.name());
         scoreboard.update(player);
+        mapManager.invalidate(player);
 
         if (game.checkWin(player)) {
             game.end(player);
