@@ -14,3 +14,5 @@ INTELLIJ IDEA (IDE JAVA RECOMENDADO):
 https://www.jetbrains.com/es-es/idea/download/?section=windows
 
 Luego, configuramos todo el IDE de preferencia INTELLIJ para utilizar la versión 17 de JAVA y elegimos MAVEN como libreria
+
+Inicializaremos el JAR de el servidor Paper que instalamos antes, y cada que hagamos cambios en el plugin lo reemplazaremos desde la carpeta PLUGINS del Paper
