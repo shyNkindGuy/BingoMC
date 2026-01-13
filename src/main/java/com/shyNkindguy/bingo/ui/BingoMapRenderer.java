@@ -58,7 +58,7 @@ public class BingoMapRenderer extends MapRenderer {
         BingoCard card = game.getCard(player);
         if (card == null) return;
 
-        canvas.drawText(6,6, MinecraftFont.Font, "BINGO HUMILDE");
+        canvas.drawText(6,6, MinecraftFont.Font, "BINGO");
 
         BingoCell[][] grid = card.getGrid();
         int cellSize = 22;
@@ -93,11 +93,9 @@ public class BingoMapRenderer extends MapRenderer {
                     icon = MapIconRegistry.fallback(cell.getObjective().getMaterial());
                 }
 
-                int scale = 3;
-                int iconSize = icon.length * scale;
+                int iconSize = icon.length;
                 int offset = (cellSize - iconSize) / 2;
-
-                drawIconScaled(canvas, x + offset, y + offset, icon, scale);
+                drawIcon(canvas, x + offset, y + offset, icon);
 //                String name = cell.getObjective().getMaterial().name();
 //                String label = name.length() >= 2 ? name.substring(0,2): name;
 //                canvas.drawText(x+4, y+6, MinecraftFont.Font, label);
