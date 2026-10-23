@@ -5,6 +5,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.map.MapView;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.Plugin;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,9 +15,12 @@ import java.util.UUID;
 public class BingoMapManager {
     private final BingoGame game;
     private final Map<UUID, MapView> maps = new HashMap<>();
+    // Marca que llevan las cartillas: así se reconocen aunque cambie el id del mapa o se reinicie el servidor.
+    private final NamespacedKey cardKey;
 
-    public BingoMapManager(BingoGame game) {
+    public BingoMapManager(Plugin plugin, BingoGame game) {
         this.game = game;
+        this.cardKey = new NamespacedKey(plugin, "cartilla");
     }
     public void invalidate(Player player) {
         MapView map = maps.get(player.getUniqueId());
@@ -32,12 +37,7 @@ public class BingoMapManager {
 
         MapView map = maps.computeIfAbsent(
                 player.getUniqueId(),
-                id -> {
-                    MapView m = Bukkit.createMap(player.getWorld());
-                    m.getRenderers().clear();
-                    m.addRenderer(new BingoMapRenderer(game));
-                    return m;
-                }
+                id -> Bukkit.createMap(player.getWorld())
         );
         map.getRenderers().clear();
         map.addRenderer(new BingoMapRenderer(game));
@@ -47,33 +47,40 @@ public class BingoMapManager {
 
         meta.setMapView(map);
         meta.setDisplayName("§aBINGO HUMILDE");
+        meta.getPersistentDataContainer().set(cardKey, PersistentDataType.BYTE, (byte) 1);
         mapItem.setItemMeta(meta);
 
-        // offhand
-        player.getInventory().setItemInOffHand(mapItem);
+        // offhand: sin cartillas repetidas, y lo que había en la mano izquierda no se pierde
+        PlayerInventory inventory = player.getInventory();
+        removeMapsFrom(inventory);
+        ItemStack previous = inventory.getItemInOffHand();
+        inventory.setItemInOffHand(mapItem);
+        if (!previous.getType().isAir()) {
+            // pasa al inventario; si no entra, se suelta a los pies del jugador
+            for (ItemStack leftover : inventory.addItem(previous).values()) {
+                player.getWorld().dropItemNaturally(player.getLocation(), leftover);
+            }
+        }
+    }
+
+    public boolean isBingoMap(ItemStack item) {
+        if (item == null || item.getType() != Material.FILLED_MAP || !item.hasItemMeta()) return false;
+        return item.getItemMeta().getPersistentDataContainer().has(cardKey, PersistentDataType.BYTE);
     }
 
     // Al terminar la partida: quita la cartilla del inventario de cada jugador conectado.
     public void removeMaps() {
         for (Player player : Bukkit.getOnlinePlayers()) {
-            MapView map = maps.get(player.getUniqueId());
-            if (map == null) continue;
-
-            PlayerInventory inventory = player.getInventory();
-            ItemStack[] contents = inventory.getContents();
-            for (int slot = 0; slot < contents.length; slot++) {
-                if (isBingoMap(contents[slot], map)) {
-                    inventory.setItem(slot, null);
-                }
-            }
+            removeMapsFrom(player.getInventory());
         }
     }
 
-    private static boolean isBingoMap(ItemStack item, MapView map) {
-        if (item == null || item.getType() != Material.FILLED_MAP) return false;
-        return item.getItemMeta() instanceof MapMeta meta
-                && meta.hasMapView()
-                && meta.getMapView() != null
-                && meta.getMapView().getId() == map.getId();
+    private void removeMapsFrom(PlayerInventory inventory) {
+        ItemStack[] contents = inventory.getContents();
+        for (int slot = 0; slot < contents.length; slot++) {
+            if (isBingoMap(contents[slot])) {
+                inventory.setItem(slot, null);
+            }
+        }
     }
 }

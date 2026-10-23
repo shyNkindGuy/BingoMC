@@ -20,7 +20,7 @@ Leyenda: `[ ]` pendiente · `[x]` hecha (se marca dentro del PR que la resuelve)
   `MAX_TIME`; `onBucketFill` debe pasar por `handleProgress` (redibujar mapa y revisar victoria);
   `/bingo stop` y permiso `bingo.admin` para start/stop; quitar `/bingotest`; empates en
   `endByPoints`; al terminar, limpiar scoreboard y quitar los mapas.
-- [ ] **0.4 Mapa sin pérdidas y sin trampas.** No pisar la mano izquierda (lo que había pasa al
+- [x] **0.4 Mapa sin pérdidas y sin trampas.** No pisar la mano izquierda (lo que había pasa al
   inventario o se suelta); el mapa no se cae al morir y no se puede tirar; detectar por el inventario
   real del jugador un tick después del evento, no por el ítem clicado (hoy basta con hacer clic en un
   cofre).

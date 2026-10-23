@@ -40,8 +40,8 @@ cuando quieras (no tienen nada que no esté en `master`).
 | 3 | El timer de 20 min no se cancela: si empiezas otra partida antes, la corta | `BingoGame.start` | 0.3 ✔ |
 | 4 | Llenar un balde no redibuja el mapa ni revisa victoria | `ObjectiveListener.onBucketFill` | 0.3 ✔ |
 | 5 | Cualquiera puede iniciar; no hay `stop`, permisos ni reset de scoreboard | `BingoCommand`, `plugin.yml` | 0.3 ✔ |
-| 6 | Clic en un ítem de un cofre (sin sacarlo) completa la casilla | `onInventoryClick` | 0.4 |
-| 7 | El mapa reemplaza la mano izquierda (borra escudo/tótem) y se cae al morir | `BingoMapManager.giveMap` | 0.4 |
+| 6 | Clic en un ítem de un cofre (sin sacarlo) completa la casilla | `onInventoryClick` | 0.4 ✔ |
+| 7 | El mapa reemplaza la mano izquierda (borra escudo/tótem) y se cae al morir | `BingoMapManager.giveMap` | 0.4 ✔ |
 | 8 | Objetivos con id/nombre/ítem que no coinciden ("Diamante" → `POLISHED_DIORITE_SLAB`, "Barca de Acacia" → `WHITE_WOOL`…) y sin pool | `ObjectiveFactory` | 0.5 |
 | 9 | Dos sistemas de íconos en paralelo; `rendered` nunca se usa (redibuja 128×128 cada tick) | `game/MapIconRegistry`, `icon/`, `BingoMapRenderer` | 0.5 |
 | 10 | `ObjectiveType` sin usar; todo es `Material` | `game/` | 1.2 |

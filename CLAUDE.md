@@ -19,8 +19,12 @@ viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
 ## Cómo se juega hoy
 `/bingo start` (permiso `bingo.admin`, ops por defecto; también desde la consola) crea una cartilla 5×5
 por jugador conectado (los 25 objetivos de `ObjectiveFactory` en distinto orden), da el mapa y el
-scoreboard. Una casilla se completa al tener el ítem (recoger, craftear, horno, balde, clic). Gana la
-primera línea (`WinConditionChecker`); a los 20 min (`MAX_TIME`), el que tenga más casillas o empate
+scoreboard. Una casilla se completa cuando el ítem está **en el inventario del jugador**: recoger, clic,
+arrastrar, cerrar el inventario, craftear, horno o balde piden revisar el inventario un tick después
+(`ObjectiveListener.requestScan`; `ScanQueue` junta los pedidos del mismo tick), nunca se mira el ítem
+del evento. La cartilla es un mapa marcado con PDC `adaptivebingo:cartilla` (`BingoMapManager.isBingoMap`):
+no pisa la mano izquierda (lo que había pasa al inventario o se suelta), no se duplica, no cae al morir y
+no se puede tirar. Gana la primera línea (`WinConditionChecker`); a los 20 min (`MAX_TIME`), el que tenga más casillas o empate
 entre los que más tengan (`TimeLimitWinners`). `/bingo stop` la detiene. Toda partida termina por
 `BingoGame.finish()`: cancela el timer, corre los `onEnd` (scoreboard principal de vuelta y mapas
 quitados del inventario) y borra las cartillas. `/bingo map` vuelve a dar el mapa. Bugs conocidos:
