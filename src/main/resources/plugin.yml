@@ -6,6 +6,9 @@ api-version: '1.21'
 commands:
   bingo:
     description: Controlar el Bingo
-  bingotest:
-    description: Comando de prueba
-    usage: /bingotest
+    usage: /bingo <start|stop|map>
+
+permissions:
+  bingo.admin:
+    description: Iniciar y detener partidas de Bingo
+    default: op

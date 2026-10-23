@@ -52,4 +52,28 @@ public class BingoMapManager {
         // offhand
         player.getInventory().setItemInOffHand(mapItem);
     }
+
+    // Al terminar la partida: quita la cartilla del inventario de cada jugador conectado.
+    public void removeMaps() {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            MapView map = maps.get(player.getUniqueId());
+            if (map == null) continue;
+
+            PlayerInventory inventory = player.getInventory();
+            ItemStack[] contents = inventory.getContents();
+            for (int slot = 0; slot < contents.length; slot++) {
+                if (isBingoMap(contents[slot], map)) {
+                    inventory.setItem(slot, null);
+                }
+            }
+        }
+    }
+
+    private static boolean isBingoMap(ItemStack item, MapView map) {
+        if (item == null || item.getType() != Material.FILLED_MAP) return false;
+        return item.getItemMeta() instanceof MapMeta meta
+                && meta.hasMapView()
+                && meta.getMapView() != null
+                && meta.getMapView().getId() == map.getId();
+    }
 }

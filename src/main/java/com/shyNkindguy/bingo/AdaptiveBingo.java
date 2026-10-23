@@ -17,17 +17,13 @@ public final class AdaptiveBingo extends JavaPlugin {
     public void onEnable(){
 
         getLogger().info("Mi Bingo Habilitado :)))");
-        if(getCommand("bingotest") != null){
-            getCommand("bingotest").setExecutor((sender, command, label, args) ->{
-                sender.sendMessage("§aBingo funciona, mira mi bingo funciona mamaaaaaaaaaaaa, shyNkindguy :v!");
-                return true;
-            });
-        }else {
-            getLogger().severe("El comando /bingotest no está definido en plugin.yml");
-        }
         game = new BingoGame(this);
         scoreboard = new BingoScoreBoard(game);
         mapManager = new BingoMapManager(game);
+        game.onEnd(() -> {
+            scoreboard.hideAll();
+            mapManager.removeMaps();
+        });
 
         Bukkit.getPluginManager().registerEvents(
                 new ObjectiveListener(this,game,scoreboard,mapManager),

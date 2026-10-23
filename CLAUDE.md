@@ -11,16 +11,20 @@ viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
   módulos `core` (sin Bukkit) + `plugin` (tarea 1.1). La versión del plugin sale solo del `pom` (el
   `plugin.yml` usa `${project.version}` con resource filtering; el CI revisa que quede reemplazada).
 - `plugin.yml` clásico de Bukkit (no `paper-plugin.yml`). Main: `com.shyNkindguy.bingo.AdaptiveBingo`.
-- Paquete `com.shyNkindguy.bingo`: `commands/` (`/bingo start|map`), `events/` (`ObjectiveListener`),
+- Paquete `com.shyNkindguy.bingo`: `commands/` (`/bingo start|stop|map`), `events/` (`ObjectiveListener`),
   `game/` (partida, cartilla, objetivos, victoria), `icon/` (registro de íconos nuevo), `ui/` (mapa,
   scoreboard, paleta). Dos sistemas de íconos conviven hasta la tarea 0.5: el viejo
   `game/MapIconRegistry` + `IconPresets` (el que usa el mapa) y el nuevo `icon/IconRegistry`.
 
 ## Cómo se juega hoy
-`/bingo start` crea una cartilla 5×5 por jugador conectado (los 25 objetivos de `ObjectiveFactory` en
-distinto orden), da el mapa y el scoreboard. Una casilla se completa al tener el ítem (recoger,
-craftear, horno, balde, clic). Gana la primera línea (`WinConditionChecker`); a los 20 min, el que tenga
-más casillas. `/bingo map` vuelve a dar el mapa. Bugs conocidos: tabla de `docs/ANALISIS.md` §3.
+`/bingo start` (permiso `bingo.admin`, ops por defecto; también desde la consola) crea una cartilla 5×5
+por jugador conectado (los 25 objetivos de `ObjectiveFactory` en distinto orden), da el mapa y el
+scoreboard. Una casilla se completa al tener el ítem (recoger, craftear, horno, balde, clic). Gana la
+primera línea (`WinConditionChecker`); a los 20 min (`MAX_TIME`), el que tenga más casillas o empate
+entre los que más tengan (`TimeLimitWinners`). `/bingo stop` la detiene. Toda partida termina por
+`BingoGame.finish()`: cancela el timer, corre los `onEnd` (scoreboard principal de vuelta y mapas
+quitados del inventario) y borra las cartillas. `/bingo map` vuelve a dar el mapa. Bugs conocidos:
+tabla de `docs/ANALISIS.md` §3.
 
 ## Convenciones
 - Commits, mensajes del juego y documentación **en español**. Java (no migrar a Kotlin sin pedirlo).
