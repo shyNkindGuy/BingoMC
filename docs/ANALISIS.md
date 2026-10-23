@@ -36,10 +36,10 @@ cuando quieras (no tienen nada que no esté en `master`).
 | # | Problema | Dónde | Tarea |
 |---|---|---|---|
 | 1 | `master` no compila (paquete `icon/` a medias) | `icon/*` | 0.1 ✔ |
-| 2 | `/bingo start` siempre manda también "Uso: /bingo start" (falta `return`) | `BingoCommand` | 0.3 |
-| 3 | El timer de 20 min no se cancela: si empiezas otra partida antes, la corta | `BingoGame.start` | 0.3 |
-| 4 | Llenar un balde no redibuja el mapa ni revisa victoria | `ObjectiveListener.onBucketFill` | 0.3 |
-| 5 | Cualquiera puede iniciar; no hay `stop`, permisos ni reset de scoreboard | `BingoCommand`, `plugin.yml` | 0.3 |
+| 2 | `/bingo start` siempre manda también "Uso: /bingo start" (falta `return`) | `BingoCommand` | 0.3 ✔ |
+| 3 | El timer de 20 min no se cancela: si empiezas otra partida antes, la corta | `BingoGame.start` | 0.3 ✔ |
+| 4 | Llenar un balde no redibuja el mapa ni revisa victoria | `ObjectiveListener.onBucketFill` | 0.3 ✔ |
+| 5 | Cualquiera puede iniciar; no hay `stop`, permisos ni reset de scoreboard | `BingoCommand`, `plugin.yml` | 0.3 ✔ |
 | 6 | Clic en un ítem de un cofre (sin sacarlo) completa la casilla | `onInventoryClick` | 0.4 |
 | 7 | El mapa reemplaza la mano izquierda (borra escudo/tótem) y se cae al morir | `BingoMapManager.giveMap` | 0.4 |
 | 8 | Objetivos con id/nombre/ítem que no coinciden ("Diamante" → `POLISHED_DIORITE_SLAB`, "Barca de Acacia" → `WHITE_WOOL`…) y sin pool | `ObjectiveFactory` | 0.5 |

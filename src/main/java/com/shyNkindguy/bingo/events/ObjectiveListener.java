@@ -47,14 +47,8 @@ public class ObjectiveListener implements Listener {
     @EventHandler
     public void onBucketFill(PlayerBucketFillEvent event){
         if (!game.isRunning()) return;
-        Player player = event.getPlayer();
-        Material result = event.getItemStack().getType();
         //cubos lava, leche, agua
-        boolean completed = game.completePickup(player, result);
-        if (completed){
-            player.sendMessage("§a✔ Objetivo completado: §f" + result.name());
-            scoreboard.update(player);
-        }
+        handleProgress(event.getPlayer(), event.getItemStack().getType());
     }
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {

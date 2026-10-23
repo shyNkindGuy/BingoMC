@@ -39,6 +39,16 @@ public class BingoScoreBoard {
 
             update(player, board, objective);
         }
+        // Al terminar la partida: cada jugador vuelve al scoreboard principal del servidor.
+        public void hideAll(){
+            Scoreboard main = manager.getMainScoreboard();
+            for (UUID id : boards.keySet()) {
+                Player player = Bukkit.getPlayer(id);
+                if (player != null) player.setScoreboard(main);
+            }
+            boards.clear();
+            objectives.clear();
+        }
         public void update(Player player, Scoreboard board, Objective objective){
             board.getEntries().forEach(board::resetScores);
             int progress = game.getProgress(player.getUniqueId());

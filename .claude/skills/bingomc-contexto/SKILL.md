@@ -11,9 +11,10 @@ personal, con idea de llegar a servidor. Todo en español (commits, mensajes, do
 ## Qué está hecho (v1.0)
 - `/bingo start`: cartilla 5×5 por jugador con los mismos 25 ítems (`ObjectiveFactory`) en distinto
   orden, mapa en la mano izquierda (`BingoMapManager` + `BingoMapRenderer`, íconos 8×8), scoreboard
-  lateral (`BingoScoreBoard`). `/bingo map` vuelve a dar el mapa.
+  lateral (`BingoScoreBoard`). `/bingo map` vuelve a dar el mapa; `/bingo stop` la detiene (start/stop
+  piden `bingo.admin`).
 - Casilla completa al tener el `Material` (recoger, craftear, horno, balde, clic). Gana la primera línea
-  (`WinConditionChecker`); a los 20 min, el que tenga más casillas.
+  (`WinConditionChecker`); a los 20 min, el que tenga más casillas o empate (`TimeLimitWinners`).
 - Historia: estructura base → comando → cartilla + tablero → 5×5 con mapa y timer → fix de baldes →
   íconos en el mapa → refactor de íconos a medias (`icon/`). Todas las ramas viejas están fusionadas.
 
@@ -22,8 +23,10 @@ personal, con idea de llegar a servidor. Todo en español (commits, mensajes, do
   mínimo, se agregó JUnit 5 + test de victoria, CI (`.github/workflows/build.yml`), `CLAUDE.md`, `docs/`
   y esta skill (PR #10).
 - 2026-10-23 · tarea **0.2**: Paper 1.21.11 + Java 21, plugin v1.1.0, `plugin.yml` con
-  `${project.version}` y `api-version: '1.21'`. **Siguiente: 0.3** (bugs de partida). Ver
-  `docs/PLAN.md` para el estado al día.
+  `${project.version}` y `api-version: '1.21'` (PR #11).
+- 2026-10-23 · tarea **0.3**: `/bingo stop` + permiso `bingo.admin`, timer cancelable, empates por
+  tiempo, balde por `handleProgress`, `BingoGame.onEnd` limpia scoreboard y mapas, fuera `/bingotest`.
+  **Siguiente: 0.4** (mapa sin pérdidas y sin trampas). Ver `docs/PLAN.md` para el estado al día.
 - Conviven dos sistemas de íconos (`game/MapIconRegistry` es el que usa el mapa; `icon/IconRegistry`
   es el nuevo) hasta la tarea 0.5.
 

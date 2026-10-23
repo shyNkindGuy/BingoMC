@@ -2,11 +2,12 @@
 
 Plugin de bingo para servidores **Paper 1.21.11** de Minecraft (Java 21). Cada jugador recibe una cartilla 5×5 de
 objetivos dibujada en un mapa en la mano izquierda; gana el primero en completar una línea (fila,
-columna o diagonal). Si pasan 20 minutos, gana quien tenga más casillas.
+columna o diagonal). Si pasan 20 minutos, gana quien tenga más casillas (o empatan los que tengan más).
 
 | Comando | Qué hace |
 |---|---|
-| `/bingo start` | Empieza la partida con todos los jugadores conectados |
+| `/bingo start` | Empieza la partida con todos los jugadores conectados (permiso `bingo.admin`, ops por defecto) |
+| `/bingo stop` | Detiene la partida en curso (permiso `bingo.admin`) |
 | `/bingo map` | Vuelve a dar el mapa con la cartilla |
 
 **Documentación:** [arquitectura](docs/ARQUITECTURA.md) · [plan de trabajo](docs/PLAN.md) ·

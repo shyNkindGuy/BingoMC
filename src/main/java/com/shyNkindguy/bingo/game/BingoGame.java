@@ -5,6 +5,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
 
@@ -13,14 +14,22 @@ public class BingoGame {
     private GameState state = GameState.WAITING;
     private long startTime;
     private static final long MAX_TIME = 20 * 60 * 1000;
+    private static final long MILLIS_PER_TICK = 50;
     private final Map<UUID, BingoCard> cards = new HashMap<>();
+    private final List<Runnable> endListeners = new ArrayList<>();
+    private BukkitTask timeLimitTask;
 
     public BingoGame(Plugin plugin){
         this.plugin = plugin;
     }
 
+    // Se ejecuta cada vez que termina una partida (bingo, tiempo agotado o /bingo stop).
+    public void onEnd(Runnable listener) {
+        endListeners.add(listener);
+    }
+
     public boolean start(Collection<? extends Player> players) {
-        if (state == GameState.RUNNING) return false;
+        if (state == GameState.RUNNING || players.isEmpty()) return false;
 
         state = GameState.RUNNING;
         startTime = System.currentTimeMillis();
@@ -34,38 +43,36 @@ public class BingoGame {
             );
         }
 
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+        timeLimitTask = Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (state == GameState.RUNNING) {
                 endByPoints();
             }
-        }, 20L * 60 * 20);
+        }, MAX_TIME / MILLIS_PER_TICK);
 
         return true;
     }
     private void endByPoints() {
-        Player winner = null;
-        int max = -1;
-
+        Map<String, Integer> completedByPlayer = new LinkedHashMap<>();
         for (UUID id : cards.keySet()) {
             Player p = Bukkit.getPlayer(id);
             if (p == null) continue;
-
-            int progress = getProgress(id);
-            if (progress > max) {
-                max = progress;
-                winner = p;
-            }
+            completedByPlayer.put(p.getName(), getProgress(id));
         }
-
-        state = GameState.ENDED;
+        List<String> leaders = TimeLimitWinners.leaders(completedByPlayer);
 
         Bukkit.broadcastMessage("§c⏱ Tiempo agotado");
-        if (winner != null) {
-            Bukkit.broadcastMessage("§eGanador: §a" + winner.getName());
-            Bukkit.broadcastMessage("§7Objetivos: §f" + max);
+        if (leaders.isEmpty()) {
+            Bukkit.broadcastMessage("§7Nadie completó casillas.");
+        } else {
+            if (leaders.size() == 1) {
+                Bukkit.broadcastMessage("§eGanador: §a" + leaders.get(0));
+            } else {
+                Bukkit.broadcastMessage("§eEmpate entre: §a" + String.join("§e, §a", leaders));
+            }
+            Bukkit.broadcastMessage("§7Objetivos: §f" + completedByPlayer.get(leaders.get(0)));
         }
 
-        cards.clear();
+        finish();
     }
 
 
@@ -91,12 +98,28 @@ public class BingoGame {
         return state == GameState.RUNNING;
     }
     public void end(Player winner) {
-        state = GameState.ENDED;
-
         Bukkit.broadcastMessage("§6§lBINGO!");
         Bukkit.broadcastMessage(winner.getName() + " §ese los papeó :v§a");
         Bukkit.broadcastMessage("§7Tiempo: §f" + getElapsedTime());
 
+        finish();
+    }
+
+    public boolean stop(String stoppedBy) {
+        if (state != GameState.RUNNING) return false;
+
+        Bukkit.broadcastMessage("§c§lBINGO DETENIDO §7por " + stoppedBy);
+        finish();
+        return true;
+    }
+
+    private void finish() {
+        if (timeLimitTask != null) {
+            timeLimitTask.cancel();
+            timeLimitTask = null;
+        }
+        state = GameState.ENDED;
+        endListeners.forEach(Runnable::run);
         cards.clear();
     }
     public boolean completePickup(Player player, Material material) {
