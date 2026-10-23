@@ -21,4 +21,20 @@ public class IconDefinition {
             return BingoPalette.TRANSPARENT;
         return pixels[y][x];
     }
+
+    public String getId() {
+        return id;
+    }
+
+    public IconCategory getCategory() {
+        return category;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
 }

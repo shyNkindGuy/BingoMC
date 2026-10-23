@@ -48,7 +48,7 @@ public class IconRenderer {
         // Dividir celda en mitad izquierda/derecha
         int halfSize = cellSize / 2;
 
-        // Escalar iconos a mitad
+        // Escalar iconos a mitad (pendiente: drawScaled todavía no dibuja nada)
         drawScaled(canvas, cellX, cellY, icon1, 0.5);
         drawScaled(canvas, cellX + halfSize, cellY, icon2, 0.5);
     }

@@ -18,11 +18,10 @@ public class IconRegistry {
     }
 
     private static void initializeFallbacks() {
-        FALLBACKS.put(IconCategory.TOOL,
-                new IconDefinition("fallback_tool", TooLIcons.GENERIC_TOOL, IconCategory.TOOL));
-        FALLBACKS.put(IconCategory.FOOD,
-                new IconDefinition("fallback_food", FoodIcons.GENERIC_FOOD, IconCategory.FOOD));
-        // ... más fallbacks
+        for (IconCategory category : IconCategory.values()) {
+            FALLBACKS.put(category, new IconDefinition(
+                    "fallback_" + category.name().toLowerCase(), category.getFallback(), category));
+        }
     }
 
     private static void registerIcons() {
@@ -40,6 +39,14 @@ public class IconRegistry {
                 registerIngot(mat);
             }
         }
+    }
+
+    private static void register(Material material, byte[][] pixels, IconCategory category) {
+        ICONS.put(material, new IconDefinition(material.name().toLowerCase(), pixels, category));
+    }
+
+    private static void registerIngot(Material material) {
+        register(material, BlockIcons.INGOT, IconCategory.ORE);
     }
 
     public static IconDefinition get(Material material) {

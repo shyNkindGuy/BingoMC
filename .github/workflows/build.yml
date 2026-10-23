@@ -1,0 +1,38 @@
+name: Build
+
+# Compila el plugin y corre los tests en cada PR y en cada push a master.
+# El .jar queda como artefacto del run: se descarga y se copia a plugins/ del servidor Paper.
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Compilar y correr tests
+        run: mvn -B -ntp verify
+
+      - name: Subir jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: adaptive-bingo-jar
+          path: target/*.jar
+          if-no-files-found: error
+          retention-days: 14
