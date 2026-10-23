@@ -9,8 +9,9 @@ Repo `shyNkindGuy/BingoMC`, plugin `AdaptiveBingo` (`com.shyNkindguy.bingo.Adapt
 personal, con idea de llegar a servidor. Todo en español (commits, mensajes, docs).
 
 ## Qué está hecho (v1.0)
-- `/bingo start`: cartilla 5×5 por jugador con los mismos 25 ítems (`ObjectiveFactory`) en distinto
-  orden, mapa en la mano izquierda (`BingoMapManager` + `BingoMapRenderer`, íconos 8×8), scoreboard
+- `/bingo start`: cartilla 5×5 por jugador con 25 ítems sorteados por partida de los 43 de
+  `ObjectivePool` (los mismos para todos, en distinto orden), mapa en la mano izquierda
+  (`BingoMapManager` + `BingoMapRenderer` contextual, íconos 8×8 de `icon/IconRegistry` al doble), scoreboard
   lateral (`BingoScoreBoard`). `/bingo map` vuelve a dar el mapa; `/bingo stop` la detiene (start/stop
   piden `bingo.admin`).
 - Casilla completa cuando el `Material` está en el inventario real (escaneo un tick después de
@@ -29,10 +30,12 @@ personal, con idea de llegar a servidor. Todo en español (commits, mensajes, do
   tiempo, balde por `handleProgress`, `BingoGame.onEnd` limpia scoreboard y mapas, fuera `/bingotest`.
   (PR #12).
 - 2026-10-23 · tarea **0.4**: detección por inventario real (`ScanQueue`), cartilla marcada con PDC
-  que no pisa la mano izquierda, no se duplica, no cae al morir y no se tira. **Siguiente: 0.5**
-  (objetivos corregidos e íconos unificados). Ver `docs/PLAN.md` para el estado al día.
-- Conviven dos sistemas de íconos (`game/MapIconRegistry` es el que usa el mapa; `icon/IconRegistry`
-  es el nuevo) hasta la tarea 0.5.
+  que no pisa la mano izquierda, no se duplica, no cae al morir y no se tira (PR #13).
+- 2026-10-23 · tarea **0.5**: pool de 43 objetivos con nombres en español (`ObjectivePool`, id derivado
+  del ítem), sorteo de 25 por partida, un solo sistema de íconos (`icon/`; se borraron
+  `game/IconPresets` y `game/MapIconRegistry`), `drawScaled` y renderer contextual que solo redibuja al
+  cambiar. **Fase 0 completa. Siguiente: 1.1** (módulo `core` puro). Ver `docs/PLAN.md` para el estado
+  al día.
 
 ## Decisiones (no volver a preguntar)
 | Tema | Decisión |

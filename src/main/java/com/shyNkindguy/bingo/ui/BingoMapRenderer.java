@@ -3,53 +3,36 @@ package com.shyNkindguy.bingo.ui;
 import com.shyNkindguy.bingo.game.BingoCard;
 import com.shyNkindguy.bingo.game.BingoCell;
 import com.shyNkindguy.bingo.game.BingoGame;
-import com.shyNkindguy.bingo.game.MapIconRegistry;
+import com.shyNkindguy.bingo.icon.IconDefinition;
+import com.shyNkindguy.bingo.icon.IconRegistry;
+import com.shyNkindguy.bingo.icon.IconRenderer;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.map.*;
 import org.bukkit.map.MapView;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
+// Contextual: cada jugador tiene su propio lienzo y ve SU cartilla. Solo se redibuja cuando la cartilla
+// cambia (invalidate); el resto de los ticks el lienzo conserva lo último que se pintó.
 public class BingoMapRenderer extends MapRenderer {
     private final BingoGame game;
-    private boolean rendered = false;
+    private final Set<UUID> upToDate = new HashSet<>();
 
     public BingoMapRenderer(BingoGame game){
-        super(false);
+        super(true);
         this.game = game;
     }
     public void invalidate() {
-        this.rendered = false;
-    }
-    private void drawIcon(MapCanvas canvas, int x, int y, byte[][] icon) {
-        for (int i = 0; i < icon.length; i++) {
-            for (int j = 0; j < icon[i].length; j++) {
-                byte color = icon[i][j];
-                if (color != 0) {
-                    canvas.setPixel(x + j, y + i, color);
-                }
-            }
-        }
-    }
-    private void drawIconScaled(MapCanvas canvas, int x, int y, byte[][] icon, int scale) {
-        for (int iy = 0; iy < icon.length; iy++) {
-            for (int ix = 0; ix < icon[iy].length; ix++) {
-                byte color = icon[iy][ix];
-                if (color == 0) continue;
-
-                for (int sx = 0; sx < scale; sx++) {
-                    for (int sy = 0; sy < scale; sy++) {
-                        canvas.setPixel(
-                                x + ix * scale + sx,
-                                y + iy * scale + sy,
-                                color
-                        );
-                    }
-                }
-            }
-        }
+        upToDate.clear();
     }
     @Override
 
     public void render(MapView view, MapCanvas canvas, Player player){
+        if (!upToDate.add(player.getUniqueId())) return;
+
         for (int x = 0; x < 128; x++) {
             for (int y = 0; y < 128; y++) {
                 canvas.setPixel(x, y, MapPalette.PALE_BLUE);
@@ -88,17 +71,12 @@ public class BingoMapRenderer extends MapRenderer {
                     canvas.setPixel(x + cellSize - 1, y + i, border);
                 }
 
-                byte[][] icon = MapIconRegistry.get(cell.getObjective().getMaterial());
+                Material material = cell.getObjective().getMaterial();
+                IconDefinition icon = IconRegistry.get(material);
                 if (icon == null) {
-                    icon = MapIconRegistry.fallback(cell.getObjective().getMaterial());
+                    icon = IconRegistry.getFallback(material);
                 }
-
-                int iconSize = icon.length;
-                int offset = (cellSize - iconSize) / 2;
-                drawIcon(canvas, x + offset, y + offset, icon);
-//                String name = cell.getObjective().getMaterial().name();
-//                String label = name.length() >= 2 ? name.substring(0,2): name;
-//                canvas.drawText(x+4, y+6, MinecraftFont.Font, label);
+                IconRenderer.drawInCell(canvas, x, y, cellSize, icon, cell.isCompleted());
 
                 if (cell.isCompleted()) {
                     for (int i = 0; i < 6; i++) {

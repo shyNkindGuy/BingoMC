@@ -1,6 +1,7 @@
 package com.shyNkindguy.bingo.icon;
 
 import com.shyNkindguy.bingo.icon.presets.BlockIcons;
+import com.shyNkindguy.bingo.icon.presets.FluidIcons;
 import com.shyNkindguy.bingo.icon.presets.FoodIcons;
 import com.shyNkindguy.bingo.icon.presets.TooLIcons;
 import org.bukkit.Material;
@@ -28,6 +29,11 @@ public class IconRegistry {
         register(Material.DIAMOND, BlockIcons.DIAMOND_GEM, IconCategory.ORE);
         register(Material.BREAD, FoodIcons.BREAD, IconCategory.FOOD);
         register(Material.IRON_PICKAXE, TooLIcons.PICKAXE, IconCategory.TOOL);
+        register(Material.DIAMOND_PICKAXE, TooLIcons.PICKAXE, IconCategory.TOOL);
+        register(Material.BUCKET, FluidIcons.BUCKET_EMPTY, IconCategory.FLUID);
+        register(Material.WATER_BUCKET, FluidIcons.WATER_BUCKET, IconCategory.FLUID);
+        register(Material.LAVA_BUCKET, FluidIcons.LAVA_BUCKET, IconCategory.FLUID);
+        register(Material.MILK_BUCKET, FluidIcons.MILK_BUCKET, IconCategory.FLUID);
 
         // Automáticos por patrón
         autoRegisterByPattern();
@@ -37,6 +43,8 @@ public class IconRegistry {
         for (Material mat : Material.values()) {
             if (mat.name().endsWith("_INGOT")) {
                 registerIngot(mat);
+            } else if (mat.name().endsWith("_LOG")) {
+                register(mat, BlockIcons.LOG, IconCategory.BLOCK);
             }
         }
     }

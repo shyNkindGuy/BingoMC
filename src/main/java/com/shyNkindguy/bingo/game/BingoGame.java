@@ -36,10 +36,12 @@ public class BingoGame {
 
         cards.clear();
 
+        // los mismos objetivos para todos; cada cartilla los baraja en su propia copia
+        List<BingoObjective> objectives = ObjectiveFactory.createObjectives();
         for (Player p : players) {
             cards.put(
                     p.getUniqueId(),
-                    new BingoCard(ObjectiveFactory.createObjectives())
+                    new BingoCard(new ArrayList<>(objectives))
             );
         }
 
@@ -122,9 +124,10 @@ public class BingoGame {
         endListeners.forEach(Runnable::run);
         cards.clear();
     }
-    public boolean completePickup(Player player, Material material) {
+    // Devuelve el objetivo completado, o null si no había ninguno pendiente con ese material.
+    public BingoObjective completePickup(Player player, Material material) {
         BingoCard card = cards.get(player.getUniqueId());
-        if (card == null) return false;
+        if (card == null) return null;
 
         return card.completeByMaterial(material);
     }
