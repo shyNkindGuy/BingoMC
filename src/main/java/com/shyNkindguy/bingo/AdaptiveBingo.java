@@ -19,7 +19,7 @@ public final class AdaptiveBingo extends JavaPlugin {
         getLogger().info("Mi Bingo Habilitado :)))");
         game = new BingoGame(this);
         scoreboard = new BingoScoreBoard(game);
-        mapManager = new BingoMapManager(game);
+        mapManager = new BingoMapManager(this, game);
         game.onEnd(() -> {
             scoreboard.hideAll();
             mapManager.removeMaps();

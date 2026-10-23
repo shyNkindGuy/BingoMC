@@ -13,7 +13,8 @@ personal, con idea de llegar a servidor. Todo en español (commits, mensajes, do
   orden, mapa en la mano izquierda (`BingoMapManager` + `BingoMapRenderer`, íconos 8×8), scoreboard
   lateral (`BingoScoreBoard`). `/bingo map` vuelve a dar el mapa; `/bingo stop` la detiene (start/stop
   piden `bingo.admin`).
-- Casilla completa al tener el `Material` (recoger, craftear, horno, balde, clic). Gana la primera línea
+- Casilla completa cuando el `Material` está en el inventario real (escaneo un tick después de
+  recoger/clic/arrastrar/cerrar/craftear/horno/balde). Gana la primera línea
   (`WinConditionChecker`); a los 20 min, el que tenga más casillas o empate (`TimeLimitWinners`).
 - Historia: estructura base → comando → cartilla + tablero → 5×5 con mapa y timer → fix de baldes →
   íconos en el mapa → refactor de íconos a medias (`icon/`). Todas las ramas viejas están fusionadas.
@@ -26,7 +27,10 @@ personal, con idea de llegar a servidor. Todo en español (commits, mensajes, do
   `${project.version}` y `api-version: '1.21'` (PR #11).
 - 2026-10-23 · tarea **0.3**: `/bingo stop` + permiso `bingo.admin`, timer cancelable, empates por
   tiempo, balde por `handleProgress`, `BingoGame.onEnd` limpia scoreboard y mapas, fuera `/bingotest`.
-  **Siguiente: 0.4** (mapa sin pérdidas y sin trampas). Ver `docs/PLAN.md` para el estado al día.
+  (PR #12).
+- 2026-10-23 · tarea **0.4**: detección por inventario real (`ScanQueue`), cartilla marcada con PDC
+  que no pisa la mano izquierda, no se duplica, no cae al morir y no se tira. **Siguiente: 0.5**
+  (objetivos corregidos e íconos unificados). Ver `docs/PLAN.md` para el estado al día.
 - Conviven dos sistemas de íconos (`game/MapIconRegistry` es el que usa el mapa; `icon/IconRegistry`
   es el nuevo) hasta la tarea 0.5.
 
@@ -55,5 +59,6 @@ personal, con idea de llegar a servidor. Todo en español (commits, mensajes, do
   Probar clases puras con `javac` + JUnit console + stubs de Bukkit en el scratchpad.
 - Maven Central puede responder 429: reintentar con espera.
 - `_` no es identificador válido (Java 9+). Los presets de íconos usan `o` como transparente.
-- `InventoryClickEvent` mira el ítem clicado (trampa del cofre) y `giveMap` pisa la mano izquierda:
-  tareas 0.4.
+- La cartilla se reconoce por la marca PDC, no por el id del mapa: todo ítem de cartilla nuevo debe
+  pasar por `BingoMapManager.giveMap`. Todavía se puede guardar en un cofre o un marco (no es trampa:
+  solo se pierde la cartilla hasta `/bingo map`).
