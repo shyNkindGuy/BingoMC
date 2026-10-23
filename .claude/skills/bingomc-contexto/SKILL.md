@@ -20,7 +20,10 @@ personal, con idea de llegar a servidor. Todo en español (commits, mensajes, do
 ## Dónde quedó
 - 2026-10-23 · tarea **0.1**: `master` no compilaba por el paquete `icon/` a medias; se completó lo
   mínimo, se agregó JUnit 5 + test de victoria, CI (`.github/workflows/build.yml`), `CLAUDE.md`, `docs/`
-  y esta skill. **Siguiente: 0.2** (Paper 1.21.11 + Java 21). Ver `docs/PLAN.md` para el estado al día.
+  y esta skill (PR #10).
+- 2026-10-23 · tarea **0.2**: Paper 1.21.11 + Java 21, plugin v1.1.0, `plugin.yml` con
+  `${project.version}` y `api-version: '1.21'`. **Siguiente: 0.3** (bugs de partida). Ver
+  `docs/PLAN.md` para el estado al día.
 - Conviven dos sistemas de íconos (`game/MapIconRegistry` es el que usa el mapa; `icon/IconRegistry`
   es el nuevo) hasta la tarea 0.5.
 

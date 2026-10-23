@@ -12,7 +12,7 @@ Leyenda: `[ ]` pendiente · `[x]` hecha (se marca dentro del PR que la resuelve)
   compilar, `pom.xml` con versión de compilador y JUnit 5, test de `WinConditionChecker`, workflow
   `build.yml` (compila, corre tests y sube el `.jar`), `CLAUDE.md`, `docs/` y la skill
   `.claude/skills/bingomc-contexto`.
-- [ ] **0.2 Migrar a Paper 1.21.11 + Java 21.** `paper-api 1.21.11-R0.1-SNAPSHOT`, `java.version 21`,
+- [x] **0.2 Migrar a Paper 1.21.11 + Java 21.** `paper-api 1.21.11-R0.1-SNAPSHOT`, `java.version 21`,
   `api-version: '1.21'`, versión del `plugin.yml` tomada del `pom` (resource filtering), CI con Java 21,
   README con los nuevos requisitos. Arreglar lo que la API nueva rompa o marque como eliminado.
 - [ ] **0.3 Bugs de partida.** Falta `return` en `/bingo start` (siempre muestra "Uso"); guardar el
