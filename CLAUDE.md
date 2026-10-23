@@ -7,8 +7,9 @@ estadísticas, ítems especiales, conjuntos y estados. Diseño en `docs/ARQUITEC
 viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
 
 ## Stack
-- **Java 17, Paper API 1.20.4**, Maven, un módulo (`pom.xml`). Decidido migrar a **Paper 1.21.11 +
-  Java 21** (tarea 0.2) y luego a dos módulos `core` (sin Bukkit) + `plugin` (tarea 1.1).
+- **Java 21, Paper API 1.21.11** (desde la tarea 0.2), Maven, un módulo (`pom.xml`). Decidido pasar a dos
+  módulos `core` (sin Bukkit) + `plugin` (tarea 1.1). La versión del plugin sale solo del `pom` (el
+  `plugin.yml` usa `${project.version}` con resource filtering; el CI revisa que quede reemplazada).
 - `plugin.yml` clásico de Bukkit (no `paper-plugin.yml`). Main: `com.shyNkindguy.bingo.AdaptiveBingo`.
 - Paquete `com.shyNkindguy.bingo`: `commands/` (`/bingo start|map`), `events/` (`ObjectiveListener`),
   `game/` (partida, cartilla, objetivos, victoria), `icon/` (registro de íconos nuevo), `ui/` (mapa,
@@ -31,10 +32,10 @@ más casillas. `/bingo map` vuelve a dar el mapa. Bugs conocidos: tabla de `docs
 
 ## Comandos
 ```bash
-mvn -B verify          # compila, corre tests y deja target/AdaptiveBingo-1.0.0.jar
+mvn -B verify          # compila, corre tests y deja target/AdaptiveBingo-<versión>.jar
 ```
 Para probar: copiar el `.jar` (o el artefacto `adaptive-bingo-jar` del CI) a `plugins/` de un servidor
-Paper de la misma versión del `pom` y reiniciar.
+Paper 1.21.11 (Java 21) y reiniciar.
 
 **El contenedor en la nube de Claude no llega a `repo.papermc.io`** (y Maven Central a veces responde
 429): ahí `mvn verify` no puede bajar `paper-api`. La validación real es `.github/workflows/build.yml`
