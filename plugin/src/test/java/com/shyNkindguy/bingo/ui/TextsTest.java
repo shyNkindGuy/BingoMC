@@ -10,7 +10,9 @@ class TextsTest {
 
     private static final String[] CLAVES = {
             "comando.uso", "comando.sin_permiso_iniciar", "comando.sin_permiso_detener", "comando.sin_permiso_recargar",
-            "comando.sin_permiso_equipos", "comando.solo_jugador",
+            "comando.sin_permiso_equipos", "comando.sin_permiso_pausar", "comando.solo_jugador",
+            "pausa.titulo", "pausa.sigue_titulo", "pausa.subtitulo", "pausa.pausada", "pausa.sigue", "pausa.no_se_puede",
+            "barra.pausa", "marcador.estado_pausa", "recarga.kit",
             "inicio.ya_en_curso", "inicio.sin_jugadores", "inicio.cartilla_no_existe", "inicio.error",
             "inicio.modo_imposible", "inicio.no_se_pudo", "inicio.anuncio", "inicio.detalle", "inicio.minutos",
             "inicio.sin_limite", "inicio.sin_pvp",

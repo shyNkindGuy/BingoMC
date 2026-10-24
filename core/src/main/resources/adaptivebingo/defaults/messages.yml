@@ -3,10 +3,11 @@
 # la de por defecto. Después de editar, /bingo reload.
 
 comando:
-  uso: "&eUso: /bingo <start [cartilla] [semilla]|stop|map|card|reload|team>"
+  uso: "&eUso: /bingo <start [cartilla] [semilla]|stop|pause|map|card|reload|team>"
   sin_permiso_iniciar: "&cNo tienes permiso para iniciar el Bingo."
   sin_permiso_detener: "&cNo tienes permiso para detener el Bingo."
   sin_permiso_recargar: "&cNo tienes permiso para recargar el Bingo."
+  sin_permiso_pausar: "&cNo tienes permiso para pausar el Bingo."
   sin_permiso_equipos: "&cNo tienes permiso para armar los equipos."
   solo_jugador: "&cEsto lo puede hacer solo un jugador."
 
@@ -38,6 +39,14 @@ partida:
   no_hay: "&cNo hay ninguna partida en curso."
   entraste: "&aEntraste a la partida de bingo en curso: tu cartilla está en la mano izquierda."
 
+pausa:
+  titulo: "&f⏸ PAUSA"
+  sigue_titulo: "&a▶ ¡SIGUE!"
+  subtitulo: "&7por {quien}"
+  pausada: "&f⏸ Partida en pausa &7por {quien}: el tiempo no corre y nadie se mueve. &f/bingo pause &7para seguir."
+  sigue: "&a▶ Sigue la partida &7({quien})"
+  no_se_puede: "&cSolo se puede pausar una partida en curso."
+
 puntos:
   tiempo_agotado: "&c⏱ Tiempo agotado"
   sin_libres: "&eNo quedan casillas libres"
@@ -63,6 +72,7 @@ recarga:
   partida_en_curso: "&7La partida en curso sigue con sus tareas; los cambios salen en la próxima."
   error: "&cNo se recargó: &f{error}"
   sigue: "&7Siguen las tareas de antes."
+  kit: "&ekit: {item} no existe en esta versión y no se va a dar"
 
 mapa:
   nombre: "&aBINGO HUMILDE"
@@ -97,11 +107,13 @@ marcador:
   fila_equipo: "{equipo}&7: &f{casillas}"
   estado_cuenta: "&fEstado: &eEMPIEZA YA"
   estado_juego: "&fEstado: &aEN CURSO"
+  estado_pausa: "&fEstado: &fEN PAUSA"
 
 barra:
   cuenta: "&eEmpieza en &f{segundos}"
   restante: "&fQuedan &e{tiempo} &7· gana: {modo}"
   sin_limite: "&fJugando hace &e{tiempo} &7· gana: {modo}"
+  pausa: "&f⏸ En pausa &7· {tiempo}"
 
 cartilla:
   titulo: "Cartilla · {equipo}"

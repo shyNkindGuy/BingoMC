@@ -38,7 +38,11 @@ public class GameBossBar {
 
         String mode = game.getSettings().mode().description();
         int duration = game.durationSeconds();
-        if (game.inCountdown()) {
+        if (game.isPaused()) {
+            bar.setColor(BarColor.WHITE);
+            bar.setTitle(Texts.get("barra.pausa", "tiempo", clock(duration > 0
+                    ? Math.max(0, duration - game.elapsedSeconds()) : game.elapsedSeconds())));
+        } else if (game.inCountdown()) {
             bar.setColor(BarColor.YELLOW);
             bar.setTitle(Texts.get("barra.cuenta", "segundos", game.countdownLeft()));
             bar.setProgress(clamp((double) game.countdownLeft() / countdownStart));

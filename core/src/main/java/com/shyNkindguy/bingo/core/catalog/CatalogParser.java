@@ -9,6 +9,7 @@ import com.shyNkindguy.bingo.core.condition.InDimension;
 import com.shyNkindguy.bingo.core.condition.NoDeath;
 import com.shyNkindguy.bingo.core.condition.TimeOfDay;
 import com.shyNkindguy.bingo.core.game.GameSettings;
+import com.shyNkindguy.bingo.core.game.StartRules;
 import com.shyNkindguy.bingo.core.win.WinMode;
 import com.shyNkindguy.bingo.core.task.AdvancementTask;
 import com.shyNkindguy.bingo.core.task.ConditionalTask;
@@ -65,8 +66,9 @@ public final class CatalogParser {
     private static final Set<String> CARDS_KEYS = Set.of("por_defecto", "cartillas");
     private static final Set<String> CARD_KEYS = Set.of("tamaño", "tamano", "listas");
     private static final Set<String> QUOTA_KEYS = Set.of("min", "max");
-    private static final Set<String> SETTINGS_KEYS =
-            Set.of("cartilla", "cuenta_regresiva", "duracion", "pvp", "semilla", "modo");
+    private static final Set<String> SETTINGS_KEYS = Set.of("cartilla", "cuenta_regresiva", "duracion", "pvp",
+            "semilla", "modo", "dispersion", "borde", "limpiar_inventario", "kit");
+    private static final Set<String> KIT_KEYS = Set.of("item", "cantidad");
 
     private CatalogParser() {
     }
@@ -400,7 +402,44 @@ public final class CatalogParser {
             String problem = mode.problemWith(catalog.cards().get(card).size());
             if (problem != null) throw error(file + ": modo", mode.description() + " no se puede: " + problem);
         }
-        return new GameSettings(card, countdown, duration, pvp, seed, mode);
+        return new GameSettings(card, countdown, duration, pvp, seed, mode, startRules(file, map));
+    }
+
+    // dispersion, borde, limpiar_inventario y kit: cómo empieza la partida.
+    private static StartRules startRules(String file, Map<String, Object> map) {
+        StartRules defaults = StartRules.DEFAULT;
+        int scatter = map.containsKey("dispersion")
+                ? nonNegative(map.get("dispersion"), file + ": dispersion") : defaults.scatterRadius();
+        if (scatter > StartRules.MAX_SCATTER) {
+            throw error(file + ": dispersion", "como mucho " + StartRules.MAX_SCATTER + " bloques (vino " + scatter + ")");
+        }
+        int border = map.containsKey("borde") ? nonNegative(map.get("borde"), file + ": borde") : defaults.borderSize();
+        if (border != 0 && (border < StartRules.MIN_BORDER || border > StartRules.MAX_BORDER)) {
+            throw error(file + ": borde", "tiene que ser 0 (sin borde) o de " + StartRules.MIN_BORDER + " a "
+                    + StartRules.MAX_BORDER + " bloques (vino " + border + ")");
+        }
+        if (border > 0 && scatter * 2 >= border) {
+            throw error(file + ": dispersion", "con borde " + border + " tiene que ser menor que " + border / 2
+                    + ", si no los equipos quedan afuera");
+        }
+        boolean clear = map.containsKey("limpiar_inventario")
+                ? yesNo(map.get("limpiar_inventario"), file + ": limpiar_inventario") : defaults.clearInventory();
+
+        List<StartRules.KitItem> kit = new ArrayList<>();
+        Object rawKit = map.get("kit");
+        if (rawKit instanceof List<?> entries) {
+            for (int i = 0; i < entries.size(); i++) {
+                String where = file + ", kit " + (i + 1);
+                Map<String, Object> entry = map(entries.get(i), where);
+                checkKeys(entry, KIT_KEYS, where);
+                String item = key(required(entry, "item", where), where + ": item");
+                int amount = entry.containsKey("cantidad") ? positive(entry.get("cantidad"), where + ": cantidad") : 1;
+                kit.add(new StartRules.KitItem(item, amount));
+            }
+        } else if (rawKit != null) {
+            throw error(file + ": kit", "tiene que ser una lista (líneas con -)");
+        }
+        return new StartRules(scatter, border, clear, kit);
     }
 
     private static boolean yesNo(Object raw, String where) {

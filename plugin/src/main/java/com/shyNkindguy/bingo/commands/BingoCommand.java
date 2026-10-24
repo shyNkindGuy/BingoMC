@@ -22,7 +22,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class BingoCommand implements CommandExecutor, TabCompleter {
     private static final String ADMIN_PERMISSION = "bingo.admin";
-    private static final List<String> ADMIN_SUBCOMMANDS = List.of("start", "stop", "map", "card", "reload", "team");
+    private static final List<String> ADMIN_SUBCOMMANDS = List.of("start", "stop", "pause", "map", "card", "reload", "team");
     private static final List<String> PLAYER_SUBCOMMANDS = List.of("map", "card", "team");
 
     private final BingoGame game;
@@ -57,6 +57,7 @@ public class BingoCommand implements CommandExecutor, TabCompleter {
         switch (subcommand) {
             case "start" -> start(sender, args);
             case "stop" -> stop(sender);
+            case "pause", "pausa" -> pause(sender);
             case "map" -> giveMap(sender);
             case "card", "cartilla" -> openCard(sender);
             case "reload" -> reload(sender);
@@ -165,6 +166,18 @@ public class BingoCommand implements CommandExecutor, TabCompleter {
         if (!game.stop(sender.getName())) {
             sender.sendMessage(Texts.get("partida.no_hay"));
         }
+    }
+
+    private void pause(CommandSender sender) {
+        if (!sender.hasPermission(ADMIN_PERMISSION)) {
+            sender.sendMessage(Texts.get("comando.sin_permiso_pausar"));
+            return;
+        }
+        if (!game.togglePause(sender.getName())) {
+            sender.sendMessage(Texts.get("pausa.no_se_puede"));
+            return;
+        }
+        scoreboard.updateAll();
     }
 
     // Vuelve a leer cards.yml y tasks/*.yml. Con un error, avisa dónde y sigue el catálogo anterior.

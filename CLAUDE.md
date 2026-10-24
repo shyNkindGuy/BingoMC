@@ -39,9 +39,10 @@ viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
   - `win/`: `WinMode` sellado (desde la 2.3: `Lines(n)`, `Blackout`, `CompleteX(n)`, `Lockout`, `TimeOnly`;
     `parse("2 lineas")`, `problemWith(tamaño)`), `WinConditionChecker` (`countLines`) y `TimeLimitWinners`
     (`winners`: más casillas y, si empatan, quien llegó antes).
-  - `game/` (desde la 2.1): `Phase` (`LOBBY → COUNTDOWN → RUNNING → ENDED`), `GameSession` (máquina de
+  - `game/` (desde la 2.1): `Phase` (`LOBBY → COUNTDOWN → RUNNING ⇄ PAUSED → ENDED`), `GameSession` (máquina de
     estados con `begin`/`tick` por segundo/`finish`, devuelve señales `COUNTDOWN`, `STARTED`, `TIME_UP`) y
-    `GameSettings` (de `config.yml`: cartilla, cuenta regresiva, duración, PvP, semilla, modo).
+    `GameSettings` (de `config.yml`: cartilla, cuenta regresiva, duración, PvP, semilla, modo y `StartRules`:
+    dispersión, borde, limpiar inventario, kit) y `ScatterPlanner` (equipos en círculo alrededor del spawn).
   - `text/Messages` (desde la 2.4): textos de `messages.yml` (claves con punto, `{variables}`, `&` → `§`,
     lo que falte sale de los por defecto; una clave desconocida es error).
   - `team/` (desde la 2.2): `TeamColor` (10 colores, en español o inglés), `Team` (de color o `solo`) y
@@ -78,7 +79,12 @@ estadísticas cuentan por jugador); el scoreboard muestra la tabla de equipos y 
 **UX** (2.4): bossbar con la cuenta regresiva o el tiempo que queda (roja en el último minuto); al completar
 una casilla, título + sonido al equipo y anuncio a los demás con el color del equipo; `/bingo card` abre la
 cartilla en un cofre de solo mirar con tipo, avance, condiciones y bloqueo en la descripción; scoreboard
-sin parpadeo (texto en prefijos de `Team` sobre entradas fijas); todos los textos en `messages.yml`. `/bingo reload` relee los YAML (también `config.yml`): con
+sin parpadeo (texto en prefijos de `Team` sobre entradas fijas); todos los textos en `messages.yml`.
+**Inicio** (2.5, `game/StartActions` con `BingoGame.onDeal`): al repartir, vaciar inventarios
+(`limpiar_inventario`), repartir a los equipos en círculo a `dispersion` bloques del spawn del mundo
+principal y poner el borde (`borde`; al terminar vuelve el de antes); al "¡YA!", el `kit`. Quien entra a
+mitad recibe lo mismo. `/bingo pause` (`bingo.admin`) congela la partida: el tiempo no corre, nada cuenta
+y nadie se mueve; otra vez `/bingo pause` sigue. `/bingo reload` relee los YAML (también `config.yml`): con
 un error lo dice y sigue con lo anterior (al arrancar con error, usa los del `.jar`). El mapa usa un renderer contextual (cada jugador ve su cartilla) que solo
 redibuja tras `invalidate()`. Una casilla se completa cuando el ítem está **en el inventario del jugador**: recoger, clic,
 arrastrar, cerrar el inventario, craftear, horno o balde piden revisar el inventario un tick después

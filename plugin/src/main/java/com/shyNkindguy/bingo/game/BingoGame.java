@@ -36,6 +36,7 @@ public class BingoGame {
     private final List<Runnable> startListeners = new ArrayList<>();
     private final List<Runnable> endListeners = new ArrayList<>();
     private final List<Runnable> tickListeners = new ArrayList<>();
+    private final List<Runnable> dealListeners = new ArrayList<>();
     private List<Task> tasks = List.of();
     private GameSettings settings = GameSettings.DEFAULT;
     private BukkitTask clock;
@@ -54,7 +55,12 @@ public class BingoGame {
         endListeners.add(listener);
     }
 
-    // Se ejecuta cada segundo mientras hay partida (también en la cuenta regresiva), y al empezar.
+    // Se ejecuta al repartir las cartillas, antes de la cuenta regresiva (y antes de que se den los mapas).
+    public void onDeal(Runnable listener) {
+        dealListeners.add(listener);
+    }
+
+    // Se ejecuta cada segundo mientras hay partida (también en la cuenta regresiva y en pausa), y al empezar.
     public void onTick(Runnable listener) {
         tickListeners.add(listener);
     }
@@ -76,6 +82,7 @@ public class BingoGame {
         }
 
         GameSession.Signal first = session.begin(settings.countdownSeconds(), settings.durationSeconds());
+        dealListeners.forEach(Runnable::run);
         clock = Bukkit.getScheduler().runTaskTimer(plugin, () -> handle(session.tick()),
                 TICKS_PER_SECOND, TICKS_PER_SECOND);
         handle(first);
@@ -285,6 +292,28 @@ public class BingoGame {
 
     public boolean inCountdown() {
         return session.phase() == Phase.COUNTDOWN;
+    }
+
+    public boolean isPaused() {
+        return session.phase() == Phase.PAUSED;
+    }
+
+    // En la cuenta regresiva o en pausa nadie se mueve (SessionListener).
+    public boolean isFrozen() {
+        return inCountdown() || isPaused();
+    }
+
+    // /bingo pause: en curso → en pausa (el tiempo no corre, nada cuenta, nadie se mueve) y al revés.
+    // false si no hay una partida en curso ni en pausa.
+    public boolean togglePause(String by) {
+        boolean pausing = session.pause();
+        if (!pausing && !session.resume()) return false;
+
+        String title = Texts.get(pausing ? "pausa.titulo" : "pausa.sigue_titulo");
+        for (Player player : playersInGame()) player.sendTitle(title, Texts.get("pausa.subtitulo", "quien", by), 0, 30, 10);
+        Bukkit.broadcastMessage(Texts.get(pausing ? "pausa.pausada" : "pausa.sigue", "quien", by));
+        tickListeners.forEach(Runnable::run);
+        return true;
     }
 
     public GameSettings getSettings() {
