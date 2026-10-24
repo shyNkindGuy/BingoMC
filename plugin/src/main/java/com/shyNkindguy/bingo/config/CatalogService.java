@@ -8,6 +8,7 @@ import com.shyNkindguy.bingo.core.catalog.CatalogLoader;
 import com.shyNkindguy.bingo.adapter.Keys;
 import com.shyNkindguy.bingo.core.game.GameSettings;
 import com.shyNkindguy.bingo.core.game.StartRules;
+import com.shyNkindguy.bingo.core.item.SpecialItem;
 import com.shyNkindguy.bingo.core.task.Task;
 import com.shyNkindguy.bingo.core.text.Messages;
 import com.shyNkindguy.bingo.ui.Texts;
@@ -20,14 +21,15 @@ import java.util.List;
 import java.util.logging.Logger;
 
 // El catálogo de tareas y cartillas (cards.yml y tasks/*.yml), la configuración de las partidas
-// (config.yml), los logros (achievements.yml) y los textos (messages.yml, que van a Texts), leídos de
-// plugins/AdaptiveBingo/. La primera vez copia ahí los que vienen en el .jar.
+// (config.yml), los logros (achievements.yml), los ítems especiales (items.yml) y los textos (messages.yml, que
+// van a Texts), leídos de plugins/AdaptiveBingo/. La primera vez copia ahí los que vienen en el .jar.
 public class CatalogService {
     private final JavaPlugin plugin;
     private final TaskAvailability availability;
     private Catalog catalog;
     private GameSettings settings;
     private List<Achievement> achievements = List.of();
+    private List<SpecialItem> items = List.of();
 
     public CatalogService(JavaPlugin plugin, TaskAvailability availability) {
         this.plugin = plugin;
@@ -70,12 +72,21 @@ public class CatalogService {
             achievements = CatalogLoader.defaultAchievements(catalog);
         }
         try {
+            items = CatalogLoader.itemsFromDirectory(folder);
+            log.info(items.size() + " ítems especiales");
+        } catch (CatalogException e) {
+            log.severe(e.getMessage());
+            log.severe("Se usan los ítems especiales por defecto hasta que /bingo reload lea bien items.yml.");
+            items = CatalogLoader.defaultItems();
+        }
+        try {
             Texts.use(CatalogLoader.messagesFromDirectory(folder));
         } catch (CatalogException e) {
             log.severe(e.getMessage());
             log.severe("Se usan los textos por defecto hasta que /bingo reload lea bien messages.yml.");
             Texts.use(CatalogLoader.defaultMessages());
         }
+        itemProblems(items).forEach(log::warning);
     }
 
     // /bingo reload. Si algún archivo tiene un error lanza CatalogException y quedan todos los de antes (van
@@ -85,14 +96,17 @@ public class CatalogService {
         Catalog loadedCatalog = CatalogLoader.fromDirectory(folder);
         GameSettings loadedSettings = CatalogLoader.settingsFromDirectory(folder, loadedCatalog);
         List<Achievement> loadedAchievements = CatalogLoader.achievementsFromDirectory(folder, loadedCatalog);
+        List<SpecialItem> loadedItems = CatalogLoader.itemsFromDirectory(folder);
         Messages loadedMessages = CatalogLoader.messagesFromDirectory(folder);
         catalog = loadedCatalog;
         settings = loadedSettings;
         achievements = loadedAchievements;
+        items = loadedItems;
         Texts.use(loadedMessages);
         List<String> lines = new ArrayList<>(summary(loadedCatalog, availability));
-        lines.add(loadedAchievements.size() + " logros");
+        lines.add(loadedAchievements.size() + " logros, " + loadedItems.size() + " ítems especiales");
         lines.addAll(kitProblems(loadedSettings));
+        lines.addAll(itemProblems(loadedItems));
         return lines;
     }
 
@@ -106,6 +120,21 @@ public class CatalogService {
 
     public List<Achievement> achievements() {
         return achievements;
+    }
+
+    public List<SpecialItem> items() {
+        return items;
+    }
+
+    // Los ítems especiales cuyo ítem de Minecraft no existe en esta versión (salen como papel).
+    static List<String> itemProblems(List<SpecialItem> items) {
+        List<String> problems = new ArrayList<>();
+        for (SpecialItem item : items) {
+            if (Keys.toMaterial(item.material()) == null) {
+                problems.add(Texts.get("recarga.item_especial", "id", item.id(), "item", item.material()));
+            }
+        }
+        return problems;
     }
 
     // Los ítems del kit que no existen en esta versión (no se dan).

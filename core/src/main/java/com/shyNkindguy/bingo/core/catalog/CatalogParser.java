@@ -8,6 +8,7 @@ import com.shyNkindguy.bingo.core.condition.InBiome;
 import com.shyNkindguy.bingo.core.condition.InDimension;
 import com.shyNkindguy.bingo.core.condition.NoDeath;
 import com.shyNkindguy.bingo.core.condition.TimeOfDay;
+import com.shyNkindguy.bingo.core.game.ChaosRules;
 import com.shyNkindguy.bingo.core.game.EndRules;
 import com.shyNkindguy.bingo.core.game.GameSettings;
 import com.shyNkindguy.bingo.core.game.StartRules;
@@ -69,7 +70,7 @@ public final class CatalogParser {
     private static final Set<String> QUOTA_KEYS = Set.of("min", "max");
     private static final Set<String> SETTINGS_KEYS = Set.of("cartilla", "cuenta_regresiva", "duracion", "pvp",
             "semilla", "modo", "dispersion", "borde", "limpiar_inventario", "kit",
-            "espera_final", "volver_al_terminar", "limpiar_al_terminar");
+            "espera_final", "volver_al_terminar", "limpiar_al_terminar", "caos");
     private static final Set<String> KIT_KEYS = Set.of("item", "cantidad");
 
     private CatalogParser() {
@@ -404,7 +405,8 @@ public final class CatalogParser {
             String problem = mode.problemWith(catalog.cards().get(card).size());
             if (problem != null) throw error(file + ": modo", mode.description() + " no se puede: " + problem);
         }
-        return new GameSettings(card, countdown, duration, pvp, seed, mode, startRules(file, map), endRules(file, map));
+        return new GameSettings(card, countdown, duration, pvp, seed, mode, startRules(file, map), endRules(file, map),
+                chaosRules(file, map));
     }
 
     // espera_final, volver_al_terminar y limpiar_al_terminar: cómo termina la partida.
@@ -420,6 +422,16 @@ public final class CatalogParser {
         boolean clear = map.containsKey("limpiar_al_terminar")
                 ? yesNo(map.get("limpiar_al_terminar"), file + ": limpiar_al_terminar") : defaults.clearInventory();
         return new EndRules(back, clear, wait);
+    }
+
+    // caos: cada cuántos minutos se reparte un ítem especial (0 = apagado).
+    private static ChaosRules chaosRules(String file, Map<String, Object> map) {
+        if (!map.containsKey("caos")) return ChaosRules.DEFAULT;
+        int minutes = nonNegative(map.get("caos"), file + ": caos");
+        if (minutes > ChaosRules.MAX_MINUTES) {
+            throw error(file + ": caos", "como mucho " + ChaosRules.MAX_MINUTES + " minutos (vino " + minutes + ")");
+        }
+        return new ChaosRules(minutes);
     }
 
     // dispersion, borde, limpiar_inventario y kit: cómo empieza la partida.

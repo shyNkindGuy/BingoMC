@@ -6,7 +6,7 @@ import com.shyNkindguy.bingo.core.task.Task;
 // Una casilla: su tarea, el avance, en qué segundo de la partida se completó y quién (para desempatar y el
 // resumen del final) y, en lockout, qué equipo se la quedó antes (bloqueada: ya no se puede completar).
 public class BingoCell {
-    private final Task task;
+    private Task task;
     private TaskProgress progress;
     private int completedAt = -1;
     private String completedBy;
@@ -66,6 +66,15 @@ public class BingoCell {
 
     public String lockedBy() {
         return lockedBy;
+    }
+
+    // El dado del caos: otra tarea, desde cero (sin avance, tiempo, autor ni bloqueo).
+    public void replaceTask(Task newTask) {
+        task = newTask;
+        progress = TaskProgress.start(newTask.target());
+        completedAt = -1;
+        completedBy = null;
+        lockedBy = null;
     }
 
     // Lockout: otro equipo (`by`) completó esta tarea primero. Una casilla ya completa no se bloquea.

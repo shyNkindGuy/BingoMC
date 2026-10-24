@@ -7,11 +7,14 @@ import com.shyNkindguy.bingo.events.AdvancementReset;
 import com.shyNkindguy.bingo.events.CardUpdater;
 import com.shyNkindguy.bingo.events.ObjectiveListener;
 import com.shyNkindguy.bingo.events.SessionListener;
+import com.shyNkindguy.bingo.events.SpecialItemListener;
 import com.shyNkindguy.bingo.events.StatisticPoller;
 import com.shyNkindguy.bingo.game.BingoGame;
 import com.shyNkindguy.bingo.game.EndActions;
 import com.shyNkindguy.bingo.game.PlayerContexts;
 import com.shyNkindguy.bingo.game.StartActions;
+import com.shyNkindguy.bingo.items.ChaosDealer;
+import com.shyNkindguy.bingo.items.SpecialItems;
 import com.shyNkindguy.bingo.core.stats.YamlStatsRepository;
 import com.shyNkindguy.bingo.storage.StatsService;
 import com.shyNkindguy.bingo.ui.AchievementAnnouncer;
@@ -49,6 +52,11 @@ public final class AdaptiveBingo extends JavaPlugin {
         StatisticPoller statistics = new StatisticPoller(this, game, updater);
         StartActions startActions = new StartActions(game);
         EndActions endActions = new EndActions(this, game, startActions);
+        SpecialItems specialItems = new SpecialItems(this, catalogs::items);
+        ChaosDealer chaos = new ChaosDealer(game, specialItems);
+        SpecialItemListener itemListener = new SpecialItemListener(game, specialItems, catalogs, mapManager, scoreboard);
+        game.onDeal(chaos::reset);
+        game.onDeal(itemListener::reset);
         game.onDeal(endActions::cancel);
         game.onDeal(startActions::prepare);
         game.onStart(() -> {
@@ -60,6 +68,7 @@ public final class AdaptiveBingo extends JavaPlugin {
         });
         GameBossBar bossBar = new GameBossBar(game);
         game.onTick(bossBar::update);
+        game.onTick(chaos::tick);
         game.onEnd(() -> {
             endActions.finish();
             startActions.restore();
@@ -67,14 +76,16 @@ public final class AdaptiveBingo extends JavaPlugin {
             statistics.stop();
             scoreboard.hideAll();
             mapManager.removeMaps();
+            specialItems.removeAll();
         });
 
         Bukkit.getPluginManager().registerEvents(
-                new ObjectiveListener(this, game, mapManager, updater),
+                new ObjectiveListener(this, game, mapManager, updater, specialItems),
                 this
         );
+        Bukkit.getPluginManager().registerEvents(itemListener, this);
         Bukkit.getPluginManager().registerEvents(new SessionListener(this, game, mapManager, scoreboard, startActions), this);
-        BingoCommand command = new BingoCommand(game, scoreboard, mapManager, catalogs, stats);
+        BingoCommand command = new BingoCommand(game, scoreboard, mapManager, catalogs, stats, specialItems);
         PluginCommand bingo = getCommand("bingo");
         bingo.setExecutor(command);
         bingo.setTabCompleter(command);

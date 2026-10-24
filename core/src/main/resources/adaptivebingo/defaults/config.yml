@@ -46,6 +46,10 @@ volver_al_terminar: false
 # Después del festejo, se vacía el inventario de quienes jugaron.
 limpiar_al_terminar: false
 
+# Modo caos: cada `caos` minutos de juego cada jugador recibe un ítem especial al azar de items.yml (dado que
+# cambia una casilla, brújula al bioma, escudo anti-PvP). 0 = apagado; como mucho 60.
+caos: 0
+
 # Semilla fija: con la misma salen siempre las mismas tareas. Si falta, una al azar en cada partida
 # (se anuncia al empezar). /bingo start <cartilla> <semilla> la cambia para una partida.
 # semilla: 12345

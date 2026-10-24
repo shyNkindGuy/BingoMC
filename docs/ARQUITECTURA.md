@@ -71,6 +71,7 @@ BingoMC/
 │       ├── bus/                 DomainEvents (CellCompleted, GameEnded) (3.1 ✔)
 │       ├── stats/               PlayerStats, StatsBook, StatsRepository (3.1 ✔)
 │       ├── achievement/         Achievement, GameRule/CellRule, AchievementTracker (3.2 ✔)
+│       ├── item/                SpecialItem, ItemEffect, Reroll, BiomeTargets (3.3 ✔)
 │       └── meta/                (Fase 3) ItemSet, PlayerStatus
 └── plugin/                      Paper 1.21.11 · depende de core
     └── com.shyNkindguy.bingo
