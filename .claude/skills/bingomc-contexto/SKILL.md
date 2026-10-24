@@ -74,8 +74,12 @@ personal, con idea de llegar a servidor. Todo en español (commits, mensajes, do
 - 2026-10-24 · tarea **2.3**: modos de victoria (`core/win/WinMode`: N líneas, carta llena, N casillas,
   lockout, por tiempo) en `config.yml` `modo` (texto en español: "2 lineas", "carta llena"…); desempate por
   tiempo (`BingoCell.completedAt`, `TimeLimitWinners.winners`); lockout bloquea la tarea en las cartillas
-  de los demás (cruz roja en el mapa, aviso, fin si no quedan libres). **Siguiente: 2.4** (UX en partida).
-  Ver `docs/PLAN.md` para el estado al día.
+  de los demás (cruz roja en el mapa, aviso, fin si no quedan libres) (PR #22).
+- 2026-10-24 · tarea **2.4**: UX. `messages.yml` (`core/text/Messages` + `ui/Texts`; ya no hay textos en el
+  código del plugin), bossbar (`GameBossBar`, `BingoGame.onTick`), título + sonido al completar y anuncio
+  con color de equipo, `/bingo card` (`CardMenu`, lore con tipo/avance/condiciones/bloqueo;
+  `Condition.description`), scoreboard sin parpadeo (prefijos de `Team`). **Siguiente: 2.5** (inicio de
+  partida). Ver `docs/PLAN.md` para el estado al día.
 
 ## Decisiones (no volver a preguntar)
 | Tema | Decisión |
