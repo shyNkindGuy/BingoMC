@@ -4,6 +4,7 @@ import com.shyNkindguy.bingo.core.catalog.CardSpec;
 import com.shyNkindguy.bingo.core.catalog.Catalog;
 import com.shyNkindguy.bingo.core.catalog.CatalogException;
 import com.shyNkindguy.bingo.core.catalog.CatalogLoader;
+import com.shyNkindguy.bingo.core.game.GameSettings;
 import com.shyNkindguy.bingo.core.task.Task;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -13,12 +14,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-// El catálogo de tareas y cartillas que usa /bingo start, leído de plugins/AdaptiveBingo/ (cards.yml y
-// tasks/*.yml). La primera vez copia ahí los que vienen en el .jar.
+// El catálogo de tareas y cartillas (cards.yml y tasks/*.yml) y la configuración de las partidas
+// (config.yml) que usa /bingo start, leídos de plugins/AdaptiveBingo/. La primera vez copia ahí los que
+// vienen en el .jar.
 public class CatalogService {
     private final JavaPlugin plugin;
     private final TaskAvailability availability;
     private Catalog catalog;
+    private GameSettings settings;
 
     public CatalogService(JavaPlugin plugin, TaskAvailability availability) {
         this.plugin = plugin;
@@ -44,17 +47,32 @@ public class CatalogService {
             log.severe("Se usan las tareas que vienen en el plugin hasta que /bingo reload lea bien los archivos.");
             catalog = CatalogLoader.defaults();
         }
+        try {
+            settings = CatalogLoader.settingsFromDirectory(folder, catalog);
+        } catch (CatalogException e) {
+            log.severe(e.getMessage());
+            log.severe("Se usa la configuración por defecto hasta que /bingo reload lea bien config.yml.");
+            settings = GameSettings.DEFAULT;
+        }
     }
 
-    // /bingo reload. Si los archivos tienen un error lanza CatalogException y queda el catálogo anterior.
+    // /bingo reload. Si los archivos tienen un error lanza CatalogException y quedan los de antes (las
+    // tareas y la configuración van juntas: una cartilla de config.yml tiene que estar en cards.yml).
     public List<String> reload() {
-        Catalog loaded = CatalogLoader.fromDirectory(plugin.getDataFolder().toPath());
-        catalog = loaded;
-        return summary(loaded, availability);
+        Path folder = plugin.getDataFolder().toPath();
+        Catalog loadedCatalog = CatalogLoader.fromDirectory(folder);
+        GameSettings loadedSettings = CatalogLoader.settingsFromDirectory(folder, loadedCatalog);
+        catalog = loadedCatalog;
+        settings = loadedSettings;
+        return summary(loadedCatalog, availability);
     }
 
     public Catalog get() {
         return catalog;
+    }
+
+    public GameSettings settings() {
+        return settings;
     }
 
     public boolean isAvailable(Task task) {

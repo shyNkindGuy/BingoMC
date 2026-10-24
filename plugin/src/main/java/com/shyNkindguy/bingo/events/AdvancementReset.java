@@ -22,11 +22,14 @@ public final class AdvancementReset {
     public static void forGame(BingoGame game) {
         for (Player player : Bukkit.getOnlinePlayers()) {
             BingoCard card = game.getCard(player);
-            if (card == null) continue;
-            int revoked = revoke(player, card);
-            if (revoked > 0) {
-                player.sendMessage("§7Se reiniciaron " + revoked + " logros de tu cartilla para que cuenten en esta partida.");
-            }
+            if (card != null) forPlayer(player, card);
+        }
+    }
+
+    public static void forPlayer(Player player, BingoCard card) {
+        int revoked = revoke(player, card);
+        if (revoked > 0) {
+            player.sendMessage("§7Se reiniciaron " + revoked + " logros de tu cartilla para que cuenten en esta partida.");
         }
     }
 

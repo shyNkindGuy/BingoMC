@@ -36,25 +36,33 @@ viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
     `CatalogParser` valida todo con mensajes "archivo, tarea N: problema"; `Catalog` (listas `TaskList` +
     `Tier`, cartillas `CardSpec` con mín/máx por lista) y `CardGenerator` (semilla, sin repetidos).
   - `win/`: `WinConditionChecker` y `TimeLimitWinners`.
+  - `game/` (desde la 2.1): `Phase` (`LOBBY → COUNTDOWN → RUNNING → ENDED`), `GameSession` (máquina de
+    estados con `begin`/`tick` por segundo/`finish`, devuelve señales `COUNTDOWN`, `STARTED`, `TIME_UP`) y
+    `GameSettings` (de `config.yml`: cartilla, cuenta regresiva, duración, PvP, semilla).
 - `plugin`: `adapter/Keys` traduce `Material`/`EntityType`/`Statistic`/`Advancement` ↔ clave;
   `config/CatalogService` tiene el catálogo (carga al arrancar, `/bingo reload`) y `config/TaskAvailability`
   dice si una tarea se puede hacer en esta versión y por qué no (las que no, no salen); el resto como abajo.
 - `plugin.yml` clásico de Bukkit (no `paper-plugin.yml`). Main: `com.shyNkindguy.bingo.AdaptiveBingo`.
 - Paquete `com.shyNkindguy.bingo` del plugin: `commands/` (`/bingo start|stop|map|reload`), `config/`,
   `events/` (`ObjectiveListener`, `ScanQueue`, `CardUpdater`, `StatisticPoller`, `AdvancementReset`),
-  `game/` (`BingoGame` con `onStart`/`onEnd`, `PlayerContexts`: el `EventContext` de cada jugador y sus
-  muertes desde el inicio), `icon/` (+ `TaskIcons`: ícono y marca por tipo), `ui/` (mapa,
+  `events/SessionListener` (congelar en la cuenta regresiva, PvP, entrar a mitad), `game/` (`BingoGame`
+  sobre `GameSession`, con `onStart` al terminar la cuenta y `onEnd`; `PlayerContexts`: el `EventContext`
+  de cada jugador y sus muertes desde el inicio), `icon/` (+ `TaskIcons`: ícono y marca por tipo), `ui/` (mapa,
   scoreboard, paleta). Íconos: un solo sistema, `icon/IconRegistry` (por `Material`, con fallback por
   categoría) + `icon/IconRenderer` (escala entera que entra en la casilla, centrado; dibuja sobre un
   `PixelSink` para poder testearlo).
 
 ## Cómo se juega hoy
 `/bingo start [cartilla] [semilla]` (permiso `bingo.admin`, ops por defecto; también desde la consola)
-crea una cartilla por jugador conectado (la `por_defecto` de `cards.yml`: `normal` 5×5) con tareas
+crea una cartilla por jugador conectado (la de `config.yml` o la `por_defecto` de `cards.yml`: `normal` 5×5) con tareas
 sorteadas **una vez por partida** de `plugins/AdaptiveBingo/tasks/*.yml` (ítem + nombre en español +
 cantidad, p. ej. "16 × Tronco de roble"; id `item:<ítem>`), las mismas para todos en distinto orden; anuncia
-la semilla (la misma semilla repite las tareas) y da el mapa y el scoreboard. `/bingo reload` relee los
-YAML: con un error lo dice y sigue el catálogo anterior (al arrancar con error, usa los del `.jar`). El mapa usa un renderer contextual (cada jugador ve su cartilla) que solo
+la semilla (la misma semilla repite las tareas) y da el mapa y el scoreboard. Después viene la cuenta
+regresiva (`cuenta_regresiva` de `config.yml`, 10 s; título con el número, nadie se mueve, rompe, pone,
+agarra ni recibe daño) y recién al "¡YA!" las tareas cuentan (`onStart`: contextos, logros, estadísticas).
+Quien entra con la partida empezada recibe una cartilla con las mismas tareas (o la suya si volvió).
+`pvp: false` evita que los jugadores se peguen. `/bingo reload` relee los YAML (también `config.yml`): con
+un error lo dice y sigue con lo anterior (al arrancar con error, usa los del `.jar`). El mapa usa un renderer contextual (cada jugador ve su cartilla) que solo
 redibuja tras `invalidate()`. Una casilla se completa cuando el ítem está **en el inventario del jugador**: recoger, clic,
 arrastrar, cerrar el inventario, craftear, horno o balde piden revisar el inventario un tick después
 (`ObjectiveListener.requestScan`; `ScanQueue` junta los pedidos del mismo tick), nunca se mira el ítem
@@ -70,7 +78,7 @@ cambiar de mundo pide un escaneo. En el mapa, las tareas de matar, logro y estad
 que tienen condiciones un punto morado abajo a la izquierda.
 En el mapa, las tareas de varias unidades muestran la cantidad pedida y una barra de avance. La cartilla es un mapa marcado con PDC `adaptivebingo:cartilla` (`BingoMapManager.isBingoMap`):
 no pisa la mano izquierda (lo que había pasa al inventario o se suelta), no se duplica, no cae al morir y
-no se puede tirar. Gana la primera línea (`WinConditionChecker`); a los 20 min (`MAX_TIME`), el que tenga más casillas o empate
+no se puede tirar. Gana la primera línea (`WinConditionChecker`); al terminar la `duracion` de `config.yml` (20 min; 0 = sin límite), el que tenga más casillas o empate
 entre los que más tengan (`TimeLimitWinners`). `/bingo stop` la detiene. Toda partida termina por
 `BingoGame.finish()`: cancela el timer, corre los `onEnd` (scoreboard principal de vuelta y mapas
 quitados del inventario) y borra las cartillas. `/bingo map` vuelve a dar el mapa. Bugs conocidos:

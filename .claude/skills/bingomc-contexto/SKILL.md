@@ -60,7 +60,12 @@ personal, con idea de llegar a servidor. Todo en español (commits, mensajes, do
   (`core/condition`: dimensión, hora, bioma, debajo de Y, sin morir, `alguna`; `ConditionalTask`,
   `EventContext`, `Task.base()`), contexto armado por `PlayerContexts` en `CardUpdater`; mapa: dos ítems
   para conjuntos y punto morado si hay condiciones. 67 tareas por defecto. **Fase 1 completa.**
-  **Siguiente: 2.1** (sesión con fases). Ver `docs/PLAN.md` para el estado al día.
+  (PR #19).
+- 2026-10-24 · tarea **2.1**: `core/game` (`Phase`, `GameSession` con señales por segundo, `GameSettings`)
+  y `config.yml` (cartilla, `cuenta_regresiva`, `duracion`, `pvp`, `semilla`; se recarga con `/bingo
+  reload`). `BingoGame` sobre `GameSession`: cuenta regresiva con títulos y jugadores congelados
+  (`SessionListener`), `onStart` al "¡YA!", duración configurable, PvP apagable y cartilla para quien entra
+  a mitad. Adiós `GameState`. **Siguiente: 2.2** (equipos). Ver `docs/PLAN.md` para el estado al día.
 
 ## Decisiones (no volver a preguntar)
 | Tema | Decisión |

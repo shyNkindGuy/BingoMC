@@ -66,7 +66,7 @@ BingoMC/
 │       ├── catalog/             Catalog, TaskList + Tier, CardSpec, CardGenerator, lector de YAML
 │       ├── progress/            ProgressTracker (por equipo), TaskProgress (n/m)
 │       ├── win/                 WinCondition: Line, Blackout, Lockout, CompleteX, TimeLimit
-│       ├── game/                GameSession, Phase (LOBBY, COUNTDOWN, RUNNING, ENDED), GameSettings
+│       ├── game/                GameSession, Phase (LOBBY, COUNTDOWN, RUNNING, ENDED), GameSettings (2.1 ✔)
 │       ├── team/                Team, TeamId, TeamRegistry
 │       ├── bus/                 DomainEvents (CellCompleted, GameEnded, TeamEliminated)
 │       └── meta/                (Fase 3) PlayerProfile, Achievement, ItemSet, PlayerStatus

@@ -1,5 +1,6 @@
 package com.shyNkindguy.bingo.core.catalog;
 
+import com.shyNkindguy.bingo.core.game.GameSettings;
 import com.shyNkindguy.bingo.core.task.AdvancementTask;
 import com.shyNkindguy.bingo.core.task.ConditionalTask;
 import com.shyNkindguy.bingo.core.task.ItemTask;
@@ -118,6 +119,21 @@ class CatalogLoaderTest {
         assertEquals(CatalogLoader.DEFAULT_FILES, copiados);
         assertEquals(CatalogLoader.defaults(), CatalogLoader.fromDirectory(carpeta));
         assertEquals(List.of(), CatalogLoader.copyDefaults(carpeta));
+    }
+
+    @Test
+    void sinConfigSeJuegaConLaConfiguracionPorDefecto() throws IOException {
+        escribir("cards.yml", CARTILLAS);
+        escribir("tasks/faciles.yml", FACILES);
+        escribir("tasks/dificiles.yml", DIFICILES);
+        Catalog catalogo = CatalogLoader.fromDirectory(carpeta);
+        assertEquals(GameSettings.DEFAULT, CatalogLoader.settingsFromDirectory(carpeta, catalogo));
+
+        escribir("config.yml", "cartilla: chica\nduracion: 5");
+        GameSettings config = CatalogLoader.settingsFromDirectory(carpeta, catalogo);
+        assertEquals("chica", config.card());
+        assertEquals(5, config.durationMinutes());
+        assertEquals(GameSettings.DEFAULT.countdownSeconds(), config.countdownSeconds());
     }
 
     @Test

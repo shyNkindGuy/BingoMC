@@ -2,8 +2,8 @@
 
 Plugin de bingo para servidores **Paper 1.21.11** de Minecraft (Java 21). Cada jugador recibe una cartilla
 (5×5 por defecto) de objetivos dibujada en un mapa en la mano izquierda; gana el primero en completar una
-línea (fila, columna o diagonal). Si pasan 20 minutos, gana quien tenga más casillas (o empatan los que
-tengan más).
+línea (fila, columna o diagonal). Antes de empezar hay una cuenta regresiva; si se acaba el tiempo (20
+minutos por defecto), gana quien tenga más casillas (o empatan los que tengan más).
 
 | Comando | Qué hace |
 |---|---|
@@ -22,6 +22,10 @@ La primera vez que arranca, el plugin crea en `plugins/AdaptiveBingo/`:
   distintos"; `todos`: "las 3 herramientas de hierro"). Cualquier tarea puede llevar `condiciones`:
   dimensión, de día o de noche, bioma, debajo de cierta Y o sin haber muerto (en el mapa, un punto morado).
 - `cards.yml`: las cartillas (`normal` 5×5 y `rapida` 3×3) con cuántas tareas salen de cada lista.
+- `config.yml`: cómo se juega: cartilla por defecto, segundos de cuenta regresiva (10; durante la cuenta
+  nadie se mueve), minutos de partida (20; 0 = sin límite), PvP y una semilla fija opcional.
+
+Quien entra al servidor con la partida empezada recibe su cartilla con las mismas tareas.
 
 El formato está explicado en los comentarios de los propios archivos. Después de editar: `/bingo reload`.
 

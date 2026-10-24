@@ -6,6 +6,7 @@ import com.shyNkindguy.bingo.config.TaskAvailability;
 import com.shyNkindguy.bingo.events.AdvancementReset;
 import com.shyNkindguy.bingo.events.CardUpdater;
 import com.shyNkindguy.bingo.events.ObjectiveListener;
+import com.shyNkindguy.bingo.events.SessionListener;
 import com.shyNkindguy.bingo.events.StatisticPoller;
 import com.shyNkindguy.bingo.game.BingoGame;
 import com.shyNkindguy.bingo.game.PlayerContexts;
@@ -36,6 +37,7 @@ public final class AdaptiveBingo extends JavaPlugin {
             contexts.reset(Bukkit.getOnlinePlayers());
             AdvancementReset.forGame(game);
             statistics.start();
+            Bukkit.getOnlinePlayers().forEach(scoreboard::update);
         });
         game.onEnd(() -> {
             statistics.stop();
@@ -47,6 +49,7 @@ public final class AdaptiveBingo extends JavaPlugin {
                 new ObjectiveListener(this, game, mapManager, updater),
                 this
         );
+        Bukkit.getPluginManager().registerEvents(new SessionListener(this, game, mapManager, scoreboard), this);
         BingoCommand command = new BingoCommand(game, scoreboard, mapManager, catalogs);
         PluginCommand bingo = getCommand("bingo");
         bingo.setExecutor(command);

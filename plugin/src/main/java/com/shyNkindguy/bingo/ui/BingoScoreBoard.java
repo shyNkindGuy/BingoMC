@@ -56,6 +56,7 @@ public class BingoScoreBoard {
             objective.getScore("§fJugador:").setScore(3);
             objective.getScore("§a" + player.getName()).setScore(2);
             objective.getScore("§fObjetivos: §a" + progress).setScore(1);
-            objective.getScore("§fEstado: §aEN CURSO").setScore(0);
+            String state = game.inCountdown() ? "§eEMPIEZA YA" : "§aEN CURSO";
+            objective.getScore("§fEstado: " + state).setScore(0);
         }
 }

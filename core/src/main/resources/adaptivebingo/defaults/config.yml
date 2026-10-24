@@ -1,0 +1,18 @@
+# Configuración de las partidas de AdaptiveBingo. Después de editar, /bingo reload.
+
+# Cartilla de cards.yml que usa /bingo start sin argumentos. Si falta, la por_defecto de cards.yml.
+# cartilla: rapida
+
+# Segundos de cuenta regresiva antes de empezar (0 = empieza en el acto, como mucho 60). Durante la
+# cuenta nadie se puede mover, romper ni agarrar cosas.
+cuenta_regresiva: 10
+
+# Minutos de partida (como mucho 600). Al terminar gana quien tenga más casillas. 0 = sin límite.
+duracion: 20
+
+# Si los jugadores se pueden pegar entre ellos.
+pvp: true
+
+# Semilla fija: con la misma salen siempre las mismas tareas. Si falta, una al azar en cada partida
+# (se anuncia al empezar). /bingo start <cartilla> <semilla> la cambia para una partida.
+# semilla: 12345

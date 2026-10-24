@@ -8,6 +8,7 @@ import com.shyNkindguy.bingo.core.condition.InBiome;
 import com.shyNkindguy.bingo.core.condition.InDimension;
 import com.shyNkindguy.bingo.core.condition.NoDeath;
 import com.shyNkindguy.bingo.core.condition.TimeOfDay;
+import com.shyNkindguy.bingo.core.game.GameSettings;
 import com.shyNkindguy.bingo.core.task.AdvancementTask;
 import com.shyNkindguy.bingo.core.task.ConditionalTask;
 import com.shyNkindguy.bingo.core.task.ItemTask;
@@ -63,6 +64,7 @@ public final class CatalogParser {
     private static final Set<String> CARDS_KEYS = Set.of("por_defecto", "cartillas");
     private static final Set<String> CARD_KEYS = Set.of("tamaño", "tamano", "listas");
     private static final Set<String> QUOTA_KEYS = Set.of("min", "max");
+    private static final Set<String> SETTINGS_KEYS = Set.of("cartilla", "cuenta_regresiva", "duracion", "pvp", "semilla");
 
     private CatalogParser() {
     }
@@ -354,6 +356,49 @@ public final class CatalogParser {
                     + maximums + " tareas");
         }
         return new CardSpec(name, size, quotas);
+    }
+
+    // config.yml: cómo se juega. Lo que falte queda como en GameSettings.DEFAULT; un archivo vacío (o todo
+    // comentado) es la configuración por defecto. La cartilla tiene que existir en `catalog`.
+    public static GameSettings parseSettings(String file, Object root, Catalog catalog) {
+        if (root == null) return GameSettings.DEFAULT;
+        Map<String, Object> map = map(root, file);
+        checkKeys(map, SETTINGS_KEYS, file);
+        GameSettings defaults = GameSettings.DEFAULT;
+
+        String card = map.containsKey("cartilla") ? text(map.get("cartilla"), file + ": cartilla") : defaults.card();
+        if (card != null && !catalog.cards().containsKey(card)) {
+            throw error(file + ": cartilla", "no existe la cartilla " + card + " en cards.yml (hay: "
+                    + String.join(", ", catalog.cards().keySet()) + ")");
+        }
+        int countdown = map.containsKey("cuenta_regresiva")
+                ? nonNegative(map.get("cuenta_regresiva"), file + ": cuenta_regresiva") : defaults.countdownSeconds();
+        if (countdown > GameSettings.MAX_COUNTDOWN) {
+            throw error(file + ": cuenta_regresiva", "como mucho " + GameSettings.MAX_COUNTDOWN + " segundos (vino " + countdown + ")");
+        }
+        int duration = map.containsKey("duracion")
+                ? nonNegative(map.get("duracion"), file + ": duracion") : defaults.durationMinutes();
+        if (duration > GameSettings.MAX_DURATION) {
+            throw error(file + ": duracion", "como mucho " + GameSettings.MAX_DURATION + " minutos (vino " + duration + ")");
+        }
+        boolean pvp = map.containsKey("pvp") ? yesNo(map.get("pvp"), file + ": pvp") : defaults.pvp();
+        Long seed = map.containsKey("semilla") ? seed(map.get("semilla"), file + ": semilla") : defaults.seed();
+        return new GameSettings(card, countdown, duration, pvp, seed);
+    }
+
+    private static boolean yesNo(Object raw, String where) {
+        if (raw instanceof Boolean value) return value;
+        if (raw instanceof String text) {
+            String lower = text.trim().toLowerCase(Locale.ROOT);
+            if (Set.of("si", "sí", "true").contains(lower)) return true;
+            if (Set.of("no", "false").contains(lower)) return false;
+        }
+        throw error(where, "tiene que ser true o false (vino " + raw + ")");
+    }
+
+    private static Long seed(Object raw, String where) {
+        if (raw instanceof Integer || raw instanceof Long) return ((Number) raw).longValue();
+        throw error(where, "tiene que ser un número entero (vino " + raw + ")");
     }
 
     // `basicos: 5` (exactamente 5) o `basicos: { min: 3, max: 8 }` (cualquiera de los dos puede faltar).
