@@ -7,12 +7,19 @@ estadísticas, ítems especiales, conjuntos y estados. Diseño en `docs/ARQUITEC
 viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
 
 ## Stack
-- **Java 21, Paper API 1.21.11** (desde la tarea 0.2), Maven, un módulo (`pom.xml`). Decidido pasar a dos
-  módulos `core` (sin Bukkit) + `plugin` (tarea 1.1). La versión del plugin sale solo del `pom` (el
-  `plugin.yml` usa `${project.version}` con resource filtering; el CI revisa que quede reemplazada).
+- **Java 21, Paper API 1.21.11** (desde la tarea 0.2), Maven **multi-módulo** (desde la 1.1): `pom.xml`
+  padre (versión, Java y versiones de plugins de Maven) + **`core/`** (lógica del bingo **sin Bukkit**,
+  paquete `com.shyNkindguy.bingo.core`, solo JUnit) + **`plugin/`** (adaptador Paper, artifactId
+  `AdaptiveBingo`; `maven-shade-plugin` mete las clases de `core` en su `.jar`). La versión sale solo del
+  `pom` padre (el `plugin.yml` usa `${project.version}` con resource filtering; el CI revisa que quede
+  reemplazada y que el `.jar` traiga `core`).
+- `core`: `card/` (`BingoCard` N×N, `BingoCell`, `BingoObjective` con la **clave del ítem**
+  `"minecraft:diamond"`, `ObjectivePool` con los 43 candidatos y el sorteo `draw`) y `win/`
+  (`WinConditionChecker`, `TimeLimitWinners`). Nada de `org.bukkit` ahí.
+- `plugin`: `adapter/Keys` traduce `Material` ↔ clave; el resto como abajo.
 - `plugin.yml` clásico de Bukkit (no `paper-plugin.yml`). Main: `com.shyNkindguy.bingo.AdaptiveBingo`.
-- Paquete `com.shyNkindguy.bingo`: `commands/` (`/bingo start|stop|map`), `events/` (`ObjectiveListener`),
-  `game/` (partida, cartilla, objetivos, victoria), `icon/` (registro de íconos nuevo), `ui/` (mapa,
+- Paquete `com.shyNkindguy.bingo` del plugin: `commands/` (`/bingo start|stop|map`), `events/`
+  (`ObjectiveListener`, `ScanQueue`), `game/` (`BingoGame`, `ObjectiveFactory`), `icon/`, `ui/` (mapa,
   scoreboard, paleta). Íconos: un solo sistema, `icon/IconRegistry` (por `Material`, con fallback por
   categoría) + `icon/IconRenderer` (escala entera que entra en la casilla, centrado; dibuja sobre un
   `PixelSink` para poder testearlo).
@@ -43,15 +50,17 @@ tabla de `docs/ANALISIS.md` §3.
 
 ## Comandos
 ```bash
-mvn -B verify          # compila, corre tests y deja target/AdaptiveBingo-<versión>.jar
+mvn -B verify            # compila los dos módulos, corre tests y deja plugin/target/AdaptiveBingo-<versión>.jar
+mvn -B -pl core verify   # solo el núcleo: no necesita paper-api (corre en el contenedor de Claude)
 ```
 Para probar: copiar el `.jar` (o el artefacto `adaptive-bingo-jar` del CI) a `plugins/` de un servidor
 Paper 1.21.11 (Java 21) y reiniciar.
 
 **El contenedor en la nube de Claude no llega a `repo.papermc.io`** (y Maven Central a veces responde
-429): ahí `mvn verify` no puede bajar `paper-api`. La validación real es `.github/workflows/build.yml`
-en cada PR. Antes de hacer push, las clases puras se prueban con `javac` + `junit-platform-console-
-standalone` contra stubs mínimos de Bukkit en el scratchpad; desde la tarea 1.1, `mvn -pl core verify`.
+429): ahí solo `mvn -pl core verify` funciona de verdad. El módulo `plugin` se compila con `javac`
+contra stubs mínimos de Bukkit en el scratchpad + el `.jar` de `core`, y sus tests con
+`junit-platform-console-standalone`. La validación real del plugin es `.github/workflows/build.yml` en
+cada PR. Lógica nueva: ponerla en `core` siempre que no necesite Bukkit.
 
 ## Reglas de trabajo para Claude (modo autónomo)
 1. Una tarea de `docs/PLAN.md` = un PR desde `claude/compassionate-davinci-y5x96q` contra `master`

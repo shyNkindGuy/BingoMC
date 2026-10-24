@@ -34,8 +34,11 @@ personal, con idea de llegar a servidor. Todo en español (commits, mensajes, do
 - 2026-10-23 · tarea **0.5**: pool de 43 objetivos con nombres en español (`ObjectivePool`, id derivado
   del ítem), sorteo de 25 por partida, un solo sistema de íconos (`icon/`; se borraron
   `game/IconPresets` y `game/MapIconRegistry`), `drawScaled` y renderer contextual que solo redibuja al
-  cambiar. **Fase 0 completa. Siguiente: 1.1** (módulo `core` puro). Ver `docs/PLAN.md` para el estado
-  al día.
+  cambiar (PR #14). **Fase 0 completa.**
+- 2026-10-24 · tarea **1.1**: Maven multi-módulo. `core/` (sin Bukkit: `card/` con `BingoCard` N×N,
+  `BingoObjective` por clave `"minecraft:…"`, `ObjectivePool.draw`; `win/`) y `plugin/` (Paper +
+  `adapter/Keys`; shade mete `core` en el `.jar`, que sale en `plugin/target/`). `mvn -pl core verify`
+  corre en el contenedor. **Siguiente: 1.2** (modelo de tareas). Ver `docs/PLAN.md` para el estado al día.
 
 ## Decisiones (no volver a preguntar)
 | Tema | Decisión |
@@ -58,8 +61,9 @@ personal, con idea de llegar a servidor. Todo en español (commits, mensajes, do
   mapa sin resource pack, español primero, capa propia de logros/objetos/sets/estados.
 
 ## Trampas conocidas
-- El contenedor de Claude no llega a `repo.papermc.io`: `mvn verify` falla ahí; la verdad es el CI.
-  Probar clases puras con `javac` + JUnit console + stubs de Bukkit en el scratchpad.
+- El contenedor de Claude no llega a `repo.papermc.io`: ahí solo corre `mvn -pl core verify`; el
+  módulo `plugin` se valida con `javac` + JUnit console + stubs de Bukkit en el scratchpad y la verdad
+  es el CI. Por eso la lógica nueva va en `core`.
 - Maven Central puede responder 429: reintentar con espera.
 - `_` no es identificador válido (Java 9+). Los presets de íconos usan `o` como transparente.
 - La cartilla se reconoce por la marca PDC, no por el id del mapa: todo ítem de cartilla nuevo debe

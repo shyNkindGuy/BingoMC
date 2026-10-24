@@ -1,7 +1,7 @@
 name: Build
 
-# Compila el plugin y corre los tests en cada PR y en cada push a master.
-# El .jar queda como artefacto del run: se descarga y se copia a plugins/ del servidor Paper.
+# Compila los dos módulos (core y plugin) y corre sus tests en cada PR y en cada push a master.
+# El .jar del plugin queda como artefacto del run: se descarga y se copia a plugins/ del servidor Paper.
 
 on:
   pull_request:
@@ -29,16 +29,18 @@ jobs:
       - name: Compilar y correr tests
         run: mvn -B -ntp verify
 
-      - name: Verificar versión en plugin.yml
+      - name: Verificar el jar del plugin
         # El pom filtra ${project.version}; si queda sin reemplazar, Paper carga el plugin con versión basura.
+        # Y el jar tiene que llevar adentro las clases de core (maven-shade-plugin), o el plugin no arranca.
         run: |
-          unzip -p target/AdaptiveBingo-*.jar plugin.yml | tee plugin.yml.out
+          unzip -p plugin/target/AdaptiveBingo-*.jar plugin.yml | tee plugin.yml.out
           grep -Eq "^version: '[0-9]+\.[0-9]+\.[0-9]+'$" plugin.yml.out
+          unzip -l plugin/target/AdaptiveBingo-*.jar | grep -q 'com/shyNkindguy/bingo/core/card/BingoCard.class'
 
       - name: Subir jar
         uses: actions/upload-artifact@v4
         with:
           name: adaptive-bingo-jar
-          path: target/*.jar
+          path: plugin/target/AdaptiveBingo-*.jar
           if-no-files-found: error
           retention-days: 14

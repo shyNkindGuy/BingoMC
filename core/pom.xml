@@ -1,0 +1,24 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Núcleo del bingo: cartilla, objetivos, victoria y sorteo. Sin Bukkit ni Paper: solo Java y JUnit,
+         así `mvn -pl core verify` corre sin el repositorio de Paper. -->
+    <parent>
+        <groupId>com.shyNkindguy.bingo</groupId>
+        <artifactId>adaptive-bingo-parent</artifactId>
+        <version>1.1.0</version>
+    </parent>
+
+    <artifactId>adaptive-bingo-core</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>

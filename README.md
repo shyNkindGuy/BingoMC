@@ -15,8 +15,11 @@ columna o diagonal). Si pasan 20 minutos, gana quien tenga más casillas (o empa
 
 ## Compilar
 ```bash
-mvn -B verify    # deja target/AdaptiveBingo-<versión>.jar (versión del pom.xml)
+mvn -B verify            # deja plugin/target/AdaptiveBingo-<versión>.jar (versión del pom.xml padre)
+mvn -B -pl core verify   # solo el núcleo del bingo (no necesita el repositorio de Paper)
 ```
+El proyecto tiene dos módulos: `core/` (la lógica del bingo, sin Bukkit) y `plugin/` (lo de Paper:
+comandos, eventos, mapa); el `.jar` del plugin ya lleva `core` adentro.
 Cada PR compila y corre los tests en GitHub Actions (`.github/workflows/build.yml`); el `.jar` queda
 como artefacto del run.
 

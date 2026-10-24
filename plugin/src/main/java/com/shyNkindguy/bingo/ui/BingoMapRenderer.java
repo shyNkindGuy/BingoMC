@@ -1,0 +1,101 @@
+package com.shyNkindguy.bingo.ui;
+
+import com.shyNkindguy.bingo.adapter.Keys;
+import com.shyNkindguy.bingo.core.card.BingoCard;
+import com.shyNkindguy.bingo.core.card.BingoCell;
+import com.shyNkindguy.bingo.game.BingoGame;
+import com.shyNkindguy.bingo.icon.IconDefinition;
+import com.shyNkindguy.bingo.icon.IconRegistry;
+import com.shyNkindguy.bingo.icon.IconRenderer;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.map.*;
+import org.bukkit.map.MapView;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
+// Contextual: cada jugador tiene su propio lienzo y ve SU cartilla. Solo se redibuja cuando la cartilla
+// cambia (invalidate); el resto de los ticks el lienzo conserva lo último que se pintó.
+public class BingoMapRenderer extends MapRenderer {
+    private static final int MAP_SIZE = 128;
+    private static final int GRID_TOP = 15;   // debajo del título "BINGO"
+    private static final int MAX_CELL = 36;
+
+    private final BingoGame game;
+    private final Set<UUID> upToDate = new HashSet<>();
+
+    public BingoMapRenderer(BingoGame game){
+        super(true);
+        this.game = game;
+    }
+    public void invalidate() {
+        upToDate.clear();
+    }
+    @Override
+
+    public void render(MapView view, MapCanvas canvas, Player player){
+        if (!upToDate.add(player.getUniqueId())) return;
+
+        for (int x = 0; x < 128; x++) {
+            for (int y = 0; y < 128; y++) {
+                canvas.setPixel(x, y, MapPalette.PALE_BLUE);
+            }
+        }
+        BingoCard card = game.getCard(player);
+        if (card == null) return;
+
+        canvas.drawText(6,6, MinecraftFont.Font, "BINGO");
+
+        BingoCell[][] grid = card.getGrid();
+        int size = card.getSize();
+        // casillas cuadradas lo más grandes posible (22 px en 5×5), grilla centrada a lo ancho
+        int cellSize = Math.min(MAX_CELL, (MAP_SIZE - GRID_TOP - 3) / size);
+        int startX = (MAP_SIZE - size * cellSize) / 2;
+        int startY = GRID_TOP;
+
+        for (int r= 0; r < size; r++){
+            for (int c=0; c < size; c++){
+                int x = startX + c * cellSize;
+                int y = startY + r * cellSize;
+                BingoCell cell = grid[r][c];
+
+                byte bg = cell.isCompleted()
+                        ? MapPalette.LIGHT_GREEN
+                        : MapPalette.LIGHT_GRAY;
+                byte border = MapPalette.GRAY_1;
+
+                for (int dx = 1; dx < cellSize - 1; dx++) {
+                    for (int dy = 1; dy < cellSize - 1; dy++) {
+                        canvas.setPixel(x + dx, y + dy, bg);
+                    }
+                }
+                for (int i = 0; i < cellSize; i++) {
+                    canvas.setPixel(x + i, y, border);
+                    canvas.setPixel(x + i, y + cellSize - 1, border);
+                    canvas.setPixel(x, y + i, border);
+                    canvas.setPixel(x + cellSize - 1, y + i, border);
+                }
+
+                Material material = Keys.toMaterial(cell.getObjective().getItem());
+                if (material != null) {
+                    IconDefinition icon = IconRegistry.get(material);
+                    if (icon == null) {
+                        icon = IconRegistry.getFallback(material);
+                    }
+                    IconRenderer.drawInCell(canvas, x, y, cellSize, icon, cell.isCompleted());
+                }
+
+                if (cell.isCompleted()) {
+                    for (int i = 0; i < 6; i++) {
+                        canvas.setPixel(x + i, y + i, MapPalette.DARK_GREEN);
+                        canvas.setPixel(x + (cellSize - 3 - i), y + i, MapPalette.DARK_GREEN);
+                    }
+                }
+
+            }
+        }
+    }
+
+}

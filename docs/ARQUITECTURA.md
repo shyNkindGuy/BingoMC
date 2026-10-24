@@ -81,8 +81,8 @@ BingoMC/
         └── storage/             (Fase 3) StatsRepository: YAML → SQLite
 ```
 
-Hasta la tarea 1.1 del plan se sigue en un solo módulo; los paquetes nuevos se crean ya con esta forma
-para que la división sea mover carpetas.
+Desde la tarea 1.1 el repo ya tiene esta forma: `core/` (hoy `card/` y `win/`) y `plugin/` (con
+`adapter/Keys`). Los paquetes que faltan se crean así a medida que llegan sus tareas.
 
 ## 4. Modelo de dominio
 
