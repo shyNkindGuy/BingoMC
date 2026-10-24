@@ -70,7 +70,7 @@ Leyenda: `[ ]` pendiente · `[x]` hecha (se marca dentro del PR que la resuelve)
   casilla, brújula al bioma, escudo anti-PvP), configurables en YAML.
 - [x] **3.4 Conjuntos con bonus y estados.** Llevar N piezas marcadas da un efecto; `PlayerStatus`
   (velocidad, visión nocturna, sin hambre) como modificador de partida o recompensa.
-- [ ] **3.5 Ranking y API.** `/bingo top`, expansión de PlaceholderAPI opcional (`softdepend`), API
+- [x] **3.5 Ranking y API.** `/bingo top`, expansión de PlaceholderAPI opcional (`softdepend`), API
   pública para otros plugins.
 
 ## Fase 4 — Servidor (decide el dueño: la automatización no la empieza)

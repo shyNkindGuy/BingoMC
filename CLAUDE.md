@@ -61,6 +61,9 @@ viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
     3.2, los logros desbloqueados), `StatsBook`
     (al día con los eventos; las partidas detenidas no cuentan) y `StatsRepository` →
     `YamlStatsRepository` (`stats.yml` por UUID, validado al leer, se guarda con archivo temporal + move).
+    Desde la 3.5: `Ranking` (top por victorias, partidas, casillas o tiempo, con desempate fijo) y `Placeholders`
+    (claves de PlaceholderAPI que salen de las estadísticas); `StatsBook` sincronizado; `DomainEvents.subscribe`
+    devuelve una `Subscription` para `cancel()`.
   - `achievement/` (desde la 3.2): `Achievement` (id, nombre, descripción, ícono y regla), `AchievementRule`
     sellada (`GameRule`: ganar, en menos de, modo, casillas en la partida, sin morir, totales; `CellRule`:
     tarea, `Condition` del motor, en menos de) y `AchievementTracker` (mira los eventos, anota en el
@@ -76,8 +79,10 @@ viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
   `config/CatalogService` tiene el catálogo (carga al arrancar, `/bingo reload`) y `config/TaskAvailability`
   dice si una tarea se puede hacer en esta versión y por qué no (las que no, no salen); el resto como abajo.
 - `plugin.yml` clásico de Bukkit (no `paper-plugin.yml`). Main: `com.shyNkindguy.bingo.AdaptiveBingo`.
-- Paquete `com.shyNkindguy.bingo` del plugin: `commands/` (`/bingo start|stop|pause|map|card|stats|logros|item|conjunto|reload|team`;
-  `TeamCommand`), `config/`, `storage/StatsService` (carga `stats.yml`, suscribe el `StatsBook` a
+- Paquete `com.shyNkindguy.bingo` del plugin: `commands/` (`/bingo start|stop|pause|map|card|stats|top|logros|item|conjunto|reload|team`;
+  `TeamCommand`), `config/`, `api/` (`AdaptiveBingoApi` + `BingoApi`, en el `ServicesManager`; ver
+  `docs/API.md`), `hooks/BingoExpansion` (PlaceholderAPI, `softdepend`; solo se carga si está instalado),
+  `storage/StatsService` (carga `stats.yml`, suscribe el `StatsBook` a
   `BingoGame.events()` y guarda al terminar cada partida; con un error no pisa el archivo),
   `events/` (`ObjectiveListener`, `ScanQueue`, `CardUpdater`, `StatisticPoller`, `AdvancementReset`),
   `events/SessionListener` (congelar en la cuenta regresiva, PvP, entrar a mitad, chat de equipo, clics en
@@ -166,7 +171,12 @@ piezas marcadas; con `necesita` piezas distintas a la vez, en cualquier lugar de
 Las piezas salen en el caos (junto con los ítems especiales) o con `/bingo conjunto <id> [jugador]`; no cuentan
 en el escaneo y se quitan al terminar. `StatusApplier` (en `onTick`, solo en curso) pone cada efecto por 20 s
 (`Registry.EFFECT`) cada segundo, saca los que ya no tocan, avisa al activar o perder un conjunto y limpia al
-terminar. `/bingo map` vuelve a dar el mapa. Bugs conocidos:
+terminar.
+**Ranking y API** (3.5): `/bingo top [victorias|partidas|casillas|tiempo]` (10 mejores; para todos);
+`%adaptivebingo_...%` (estadísticas, top y partida en curso) si está PlaceholderAPI (`me.clip:placeholderapi`
+`provided` desde `repo.extendedclip.com`, que el contenedor de Claude no alcanza: en los stubs hay un
+`PlaceholderExpansion` falso); `AdaptiveBingoApi` para otros plugins (estado, progreso, estadísticas, top y
+suscripción a los eventos). `/bingo map` vuelve a dar el mapa. Bugs conocidos:
 tabla de `docs/ANALISIS.md` §3.
 
 ## Convenciones

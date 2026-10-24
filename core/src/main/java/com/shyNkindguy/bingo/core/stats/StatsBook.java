@@ -14,7 +14,8 @@ import java.util.Optional;
 
 // Las estadísticas de todos, al día con los eventos de las partidas: mientras se juega junta las casillas de
 // cada jugador y al terminar (GameEnded) las suma junto con la partida y la victoria. Una partida detenida no
-// suma nada. Por id de jugador (en el plugin, el UUID en texto).
+// suma nada. Por id de jugador (en el plugin, el UUID en texto). Sincronizado: PlaceholderAPI puede leer desde
+// otro hilo.
 public final class StatsBook {
     private final Map<String, PlayerStats> byId = new LinkedHashMap<>();
     private final Map<String, Integer> pendingCells = new HashMap<>();
@@ -28,11 +29,11 @@ public final class StatsBook {
         events.subscribe(GameEnded.class, this::onGameEnded);
     }
 
-    public void onCellCompleted(CellCompleted event) {
+    public synchronized void onCellCompleted(CellCompleted event) {
         pendingCells.merge(event.playerId(), 1, Integer::sum);
     }
 
-    public void onGameEnded(GameEnded event) {
+    public synchronized void onGameEnded(GameEnded event) {
         if (!event.aborted()) {
             for (GameEnded.Participant player : event.players()) {
                 PlayerStats before = byId.getOrDefault(player.id(), PlayerStats.empty(player.name()));
@@ -44,19 +45,19 @@ public final class StatsBook {
     }
 
     // Anota el logro; false si ya lo tenía. Quien todavía no terminó ninguna partida queda con 0 partidas.
-    public boolean unlock(String playerId, String playerName, String achievementId) {
+    public synchronized boolean unlock(String playerId, String playerName, String achievementId) {
         PlayerStats before = byId.getOrDefault(playerId, PlayerStats.empty(playerName));
         if (before.hasAchievement(achievementId)) return false;
         byId.put(playerId, before.withAchievement(playerName, achievementId));
         return true;
     }
 
-    public Optional<PlayerStats> get(String id) {
+    public synchronized Optional<PlayerStats> get(String id) {
         return Optional.ofNullable(byId.get(id));
     }
 
     // Sin importar mayúsculas; si dos tuvieron el mismo nombre, el que jugó más.
-    public Optional<PlayerStats> findByName(String name) {
+    public synchronized Optional<PlayerStats> findByName(String name) {
         String wanted = name.toLowerCase(Locale.ROOT);
         PlayerStats found = null;
         for (PlayerStats stats : byId.values()) {
@@ -67,14 +68,14 @@ public final class StatsBook {
         return Optional.ofNullable(found);
     }
 
-    public List<String> names() {
+    public synchronized List<String> names() {
         List<String> names = new ArrayList<>();
         for (PlayerStats stats : byId.values()) names.add(stats.name());
         return names;
     }
 
     // Una copia para guardar (los PlayerStats son inmutables).
-    public Map<String, PlayerStats> snapshot() {
+    public synchronized Map<String, PlayerStats> snapshot() {
         return new LinkedHashMap<>(byId);
     }
 }

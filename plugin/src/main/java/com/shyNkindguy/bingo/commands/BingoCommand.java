@@ -6,6 +6,7 @@ import com.shyNkindguy.bingo.core.catalog.CatalogException;
 import com.shyNkindguy.bingo.core.game.GameSettings;
 import com.shyNkindguy.bingo.core.item.SpecialItem;
 import com.shyNkindguy.bingo.core.stats.PlayerStats;
+import com.shyNkindguy.bingo.core.stats.Ranking;
 import com.shyNkindguy.bingo.core.status.ItemSet;
 import com.shyNkindguy.bingo.core.task.Task;
 import com.shyNkindguy.bingo.game.BingoGame;
@@ -30,9 +31,10 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class BingoCommand implements CommandExecutor, TabCompleter {
     private static final String ADMIN_PERMISSION = "bingo.admin";
-    private static final List<String> ADMIN_SUBCOMMANDS = List.of("start", "stop", "pause", "map", "card", "stats", "logros", "item", "conjunto", "reload",
-            "team");
-    private static final List<String> PLAYER_SUBCOMMANDS = List.of("map", "card", "stats", "logros", "team");
+    private static final List<String> ADMIN_SUBCOMMANDS = List.of("start", "stop", "pause", "map", "card", "stats", "top", "logros", "item", "conjunto",
+            "reload", "team");
+    private static final List<String> PLAYER_SUBCOMMANDS = List.of("map", "card", "stats", "top", "logros", "team");
+    private static final int TOP_SIZE = 10;
     private static final Locale SPANISH = Locale.forLanguageTag("es");
 
     private final BingoGame game;
@@ -70,6 +72,10 @@ public class BingoCommand implements CommandExecutor, TabCompleter {
         }
         if (subcommand.equals("conjunto")) {
             giveSet(sender, args);
+            return true;
+        }
+        if (subcommand.equals("top") && args.length <= 2) {
+            showTop(sender, args);
             return true;
         }
         if (subcommand.equals("stats") && args.length <= 2) {
@@ -110,6 +116,9 @@ public class BingoCommand implements CommandExecutor, TabCompleter {
                 return matching(Bukkit.getOnlinePlayers().stream().map(Player::getName).toList(), args[2]);
             }
             return List.of();
+        }
+        if (args.length == 2 && args[0].equalsIgnoreCase("top")) {
+            return matching(Ranking.Metric.keys(), args[1]);
         }
         if (args.length == 2 && args[0].equalsIgnoreCase("stats")) {
             return matching(stats.book().names(), args[1]);
@@ -300,6 +309,28 @@ public class BingoCommand implements CommandExecutor, TabCompleter {
         if (sender instanceof Player player) return player;
         sender.sendMessage(usage);
         return null;
+    }
+
+    // /bingo top [victorias|partidas|casillas|tiempo]: los 10 mejores (por defecto, por victorias).
+    private void showTop(CommandSender sender, String[] args) {
+        Optional<Ranking.Metric> metric = args.length == 2 ? Ranking.Metric.parse(args[1]) : Optional.of(Ranking.Metric.WINS);
+        if (metric.isEmpty()) {
+            sender.sendMessage(Texts.get("top.no_existe", "metrica", args[1], "metricas", String.join(", ", Ranking.Metric.keys())));
+            return;
+        }
+        topLines(Ranking.top(stats.book().snapshot(), metric.get(), TOP_SIZE), metric.get()).forEach(sender::sendMessage);
+    }
+
+    static List<String> topLines(List<Ranking.Entry> top, Ranking.Metric metric) {
+        if (top.isEmpty()) return List.of(Texts.get("top.vacio"));
+        List<String> lines = new ArrayList<>();
+        lines.add(Texts.get("top.titulo", "metrica", Texts.get("top." + metric.key())));
+        for (Ranking.Entry entry : top) {
+            int value = metric.value(entry.stats());
+            lines.add(Texts.get("top.linea", "puesto", entry.position(), "jugador", entry.stats().name(),
+                    "valor", metric == Ranking.Metric.FASTEST ? GameBossBar.clock(value) : String.valueOf(value)));
+        }
+        return lines;
     }
 
     // /bingo stats [jugador]: las suyas o las de otro (también de alguien desconectado, por nombre).

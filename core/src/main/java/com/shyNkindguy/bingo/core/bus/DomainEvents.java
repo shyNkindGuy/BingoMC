@@ -9,7 +9,13 @@ import java.util.function.Consumer;
 // los publica, en el orden en que se suscribió. Si un suscriptor falla, los demás lo reciben igual y el
 // error va a `onError` (por defecto se relanza el primero después de entregarlo a todos).
 public final class DomainEvents {
-    private final List<Subscription<?>> subscriptions = new CopyOnWriteArrayList<>();
+
+    // Para dejar de recibir (otro plugin que se apaga).
+    public interface Subscription {
+        void cancel();
+    }
+
+    private final List<Listener<?>> subscriptions = new CopyOnWriteArrayList<>();
     private final BiConsumer<DomainEvent, RuntimeException> onError;
 
     public DomainEvents() {
@@ -20,13 +26,15 @@ public final class DomainEvents {
         this.onError = onError;
     }
 
-    public <E extends DomainEvent> void subscribe(Class<E> type, Consumer<? super E> subscriber) {
-        subscriptions.add(new Subscription<>(type, subscriber));
+    public <E extends DomainEvent> Subscription subscribe(Class<E> type, Consumer<? super E> subscriber) {
+        Listener<E> listener = new Listener<>(type, subscriber);
+        subscriptions.add(listener);
+        return () -> subscriptions.remove(listener);
     }
 
     public void publish(DomainEvent event) {
         RuntimeException first = null;
-        for (Subscription<?> subscription : subscriptions) {
+        for (Listener<?> subscription : subscriptions) {
             try {
                 subscription.deliver(event);
             } catch (RuntimeException e) {
@@ -40,7 +48,16 @@ public final class DomainEvents {
         if (first != null) throw first;
     }
 
-    private record Subscription<E extends DomainEvent>(Class<E> type, Consumer<? super E> subscriber) {
+    // Una clase y no un record: dos suscripciones iguales se tienen que poder cancelar por separado.
+    private static final class Listener<E extends DomainEvent> {
+        private final Class<E> type;
+        private final Consumer<? super E> subscriber;
+
+        Listener(Class<E> type, Consumer<? super E> subscriber) {
+            this.type = type;
+            this.subscriber = subscriber;
+        }
+
         void deliver(DomainEvent event) {
             if (type.isInstance(event)) subscriber.accept(type.cast(event));
         }

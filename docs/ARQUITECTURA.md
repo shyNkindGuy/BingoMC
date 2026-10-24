@@ -76,7 +76,8 @@ BingoMC/
 └── plugin/                      Paper 1.21.11 · depende de core
     └── com.shyNkindguy.bingo
         ├── AdaptiveBingo        arranque: carga config, crea servicios, registra listeners/comandos
-        ├── command/             /bingo start|stop|card|team|settings|reload|stats
+        ├── command/             /bingo start|stop|card|team|settings|reload|stats|top
+        ├── api/ + hooks/        AdaptiveBingoApi (ServicesManager) y PlaceholderAPI (3.5 ✔, docs/API.md)
         ├── config/              CatalogService (tasks/ + cards.yml), SettingsLoader, Messages (messages.yml)
         ├── listener/            traducen eventos de Paper → TaskEvent (+ EventContext)
         ├── adapter/             Keys (Material ↔ "minecraft:..."), Teleport, WorldBorder

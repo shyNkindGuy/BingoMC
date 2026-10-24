@@ -16,6 +16,7 @@ minutos por defecto), gana quien tenga más casillas (o empatan los que tengan m
 | `/bingo item <id> [jugador]` | Da un ítem especial de `items.yml` (permiso `bingo.admin`) |
 | `/bingo conjunto <id> [jugador]` | Da todas las piezas de un conjunto de `sets.yml` (permiso `bingo.admin`) |
 | `/bingo logros` | Los logros: los que ya tienes y los que te faltan, con lo que piden |
+| `/bingo top [victorias\|partidas\|casillas\|tiempo]` | Los 10 mejores del servidor (por defecto, por victorias) |
 | `/bingo stats [jugador]` | Tus estadísticas (o las de otro): partidas, victorias, casillas y la victoria más rápida. Las partidas detenidas con `/bingo stop` no cuentan |
 | `/bingo team unir <color>` · `salir` · `lista` | Armar equipos antes de la partida (rojo, azul, verde, amarillo, celeste, morado, naranja, rosa, blanco, gris). Quien no tiene equipo juega solo |
 | `/bingo team random [n]` | Reparte a todos al azar en `n` equipos (2 por defecto; permiso `bingo.admin`) |
@@ -62,7 +63,11 @@ Quien entra al servidor con la partida empezada recibe su cartilla con las misma
 
 El formato está explicado en los comentarios de los propios archivos. Después de editar: `/bingo reload`.
 
-**Documentación:** [arquitectura](docs/ARQUITECTURA.md) · [plan de trabajo](docs/PLAN.md) ·
+Con [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/) instalado, hay `%adaptivebingo_victorias%`,
+`%adaptivebingo_top_victorias_1%` y más para scoreboards y hologramas; otros plugins pueden usar la API de Java.
+Las dos cosas están en [docs/API.md](docs/API.md).
+
+**Documentación:** [arquitectura](docs/ARQUITECTURA.md) · [plan de trabajo](docs/PLAN.md) · [API](docs/API.md) ·
 [análisis y viabilidad](docs/ANALISIS.md)
 
 ## Compilar
