@@ -29,10 +29,10 @@ class GameSettingsTest {
     @Test
     void fueraDeRangoEsError() {
         StartRules inicio = StartRules.DEFAULT;
-        assertThrows(IllegalArgumentException.class, () -> new GameSettings(null, -1, 20, true, null, WinMode.DEFAULT, inicio, EndRules.DEFAULT));
-        assertThrows(IllegalArgumentException.class, () -> new GameSettings(null, 61, 20, true, null, WinMode.DEFAULT, inicio, EndRules.DEFAULT));
-        assertThrows(IllegalArgumentException.class, () -> new GameSettings(null, 10, 601, true, null, WinMode.DEFAULT, inicio, EndRules.DEFAULT));
-        assertThrows(IllegalArgumentException.class, () -> new GameSettings(null, 10, 0, true, null, new WinMode.TimeOnly(), inicio, EndRules.DEFAULT));
+        assertThrows(IllegalArgumentException.class, () -> new GameSettings(null, -1, 20, true, null, WinMode.DEFAULT, inicio, EndRules.DEFAULT, ChaosRules.DEFAULT));
+        assertThrows(IllegalArgumentException.class, () -> new GameSettings(null, 61, 20, true, null, WinMode.DEFAULT, inicio, EndRules.DEFAULT, ChaosRules.DEFAULT));
+        assertThrows(IllegalArgumentException.class, () -> new GameSettings(null, 10, 601, true, null, WinMode.DEFAULT, inicio, EndRules.DEFAULT, ChaosRules.DEFAULT));
+        assertThrows(IllegalArgumentException.class, () -> new GameSettings(null, 10, 0, true, null, new WinMode.TimeOnly(), inicio, EndRules.DEFAULT, ChaosRules.DEFAULT));
     }
 
     @Test

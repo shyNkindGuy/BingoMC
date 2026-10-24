@@ -1,10 +1,14 @@
 package com.shyNkindguy.bingo.config;
 
+import com.shyNkindguy.bingo.adapter.Keys;
+import com.shyNkindguy.bingo.core.achievement.Achievement;
 import com.shyNkindguy.bingo.core.catalog.Catalog;
 import com.shyNkindguy.bingo.core.catalog.CatalogLoader;
 import com.shyNkindguy.bingo.core.catalog.CatalogParser;
 import com.shyNkindguy.bingo.core.catalog.TaskList;
 import com.shyNkindguy.bingo.core.catalog.Tier;
+import com.shyNkindguy.bingo.core.item.ItemEffect;
+import com.shyNkindguy.bingo.core.item.SpecialItem;
 import com.shyNkindguy.bingo.core.task.ItemTask;
 import com.shyNkindguy.bingo.core.task.Task;
 import org.junit.jupiter.api.Test;
@@ -14,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 // Corre contra el paper-api real del CI: atrapa ítems, mobs y estadísticas mal escritos en los YAML por
@@ -51,5 +56,23 @@ class CatalogServiceTest {
         assertEquals(2, summary.size());
         assertEquals("No se pueden hacer en esta versión y no van a salir: item:no_existe (el ítem no existe)",
                 summary.get(1));
+    }
+
+    @Test
+    void losItemsEspecialesYLosIconosDeLosLogrosPorDefectoExisten() {
+        assertEquals(List.of(), CatalogService.itemProblems(CatalogLoader.defaultItems()));
+        for (Achievement achievement : CatalogLoader.defaultAchievements(CatalogLoader.defaults())) {
+            if (achievement.icon() != null) {
+                assertNotNull(Keys.toMaterial(achievement.icon()), "No existe el ícono de " + achievement.id());
+            }
+        }
+    }
+
+    @Test
+    void avisaLosItemsEspecialesQueNoExisten() {
+        SpecialItem fantasma = new SpecialItem("fantasma", "Fantasma", "No existe", "minecraft:no_existe",
+                new ItemEffect.Reroll());
+        assertEquals(List.of("§eitems.yml: fantasma usa minecraft:no_existe, que no existe en esta versión (sale como papel)"),
+                CatalogService.itemProblems(List.of(fantasma)));
     }
 }

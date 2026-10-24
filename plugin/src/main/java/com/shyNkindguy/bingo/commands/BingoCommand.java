@@ -4,9 +4,11 @@ import com.shyNkindguy.bingo.config.CatalogService;
 import com.shyNkindguy.bingo.core.catalog.Catalog;
 import com.shyNkindguy.bingo.core.catalog.CatalogException;
 import com.shyNkindguy.bingo.core.game.GameSettings;
+import com.shyNkindguy.bingo.core.item.SpecialItem;
 import com.shyNkindguy.bingo.core.stats.PlayerStats;
 import com.shyNkindguy.bingo.core.task.Task;
 import com.shyNkindguy.bingo.game.BingoGame;
+import com.shyNkindguy.bingo.items.SpecialItems;
 import com.shyNkindguy.bingo.storage.StatsService;
 import com.shyNkindguy.bingo.ui.AchievementMenu;
 import com.shyNkindguy.bingo.ui.BingoMapManager;
@@ -27,7 +29,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class BingoCommand implements CommandExecutor, TabCompleter {
     private static final String ADMIN_PERMISSION = "bingo.admin";
-    private static final List<String> ADMIN_SUBCOMMANDS = List.of("start", "stop", "pause", "map", "card", "stats", "logros", "reload", "team");
+    private static final List<String> ADMIN_SUBCOMMANDS = List.of("start", "stop", "pause", "map", "card", "stats", "logros", "item", "reload", "team");
     private static final List<String> PLAYER_SUBCOMMANDS = List.of("map", "card", "stats", "logros", "team");
     private static final Locale SPANISH = Locale.forLanguageTag("es");
 
@@ -36,12 +38,13 @@ public class BingoCommand implements CommandExecutor, TabCompleter {
     private final BingoMapManager mapManager;
     private final CatalogService catalogs;
     private final StatsService stats;
+    private final SpecialItems specialItems;
     private final TeamCommand teams;
 
     public BingoCommand(BingoGame game, BingoScoreBoard scoreboard, BingoMapManager mapManager, CatalogService catalogs,
-                        StatsService stats){
+                        StatsService stats, SpecialItems specialItems){
         this.game = game; this.scoreboard = scoreboard; this.mapManager = mapManager; this.catalogs = catalogs;
-        this.stats = stats;
+        this.stats = stats; this.specialItems = specialItems;
         this.teams = new TeamCommand(game, ADMIN_PERMISSION);
     }
 
@@ -57,6 +60,10 @@ public class BingoCommand implements CommandExecutor, TabCompleter {
         String subcommand = args[0].toLowerCase(Locale.ROOT);
         if (subcommand.equals("team")) {
             teams.run(sender, args);
+            return true;
+        }
+        if (subcommand.equals("item")) {
+            giveItem(sender, args);
             return true;
         }
         if (subcommand.equals("stats") && args.length <= 2) {
@@ -88,6 +95,13 @@ public class BingoCommand implements CommandExecutor, TabCompleter {
         }
         if (args[0].equalsIgnoreCase("team")) {
             return teams.complete(args);
+        }
+        if (args[0].equalsIgnoreCase("item") && admin) {
+            if (args.length == 2) return matching(specialItems.ids(), args[1]);
+            if (args.length == 3) {
+                return matching(Bukkit.getOnlinePlayers().stream().map(Player::getName).toList(), args[2]);
+            }
+            return List.of();
         }
         if (args.length == 2 && args[0].equalsIgnoreCase("stats")) {
             return matching(stats.book().names(), args[1]);
@@ -214,6 +228,43 @@ public class BingoCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage(Texts.get("recarga.error", "error", e.getMessage()));
             sender.sendMessage(Texts.get("recarga.sigue"));
         }
+    }
+
+    // /bingo item <id> [jugador]: un ítem especial de items.yml (para probarlos o repartirlos a mano).
+    private void giveItem(CommandSender sender, String[] args) {
+        if (!sender.hasPermission(ADMIN_PERMISSION)) {
+            sender.sendMessage(Texts.get("comando.sin_permiso_items"));
+            return;
+        }
+        String ids = String.join(", ", specialItems.ids());
+        if (specialItems.all().isEmpty()) {
+            sender.sendMessage(Texts.get("especiales.ninguno"));
+            return;
+        }
+        if (args.length < 2 || args.length > 3) {
+            sender.sendMessage(Texts.get("especiales.uso", "items", ids));
+            return;
+        }
+        Optional<SpecialItem> item = specialItems.find(args[1].toLowerCase(Locale.ROOT));
+        if (item.isEmpty()) {
+            sender.sendMessage(Texts.get("especiales.no_existe", "item", args[1], "items", ids));
+            return;
+        }
+        Player target;
+        if (args.length == 3) {
+            target = Bukkit.getPlayerExact(args[2]);
+            if (target == null) {
+                sender.sendMessage(Texts.get("especiales.no_conectado", "jugador", args[2]));
+                return;
+            }
+        } else if (sender instanceof Player player) {
+            target = player;
+        } else {
+            sender.sendMessage(Texts.get("especiales.uso", "items", ids));
+            return;
+        }
+        specialItems.give(target, item.get());
+        sender.sendMessage(Texts.get("especiales.dado", "item", SpecialItems.displayName(item.get()), "jugador", target.getName()));
     }
 
     // /bingo stats [jugador]: las suyas o las de otro (también de alguien desconectado, por nombre).

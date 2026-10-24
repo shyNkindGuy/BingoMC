@@ -13,6 +13,7 @@ minutos por defecto), gana quien tenga más casillas (o empatan los que tengan m
 | `/bingo reload` | Vuelve a leer `cards.yml` y `tasks/*.yml`; si tienen un error, dice dónde y sigue con los de antes (permiso `bingo.admin`) |
 | `/bingo map` | Vuelve a dar el mapa con la cartilla |
 | `/bingo card` | Abre la cartilla en un cofre, con el avance de cada casilla en su descripción |
+| `/bingo item <id> [jugador]` | Da un ítem especial de `items.yml` (permiso `bingo.admin`) |
 | `/bingo logros` | Los logros: los que ya tienes y los que te faltan, con lo que piden |
 | `/bingo stats [jugador]` | Tus estadísticas (o las de otro): partidas, victorias, casillas y la victoria más rápida. Las partidas detenidas con `/bingo stop` no cuentan |
 | `/bingo team unir <color>` · `salir` · `lista` | Armar equipos antes de la partida (rojo, azul, verde, amarillo, celeste, morado, naranja, rosa, blanco, gris). Quien no tiene equipo juega solo |
@@ -46,6 +47,10 @@ La primera vez que arranca, el plugin crea en `plugins/AdaptiveBingo/`:
 - `achievements.yml`: los logros propios (14 de ejemplo): al terminar una partida ("gana en menos de 10
   minutos", "gana sin morir", "gana 5 partidas", "gana en lockout") o al completar una casilla ("de noche",
   "en el Nether", "en el primer minuto"). Cada uno se desbloquea una vez por jugador y se avisa en el chat.
+- `items.yml`: los ítems especiales del modo caos (`caos` en `config.yml`: cada cuántos minutos se reparte uno
+  al azar). Se usan con clic derecho: el dado cambia una casilla sin completar por otra tarea, la brújula
+  apunta al bioma que pide una casilla y el escudo hace que ningún jugador te pueda pegar por un rato. No
+  cuentan para las casillas y se quitan al terminar.
 - `stats.yml`: las estadísticas y los logros de cada jugador. Las escribe el plugin al terminar cada partida;
   si lo editas, que sea con el servidor apagado (si queda con un error, el plugin lo avisa y no lo pisa).
 

@@ -6,12 +6,14 @@ import com.shyNkindguy.bingo.core.card.BingoCell;
 import com.shyNkindguy.bingo.core.bus.CellCompleted;
 import com.shyNkindguy.bingo.core.bus.DomainEvents;
 import com.shyNkindguy.bingo.core.bus.GameEnded;
+import com.shyNkindguy.bingo.core.catalog.Catalog;
 import com.shyNkindguy.bingo.core.event.EventContext;
 import com.shyNkindguy.bingo.core.event.TaskEvent;
 import com.shyNkindguy.bingo.core.game.GameSession;
 import com.shyNkindguy.bingo.core.game.GameSummary;
 import com.shyNkindguy.bingo.core.game.GameSettings;
 import com.shyNkindguy.bingo.core.game.Phase;
+import com.shyNkindguy.bingo.core.item.Reroll;
 import com.shyNkindguy.bingo.core.progress.ProgressResult;
 import com.shyNkindguy.bingo.core.progress.ProgressTracker;
 import com.shyNkindguy.bingo.core.task.Task;
@@ -27,6 +29,8 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 import java.util.logging.Level;
 
@@ -144,6 +148,27 @@ public class BingoGame {
                 if (cell.getTask().id().equals(taskId)) cell.lock(owner);
             }
         }
+    }
+
+    // El dado del caos: cambia una casilla pendiente de la cartilla de su equipo por otra tarea (en lockout, en
+    // todas las cartillas y para los que entren después, así siguen teniendo las mismas tareas). Vacío si no
+    // había qué cambiar.
+    public Optional<Reroll.Choice> reroll(Player player, Catalog catalog, Predicate<Task> allowed) {
+        Optional<Team> team = teamInGame(player);
+        if (team.isEmpty() || !isRunning()) return Optional.empty();
+        BingoCard own = cards.get(team.get().id());
+        Optional<Reroll.Choice> choice = Reroll.pick(own, cards.values(), catalog, allowed, ThreadLocalRandom.current());
+        choice.ifPresent(picked -> {
+            if (!settings.mode().lockout()) {
+                Reroll.apply(own, picked);
+                return;
+            }
+            cards.values().forEach(card -> Reroll.apply(card, picked));
+            List<Task> replaced = new ArrayList<>();
+            for (Task task : tasks) replaced.add(task.id().equals(picked.taskId()) ? picked.replacement() : task);
+            tasks = List.copyOf(replaced);
+        });
+        return choice;
     }
 
     // Lockout: ya no queda ninguna tarea sin dueño (todas las cartillas tienen las mismas tareas).

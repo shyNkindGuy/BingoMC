@@ -3,12 +3,13 @@
 # la de por defecto. Después de editar, /bingo reload.
 
 comando:
-  uso: "&eUso: /bingo <start [cartilla] [semilla]|stop|pause|map|card|stats [jugador]|logros|reload|team>"
+  uso: "&eUso: /bingo <start [cartilla] [semilla]|stop|pause|map|card|stats [jugador]|logros|item <id> [jugador]|reload|team>"
   sin_permiso_iniciar: "&cNo tienes permiso para iniciar el Bingo."
   sin_permiso_detener: "&cNo tienes permiso para detener el Bingo."
   sin_permiso_recargar: "&cNo tienes permiso para recargar el Bingo."
   sin_permiso_pausar: "&cNo tienes permiso para pausar el Bingo."
   sin_permiso_equipos: "&cNo tienes permiso para armar los equipos."
+  sin_permiso_items: "&cNo tienes permiso para dar ítems especiales."
   solo_jugador: "&cEsto lo puede hacer solo un jugador."
 
 inicio:
@@ -84,6 +85,7 @@ recarga:
   error: "&cNo se recargó: &f{error}"
   sigue: "&7Siguen las tareas de antes."
   kit: "&ekit: {item} no existe en esta versión y no se va a dar"
+  item_especial: "&eitems.yml: {id} usa {item}, que no existe en esta versión (sale como papel)"
 
 estadisticas:
   titulo: "&6&lBingo · &f{jugador}"
@@ -102,6 +104,24 @@ logros:
   desbloqueado: "&a✔ Desbloqueado"
   bloqueado: "&8✘ Todavía no"
   ninguno: "&7No hay logros en achievements.yml."
+
+especiales:
+  lore_uso: "&8Clic derecho para usarlo"
+  solo_en_partida: "&7Este ítem solo sirve durante una partida en curso."
+  recibido: "&d✦ Caos: &frecibiste {item}&f. Clic derecho para usarlo."
+  dado: "&aLe diste {item} &aa {jugador}."
+  uso: "&eUso: /bingo item <id> [jugador] &7({items})"
+  no_existe: "&cNo existe el ítem &f{item}&c. Hay: &f{items}"
+  no_conectado: "&cNo está conectado: &f{jugador}"
+  ninguno: "&7No hay ítems especiales en items.yml."
+  cambio: "&d⚄ {jugador} &7cambió &f{antes} &7por &f{despues}"
+  sin_cambio: "&7No quedan casillas para cambiar."
+  brujula: "&b➹ La brújula apunta a &f{bioma} &7(a {distancia} bloques)"
+  brujula_sin_bioma: "&7Ninguna casilla pendiente pide un bioma."
+  brujula_lejos: "&7No hay {biomas} a menos de {radio} bloques."
+  brujula_espera: "&7La brújula se está recalibrando: espera {segundos} s."
+  escudo: "&e◆ Escudo: ningún jugador te puede pegar por {segundos} s."
+  escudo_bloquea: "&7{jugador} tiene escudo ({segundos} s)."
 
 mapa:
   nombre: "&aBINGO HUMILDE"

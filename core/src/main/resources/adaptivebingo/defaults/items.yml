@@ -1,0 +1,33 @@
+# Ítems especiales del modo caos (config.yml: caos = cada cuántos minutos se reparte uno al azar; también se
+# dan con /bingo item <id> [jugador]). Son ítems de Minecraft marcados: no cuentan para las casillas, se usan
+# con clic derecho y solo sirven durante una partida; al terminar se quitan del inventario.
+# Después de editar: /bingo reload.
+#
+# Cada uno lleva id (minúsculas, números y _), nombre, descripcion, item (el de Minecraft: amethyst_shard) y
+# efecto:
+#   cambiar_casilla — cambia una casilla sin completar de tu cartilla por otra tarea del mismo nivel (en
+#                     lockout, en todas las cartillas). Se gasta.
+#   brujula_bioma   — apunta al bioma más cercano que pida una casilla pendiente, hasta `radio` bloques
+#                     (100–5000; 2000 si no se pone). No se gasta: se usa de nuevo para volver a apuntar.
+#   escudo_pvp      — ningún jugador te puede pegar durante `segundos` (1–600; 60 si no se pone). Se gasta.
+
+items:
+  - id: dado
+    nombre: "Dado del caos"
+    descripcion: "Cambia una casilla sin completar por otra tarea"
+    item: amethyst_shard
+    efecto: cambiar_casilla
+
+  - id: brujula
+    nombre: "Brújula del explorador"
+    descripcion: "Apunta al bioma que pide una casilla pendiente"
+    item: compass
+    efecto: brujula_bioma
+    radio: 2000
+
+  - id: escudo
+    nombre: "Escudo de la paz"
+    descripcion: "Ningún jugador te puede pegar durante 60 segundos"
+    item: heart_of_the_sea
+    efecto: escudo_pvp
+    segundos: 60

@@ -66,7 +66,7 @@ Leyenda: `[ ]` pendiente · `[x]` hecha (se marca dentro del PR que la resuelve)
   tiempo. `/bingo stats`.
 - [x] **3.2 Logros propios.** `achievements.yml` (disparador + condiciones del motor 1.5), aviso al
   desbloquear, GUI `/bingo logros`.
-- [ ] **3.3 Ítems especiales.** Ítems con `PersistentDataContainer` para un modo "Caos" (reroll de
+- [x] **3.3 Ítems especiales.** Ítems con `PersistentDataContainer` para un modo "Caos" (reroll de
   casilla, brújula al bioma, escudo anti-PvP), configurables en YAML.
 - [ ] **3.4 Conjuntos con bonus y estados.** Llevar N piezas marcadas da un efecto; `PlayerStatus`
   (velocidad, visión nocturna, sin hambre) como modificador de partida o recompensa.

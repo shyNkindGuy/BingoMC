@@ -37,14 +37,15 @@ viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
     `CatalogParser` valida todo con mensajes "archivo, tarea N: problema"; `Catalog` (listas `TaskList` +
     `Tier`, cartillas `CardSpec` con mín/máx por lista) y `CardGenerator` (semilla, sin repetidos).
     `AchievementParser` (desde la 3.2) lee `achievements.yml` con los mismos ayudantes (y las mismas
-    `condiciones`) de `CatalogParser`.
+    `condiciones`) de `CatalogParser`, y `SpecialItemParser` (desde la 3.3), `items.yml`.
   - `win/`: `WinMode` sellado (desde la 2.3: `Lines(n)`, `Blackout`, `CompleteX(n)`, `Lockout`, `TimeOnly`;
     `parse("2 lineas")`, `problemWith(tamaño)`), `WinConditionChecker` (`countLines`) y `TimeLimitWinners`
     (`winners`: más casillas y, si empatan, quien llegó antes).
   - `game/` (desde la 2.1): `Phase` (`LOBBY → COUNTDOWN → RUNNING ⇄ PAUSED → ENDED`), `GameSession` (máquina de
     estados con `begin`/`tick` por segundo/`finish`, devuelve señales `COUNTDOWN`, `STARTED`, `TIME_UP`) y
     `GameSettings` (de `config.yml`: cartilla, cuenta regresiva, duración, PvP, semilla, modo y `StartRules`:
-    dispersión, borde, limpiar inventario, kit; y `EndRules`: espera final, volver, limpiar), `ScatterPlanner`
+    dispersión, borde, limpiar inventario, kit; `EndRules`: espera final, volver, limpiar; y `ChaosRules`:
+    cada cuántos minutos un ítem especial, desde la 3.3), `Timers` (escudo, esperas), `ScatterPlanner`
     (equipos en círculo alrededor del spawn) y `GameSummary` (desde la 2.6: casillas por equipo con segundo y
     quién, y el MVP).
   - `text/Messages` (desde la 2.4): textos de `messages.yml` (claves con punto, `{variables}`, `&` → `§`,
@@ -63,17 +64,22 @@ viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
     sellada (`GameRule`: ganar, en menos de, modo, casillas en la partida, sin morir, totales; `CellRule`:
     tarea, `Condition` del motor, en menos de) y `AchievementTracker` (mira los eventos, anota en el
     `StatsBook` y publica `AchievementUnlocked` la primera vez).
+  - `item/` (desde la 3.3): `SpecialItem` (id, nombre, descripción, ítem de Minecraft, efecto), `ItemEffect`
+    sellado (`Reroll`, `BiomeCompass(radio)`, `PvpShield(segundos)`), `Reroll` (casilla pendiente al azar →
+    otra tarea de la misma lista que no esté en ninguna cartilla; `BingoCell.replaceTask`) y `BiomeTargets`
+    (biomas que piden las casillas pendientes).
 - `plugin`: `adapter/Keys` traduce `Material`/`EntityType`/`Statistic`/`Advancement` ↔ clave;
   `config/CatalogService` tiene el catálogo (carga al arrancar, `/bingo reload`) y `config/TaskAvailability`
   dice si una tarea se puede hacer en esta versión y por qué no (las que no, no salen); el resto como abajo.
 - `plugin.yml` clásico de Bukkit (no `paper-plugin.yml`). Main: `com.shyNkindguy.bingo.AdaptiveBingo`.
-- Paquete `com.shyNkindguy.bingo` del plugin: `commands/` (`/bingo start|stop|pause|map|card|stats|logros|reload|team`;
+- Paquete `com.shyNkindguy.bingo` del plugin: `commands/` (`/bingo start|stop|pause|map|card|stats|logros|item|reload|team`;
   `TeamCommand`), `config/`, `storage/StatsService` (carga `stats.yml`, suscribe el `StatsBook` a
   `BingoGame.events()` y guarda al terminar cada partida; con un error no pisa el archivo),
   `events/` (`ObjectiveListener`, `ScanQueue`, `CardUpdater`, `StatisticPoller`, `AdvancementReset`),
   `events/SessionListener` (congelar en la cuenta regresiva, PvP, entrar a mitad, chat de equipo, clics en
   `/bingo card`), `ui/` también con `Texts`, `GameBossBar`, `CardMenu` y `AchievementMenu` (los dos `ReadOnlyMenu`),
-  `AchievementAnnouncer` y `TeamColors`, `game/` (`StartActions`,
+  `AchievementAnnouncer` y `TeamColors`, `items/` (`SpecialItems`: ItemStack con PDC `adaptivebingo:especial`;
+  `ChaosDealer`), `events/SpecialItemListener` (uso con clic derecho y escudo), `game/` (`StartActions`,
   `EndActions`, `BingoGame` sobre `GameSession`, con `onStart` al terminar la cuenta y `onEnd`; `PlayerContexts`: el `EventContext`
   de cada jugador y sus muertes desde el inicio), `icon/` (+ `TaskIcons`: ícono y marca por tipo), `ui/` (mapa,
   scoreboard, paleta). Íconos: un solo sistema, `icon/IconRegistry` (por `Material`, con fallback por
@@ -143,7 +149,14 @@ momento: cuentan aunque después se detenga la partida). Se leen con `CatalogSer
 `StatsService` arma el `AchievementTracker` y guarda `stats.yml` también al desbloquear;
 `AchievementAnnouncer` avisa en el chat y con título + sonido 2 s después; `/bingo logros` abre la GUI.
 Las muertes de cada uno salen de `PlayerContexts` (`BingoGame.countDeathsWith`; desconectado = -1, no
-cuenta para `sin_morir`). `/bingo map` vuelve a dar el mapa. Bugs conocidos:
+cuenta para `sin_morir`).
+**Ítems especiales** (3.3): `items.yml` (dado, brújula, escudo) y `config.yml` `caos` (cada N minutos de juego
+un ítem al azar para cada jugador, `ChaosDealer` en `onTick`; 0 = apagado); `/bingo item <id> [jugador]`
+(`bingo.admin`). Llevan la marca PDC: el escaneo no los cuenta, al terminar se quitan y solo sirven con la
+partida en curso. Dado: `BingoGame.reroll` (en lockout cambia la tarea en todas las cartillas y en las de
+los que entren; nunca sale una de logro). Brújula: `World.locateNearestBiome` con los biomas de las
+pendientes y la apunta como lodestone, sin gastarse (espera 10 s). Escudo: `Timers` con el segundo de
+partida; `SpecialItemListener.onHit` cancela el golpe de un jugador. `/bingo map` vuelve a dar el mapa. Bugs conocidos:
 tabla de `docs/ANALISIS.md` §3.
 
 ## Convenciones

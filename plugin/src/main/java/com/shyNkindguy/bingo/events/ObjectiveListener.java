@@ -6,6 +6,7 @@ import com.shyNkindguy.bingo.core.event.EntityKilled;
 import com.shyNkindguy.bingo.core.event.InventoryScanned;
 import com.shyNkindguy.bingo.core.event.ItemObtained;
 import com.shyNkindguy.bingo.core.event.TaskEvent;
+import com.shyNkindguy.bingo.items.SpecialItems;
 import com.shyNkindguy.bingo.game.BingoGame;
 import com.shyNkindguy.bingo.ui.BingoMapManager;
 import org.bukkit.Bukkit;
@@ -44,14 +45,17 @@ public class ObjectiveListener implements Listener {
     private final BingoGame game;
     private final BingoMapManager mapManager;
     private final CardUpdater updater;
+    private final SpecialItems specialItems;
     private final ScanQueue<UUID> scanQueue = new ScanQueue<>();
 
 
-    public ObjectiveListener(Plugin plugin, BingoGame game, BingoMapManager mapManager, CardUpdater updater) {
+    public ObjectiveListener(Plugin plugin, BingoGame game, BingoMapManager mapManager, CardUpdater updater,
+                             SpecialItems specialItems) {
         this.plugin = plugin;
         this.game = game;
         this.mapManager = mapManager;
         this.updater = updater;
+        this.specialItems = specialItems;
     }
     private void requestScan(Player player) {
         if (!game.isRunning()) return;
@@ -64,11 +68,12 @@ public class ObjectiveListener implements Listener {
             }
         });
     }
-    // Cuenta cuántos tiene de cada ítem y se lo pasa a la cartilla como ItemObtained(ítem, total).
+    // Cuenta cuántos tiene de cada ítem y se lo pasa a la cartilla como ItemObtained(ítem, total). La cartilla y
+    // los ítems especiales no cuentan.
     private void scanInventory(Player player) {
         Map<Material, Integer> totals = new HashMap<>();
         for (ItemStack item : player.getInventory().getContents()) {
-            if (item == null || item.getType().isAir() || mapManager.isBingoMap(item)) continue;
+            if (item == null || item.getType().isAir() || mapManager.isBingoMap(item) || specialItems.isSpecial(item)) continue;
             totals.merge(item.getType(), item.getAmount(), Integer::sum);
         }
 

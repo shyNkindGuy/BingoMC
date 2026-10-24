@@ -1,6 +1,7 @@
 package com.shyNkindguy.bingo.core.catalog;
 
 import com.shyNkindguy.bingo.core.game.GameSettings;
+import com.shyNkindguy.bingo.core.game.ChaosRules;
 import com.shyNkindguy.bingo.core.game.EndRules;
 import com.shyNkindguy.bingo.core.game.StartRules;
 import com.shyNkindguy.bingo.core.win.WinMode;
@@ -28,7 +29,7 @@ class SettingsParserTest {
 
     @Test
     void leeTodasLasClaves() {
-        assertEquals(new GameSettings("rapida", 5, 30, false, 123L, new WinMode.Lines(2), StartRules.DEFAULT, EndRules.DEFAULT),
+        assertEquals(new GameSettings("rapida", 5, 30, false, 123L, new WinMode.Lines(2), StartRules.DEFAULT, EndRules.DEFAULT, ChaosRules.DEFAULT),
                 config("cartilla: rapida\ncuenta_regresiva: 5\nduracion: 30\npvp: false\nsemilla: 123\nmodo: 2 lineas"));
     }
 
@@ -81,5 +82,12 @@ class SettingsParserTest {
     @Test
     void elConfigPorDefectoDelJarSeLee() {
         assertEquals(GameSettings.DEFAULT, CatalogLoader.defaultSettings(CATALOGO));
+    }
+
+    @Test
+    void modoCaos() {
+        assertEquals(new ChaosRules(5), config("caos: 5").chaos());
+        assertEquals(ChaosRules.DEFAULT, config("caos: 0").chaos());
+        assertEquals("config.yml: caos: como mucho 60 minutos (vino 90)", error("caos: 90"));
     }
 }

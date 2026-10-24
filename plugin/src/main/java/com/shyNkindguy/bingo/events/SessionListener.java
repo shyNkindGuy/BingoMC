@@ -111,7 +111,7 @@ public class SessionListener implements Listener {
     }
 
     // El jugador que pegó: directo o con un proyectil (flecha, tridente…).
-    private static Player attacker(Entity damager) {
+    static Player attacker(Entity damager) {
         if (damager instanceof Player player) return player;
         if (damager instanceof Projectile projectile && projectile.getShooter() instanceof Player player) return player;
         return null;

@@ -97,8 +97,12 @@ personal, con idea de llegar a servidor. Todo en español (commits, mensajes, do
   casilla` con las condiciones del motor) leído por `AchievementParser`; `core/achievement` (`GameRule`,
   `CellRule`, `AchievementTracker` → `AchievementUnlocked`); los desbloqueados van en `stats.yml`
   (`logros:`); aviso en el chat + título (`AchievementAnnouncer`) y GUI `/bingo logros` (`AchievementMenu`,
-  `ReadOnlyMenu`). `GameEnded` lleva modo y muertes; `CellCompleted`, el `EventContext`. **Siguiente: 3.3**
-  (ítems especiales). Ver `docs/PLAN.md` para el estado al día.
+  `ReadOnlyMenu`). `GameEnded` lleva modo y muertes; `CellCompleted`, el `EventContext` (PR #27).
+- 2026-10-24 · tarea **3.3**: ítems especiales. `items.yml` (dado `cambiar_casilla`, brújula `brujula_bioma`,
+  escudo `escudo_pvp`) con `SpecialItemParser`; `core/item` (`Reroll`, `BiomeTargets`), `Timers` y
+  `ChaosRules` (`config.yml` `caos`); plugin `items/SpecialItems` (PDC), `ChaosDealer`,
+  `events/SpecialItemListener` y `/bingo item`. No cuentan en el escaneo y se quitan al terminar.
+  **Siguiente: 3.4** (conjuntos con bonus y estados). Ver `docs/PLAN.md` para el estado al día.
 
 ## Decisiones (no volver a preguntar)
 | Tema | Decisión |
