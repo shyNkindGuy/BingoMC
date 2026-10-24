@@ -49,12 +49,19 @@ viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
     lo que falte sale de los por defecto; una clave desconocida es error).
   - `team/` (desde la 2.2): `TeamColor` (10 colores, en español o inglés), `Team` (de color o `solo`) y
     `TeamRegistry` (unir/salir, `soloIfAlone` al empezar, `removeSolos` al terminar, `randomize`).
+  - `bus/` (desde la 3.1): `DomainEvents` (bus sincrónico por tipo; si un suscriptor falla, los demás lo
+    reciben igual) y `DomainEvent` sellado: `CellCompleted(equipo, jugador, tarea, segundo)` y
+    `GameEnded(segundos, aborted, equipos ganadores, participantes)`.
+  - `stats/` (desde la 3.1): `PlayerStats` (partidas, victorias, casillas, victoria más rápida), `StatsBook`
+    (al día con los eventos; las partidas detenidas no cuentan) y `StatsRepository` →
+    `YamlStatsRepository` (`stats.yml` por UUID, validado al leer, se guarda con archivo temporal + move).
 - `plugin`: `adapter/Keys` traduce `Material`/`EntityType`/`Statistic`/`Advancement` ↔ clave;
   `config/CatalogService` tiene el catálogo (carga al arrancar, `/bingo reload`) y `config/TaskAvailability`
   dice si una tarea se puede hacer en esta versión y por qué no (las que no, no salen); el resto como abajo.
 - `plugin.yml` clásico de Bukkit (no `paper-plugin.yml`). Main: `com.shyNkindguy.bingo.AdaptiveBingo`.
-- Paquete `com.shyNkindguy.bingo` del plugin: `commands/` (`/bingo start|stop|map|reload|team`;
-  `TeamCommand`), `config/`,
+- Paquete `com.shyNkindguy.bingo` del plugin: `commands/` (`/bingo start|stop|pause|map|card|stats|reload|team`;
+  `TeamCommand`), `config/`, `storage/StatsService` (carga `stats.yml`, suscribe el `StatsBook` a
+  `BingoGame.events()` y guarda al terminar cada partida; con un error no pisa el archivo),
   `events/` (`ObjectiveListener`, `ScanQueue`, `CardUpdater`, `StatisticPoller`, `AdvancementReset`),
   `events/SessionListener` (congelar en la cuenta regresiva, PvP, entrar a mitad, chat de equipo, clics en
   `/bingo card`), `ui/` también con `Texts`, `GameBossBar`, `CardMenu` y `TeamColors`, `game/` (`StartActions`,
@@ -116,7 +123,11 @@ entre los que más tengan (`TimeLimitWinners`). `/bingo stop` la detiene. Toda p
 y quién la completó) y el MVP; `game/EndActions` tira fuegos artificiales del color del equipo ganador
 durante `espera_final` segundos (10) y después, si `volver_al_terminar`, devuelve a cada jugador a donde
 estaba al empezar (`StartActions.origins`) y, si `limpiar_al_terminar`, vacía los inventarios de quienes
-jugaron. Repartir una partida nueva cancela lo pendiente. `/bingo map` vuelve a dar el mapa. Bugs conocidos:
+jugaron. Repartir una partida nueva cancela lo pendiente.
+**Estadísticas** (3.1): `BingoGame` publica `CellCompleted` al completar una casilla y `GameEnded` en
+`finish` (con `/bingo stop`, `aborted`); `StatsService` las suma en `plugins/AdaptiveBingo/stats.yml` y
+`/bingo stats [jugador]` (para todos) muestra partidas, victorias y %, casillas y promedio, y la victoria
+más rápida. `/bingo map` vuelve a dar el mapa. Bugs conocidos:
 tabla de `docs/ANALISIS.md` §3.
 
 ## Convenciones

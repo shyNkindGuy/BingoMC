@@ -68,7 +68,7 @@ BingoMC/
 │       ├── win/                 WinMode: Lines, Blackout, Lockout, CompleteX, TimeOnly (2.3 ✔)
 │       ├── game/                GameSession, Phase (LOBBY, COUNTDOWN, RUNNING, ENDED), GameSettings (2.1 ✔)
 │       ├── team/                Team, TeamColor, TeamRegistry (2.2 ✔)
-│       ├── bus/                 DomainEvents (CellCompleted, GameEnded, TeamEliminated)
+│       ├── bus/                 DomainEvents (CellCompleted, GameEnded) (3.1 ✔)
 │       └── meta/                (Fase 3) PlayerProfile, Achievement, ItemSet, PlayerStatus
 └── plugin/                      Paper 1.21.11 · depende de core
     └── com.shyNkindguy.bingo
@@ -79,7 +79,7 @@ BingoMC/
         ├── adapter/             Keys (Material ↔ "minecraft:..."), Teleport, WorldBorder
         ├── ui/map/              BingoMapRenderer (contextual), MapManager, icon/
         ├── ui/                  CardMenu (GUI), ScoreboardView, BossBarView, Feedback (títulos/sonidos)
-        └── storage/             (Fase 3) StatsRepository: YAML → SQLite
+        └── storage/             StatsService (3.1 ✔; StatsRepository YAML en core/stats, SQLite después)
 ```
 
 Desde la tarea 1.1 el repo ya tiene esta forma: `core/` (hoy `task/`, `event/`, `progress/`, `card/`,

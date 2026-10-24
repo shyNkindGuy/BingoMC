@@ -3,7 +3,7 @@
 # la de por defecto. Después de editar, /bingo reload.
 
 comando:
-  uso: "&eUso: /bingo <start [cartilla] [semilla]|stop|pause|map|card|reload|team>"
+  uso: "&eUso: /bingo <start [cartilla] [semilla]|stop|pause|map|card|stats [jugador]|reload|team>"
   sin_permiso_iniciar: "&cNo tienes permiso para iniciar el Bingo."
   sin_permiso_detener: "&cNo tienes permiso para detener el Bingo."
   sin_permiso_recargar: "&cNo tienes permiso para recargar el Bingo."
@@ -84,6 +84,15 @@ recarga:
   error: "&cNo se recargó: &f{error}"
   sigue: "&7Siguen las tareas de antes."
   kit: "&ekit: {item} no existe en esta versión y no se va a dar"
+
+estadisticas:
+  titulo: "&6&lBingo · &f{jugador}"
+  partidas: "&7Partidas: &f{partidas} &7· victorias: &f{victorias} &7({porcentaje}%)"
+  casillas: "&7Casillas completadas: &f{casillas} &7({promedio} por partida)"
+  mejor_tiempo: "&7Victoria más rápida: &f{tiempo}"
+  sin_victorias: "&7Todavía sin victorias."
+  sin_datos: "&7{jugador} todavía no terminó ninguna partida."
+  uso_consola: "&eDesde la consola: /bingo stats <jugador>"
 
 mapa:
   nombre: "&aBINGO HUMILDE"

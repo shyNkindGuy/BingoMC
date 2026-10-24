@@ -12,6 +12,8 @@ import com.shyNkindguy.bingo.game.BingoGame;
 import com.shyNkindguy.bingo.game.EndActions;
 import com.shyNkindguy.bingo.game.PlayerContexts;
 import com.shyNkindguy.bingo.game.StartActions;
+import com.shyNkindguy.bingo.core.stats.YamlStatsRepository;
+import com.shyNkindguy.bingo.storage.StatsService;
 import com.shyNkindguy.bingo.ui.BingoMapManager;
 import com.shyNkindguy.bingo.ui.GameBossBar;
 import com.shyNkindguy.bingo.ui.BingoScoreBoard;
@@ -31,6 +33,8 @@ public final class AdaptiveBingo extends JavaPlugin {
         CatalogService catalogs = new CatalogService(this, TaskAvailability.ofServer());
         catalogs.load();
         game = new BingoGame(this);
+        StatsService stats = new StatsService(getLogger(), new YamlStatsRepository(getDataFolder().toPath()));
+        stats.start(game.events());
         scoreboard = new BingoScoreBoard(game);
         mapManager = new BingoMapManager(this, game);
         PlayerContexts contexts = new PlayerContexts();
@@ -63,7 +67,7 @@ public final class AdaptiveBingo extends JavaPlugin {
                 this
         );
         Bukkit.getPluginManager().registerEvents(new SessionListener(this, game, mapManager, scoreboard, startActions), this);
-        BingoCommand command = new BingoCommand(game, scoreboard, mapManager, catalogs);
+        BingoCommand command = new BingoCommand(game, scoreboard, mapManager, catalogs, stats);
         PluginCommand bingo = getCommand("bingo");
         bingo.setExecutor(command);
         bingo.setTabCompleter(command);

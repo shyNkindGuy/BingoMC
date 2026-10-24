@@ -88,8 +88,11 @@ personal, con idea de llegar a servidor. Todo en español (commits, mensajes, do
   quién —`BingoCell.completedBy`—, MVP) y `EndRules` (`config.yml` `espera_final`, `volver_al_terminar`,
   `limpiar_al_terminar`); `BingoGame.finish(ganadores)` manda el resumen; `game/EndActions`: fuegos
   artificiales del color del ganador, vuelta a donde empezó cada uno (`StartActions.origins`) y limpieza.
-  **Fase 2 completa. Siguiente: 3.1** (eventos de dominio + estadísticas). Ver `docs/PLAN.md` para el
-  estado al día.
+  **Fase 2 completa** (PR #25).
+- 2026-10-24 · tarea **3.1**: `core/bus` (`DomainEvents`, `CellCompleted`, `GameEnded`) publicados por
+  `BingoGame`; `core/stats` (`PlayerStats`, `StatsBook`, `YamlStatsRepository` → `stats.yml` validado);
+  plugin `storage/StatsService` (no pisa un `stats.yml` roto) y `/bingo stats [jugador]`. Las partidas
+  detenidas no cuentan. **Siguiente: 3.2** (logros propios). Ver `docs/PLAN.md` para el estado al día.
 
 ## Decisiones (no volver a preguntar)
 | Tema | Decisión |
