@@ -6,6 +6,7 @@ import com.shyNkindguy.bingo.core.card.BingoCell;
 import com.shyNkindguy.bingo.core.event.EventContext;
 import com.shyNkindguy.bingo.core.event.TaskEvent;
 import com.shyNkindguy.bingo.core.game.GameSession;
+import com.shyNkindguy.bingo.core.game.GameSummary;
 import com.shyNkindguy.bingo.core.game.GameSettings;
 import com.shyNkindguy.bingo.core.game.Phase;
 import com.shyNkindguy.bingo.core.progress.ProgressResult;
@@ -14,6 +15,8 @@ import com.shyNkindguy.bingo.core.task.Task;
 import com.shyNkindguy.bingo.core.team.Team;
 import com.shyNkindguy.bingo.core.team.TeamRegistry;
 import com.shyNkindguy.bingo.core.win.TimeLimitWinners;
+import com.shyNkindguy.bingo.ui.GameBossBar;
+import com.shyNkindguy.bingo.ui.TeamColors;
 import com.shyNkindguy.bingo.ui.Texts;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -33,6 +36,8 @@ public class BingoGame {
     private final TeamRegistry<UUID> teams = new TeamRegistry<>();
     private final Map<String, BingoCard> cards = new HashMap<>(); // id del equipo → cartilla
     private final Set<UUID> participants = new HashSet<>();
+    private List<Team> lastWinners = List.of();
+    private Set<UUID> lastParticipants = Set.of();
     private final List<Runnable> startListeners = new ArrayList<>();
     private final List<Runnable> endListeners = new ArrayList<>();
     private final List<Runnable> tickListeners = new ArrayList<>();
@@ -243,6 +248,10 @@ public class BingoGame {
             scores.add(new TimeLimitWinners.Score(name, card.countCompleted(), lastCompletedAt(card)));
         }
         List<String> leaders = TimeLimitWinners.winners(scores);
+        List<Team> winners = new ArrayList<>();
+        for (Team team : teamCards().keySet()) {
+            if (leaders.contains(describe(team))) winners.add(team);
+        }
 
         Bukkit.broadcastMessage(reason);
         if (leaders.isEmpty()) {
@@ -255,10 +264,45 @@ public class BingoGame {
             }
             Bukkit.broadcastMessage(Texts.get("puntos.casillas", "casillas", completedByTeam.get(leaders.get(0))));
         }
-
-        finish();
+        finish(winners);
     }
 
+    // Los que ganaron la última partida (vacío si se detuvo o nadie completó nada) y quiénes jugaron: para el
+    // festejo y lo que pasa al terminar (EndActions).
+    public List<Team> lastWinners() {
+        return lastWinners;
+    }
+
+    public Set<UUID> lastParticipants() {
+        return lastParticipants;
+    }
+
+    // En el chat, al terminar: cada equipo con sus casillas (las de los ganadores, una por una con el tiempo
+    // y quién) y el MVP.
+    private void broadcastSummary(List<Team> winners) {
+        Map<String, BingoCard> byTeam = new LinkedHashMap<>();
+        Map<String, Team> teamOfLabel = new HashMap<>();
+        for (Map.Entry<Team, BingoCard> entry : teamCards().entrySet()) {
+            String label = TeamColors.chat(entry.getKey().color()) + describe(entry.getKey());
+            byTeam.put(label, entry.getValue());
+            teamOfLabel.put(label, entry.getKey());
+        }
+        GameSummary summary = GameSummary.of(byTeam);
+        if (summary.teams().stream().allMatch(result -> result.completed() == 0)) return;
+
+        Bukkit.broadcastMessage(Texts.get("resumen.titulo"));
+        for (GameSummary.TeamResult result : summary.teams()) {
+            Bukkit.broadcastMessage(Texts.get("resumen.equipo", "equipo", result.team(), "casillas", result.completed()));
+            if (!winners.contains(teamOfLabel.get(result.team()))) continue;
+            for (GameSummary.Completion cell : result.cells()) {
+                Bukkit.broadcastMessage(Texts.get("resumen.casilla", "tiempo", GameBossBar.clock(Math.max(0, cell.second())),
+                        "tarea", cell.task(), "jugador", cell.by() == null ? "—" : cell.by()));
+            }
+        }
+        if (summary.mvp() != null) {
+            Bukkit.broadcastMessage(Texts.get("resumen.mvp", "jugador", summary.mvp(), "casillas", summary.mvpCells()));
+        }
+    }
 
     private static int lastCompletedAt(BingoCard card) {
         int last = -1;
@@ -329,7 +373,7 @@ public class BingoGame {
         Bukkit.broadcastMessage(Texts.get("partida.ganador", "ganador", who));
         Bukkit.broadcastMessage(Texts.get("partida.tiempo", "tiempo", getElapsedTime()));
 
-        finish();
+        finish(teams.teamOf(winner.getUniqueId()).map(List::of).orElse(List.of()));
     }
 
     // También durante la cuenta regresiva.
@@ -337,16 +381,19 @@ public class BingoGame {
         if (!session.inGame()) return false;
 
         Bukkit.broadcastMessage(Texts.get("partida.detenida", "quien", stoppedBy));
-        finish();
+        finish(List.of());
         return true;
     }
 
-    private void finish() {
+    private void finish(List<Team> winners) {
         if (clock != null) {
             clock.cancel();
             clock = null;
         }
         session.finish();
+        broadcastSummary(winners);
+        lastWinners = List.copyOf(winners);
+        lastParticipants = Set.copyOf(participants);
         endListeners.forEach(Runnable::run);
         cards.clear();
         participants.clear();
@@ -363,7 +410,7 @@ public class BingoGame {
         ProgressResult result = ProgressTracker.apply(cards.get(team.get().id()), event, context);
         for (BingoCell cell : result.advanced()) {
             if (!cell.isCompleted()) continue;
-            cell.markCompletedAt(session.elapsedSeconds());
+            cell.markCompleted(session.elapsedSeconds(), player.getName());
             if (!settings.mode().lockout()) continue;
             for (Map.Entry<String, BingoCard> other : cards.entrySet()) {
                 if (!other.getKey().equals(team.get().id())) lock(other.getValue(), cell.getTask().id(), team.get().id());

@@ -1,6 +1,7 @@
 package com.shyNkindguy.bingo.core.catalog;
 
 import com.shyNkindguy.bingo.core.game.GameSettings;
+import com.shyNkindguy.bingo.core.game.EndRules;
 import com.shyNkindguy.bingo.core.game.StartRules;
 import com.shyNkindguy.bingo.core.win.WinMode;
 import org.junit.jupiter.api.Test;
@@ -27,7 +28,7 @@ class SettingsParserTest {
 
     @Test
     void leeTodasLasClaves() {
-        assertEquals(new GameSettings("rapida", 5, 30, false, 123L, new WinMode.Lines(2), StartRules.DEFAULT),
+        assertEquals(new GameSettings("rapida", 5, 30, false, 123L, new WinMode.Lines(2), StartRules.DEFAULT, EndRules.DEFAULT),
                 config("cartilla: rapida\ncuenta_regresiva: 5\nduracion: 30\npvp: false\nsemilla: 123\nmodo: 2 lineas"));
     }
 
@@ -68,6 +69,13 @@ class SettingsParserTest {
         assertTrue(error("kit:\n  - { item: bread, cantidad: 0 }").contains("mayor que 0"));
         assertTrue(error("kit:\n  - { cantidad: 2 }").contains("falta item"));
         assertTrue(error("kit:\n  - { item: bread, nombre: Pan }").contains("no conozco \"nombre\""));
+    }
+
+    @Test
+    void reglasDeFin() {
+        assertEquals(new EndRules(true, true, 30),
+                config("volver_al_terminar: true\nlimpiar_al_terminar: true\nespera_final: 30").end());
+        assertTrue(error("espera_final: 500").contains("como mucho 120"));
     }
 
     @Test

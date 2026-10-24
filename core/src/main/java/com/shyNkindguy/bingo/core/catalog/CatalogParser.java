@@ -8,6 +8,7 @@ import com.shyNkindguy.bingo.core.condition.InBiome;
 import com.shyNkindguy.bingo.core.condition.InDimension;
 import com.shyNkindguy.bingo.core.condition.NoDeath;
 import com.shyNkindguy.bingo.core.condition.TimeOfDay;
+import com.shyNkindguy.bingo.core.game.EndRules;
 import com.shyNkindguy.bingo.core.game.GameSettings;
 import com.shyNkindguy.bingo.core.game.StartRules;
 import com.shyNkindguy.bingo.core.win.WinMode;
@@ -67,7 +68,8 @@ public final class CatalogParser {
     private static final Set<String> CARD_KEYS = Set.of("tamaño", "tamano", "listas");
     private static final Set<String> QUOTA_KEYS = Set.of("min", "max");
     private static final Set<String> SETTINGS_KEYS = Set.of("cartilla", "cuenta_regresiva", "duracion", "pvp",
-            "semilla", "modo", "dispersion", "borde", "limpiar_inventario", "kit");
+            "semilla", "modo", "dispersion", "borde", "limpiar_inventario", "kit",
+            "espera_final", "volver_al_terminar", "limpiar_al_terminar");
     private static final Set<String> KIT_KEYS = Set.of("item", "cantidad");
 
     private CatalogParser() {
@@ -402,7 +404,22 @@ public final class CatalogParser {
             String problem = mode.problemWith(catalog.cards().get(card).size());
             if (problem != null) throw error(file + ": modo", mode.description() + " no se puede: " + problem);
         }
-        return new GameSettings(card, countdown, duration, pvp, seed, mode, startRules(file, map));
+        return new GameSettings(card, countdown, duration, pvp, seed, mode, startRules(file, map), endRules(file, map));
+    }
+
+    // espera_final, volver_al_terminar y limpiar_al_terminar: cómo termina la partida.
+    private static EndRules endRules(String file, Map<String, Object> map) {
+        EndRules defaults = EndRules.DEFAULT;
+        int wait = map.containsKey("espera_final")
+                ? nonNegative(map.get("espera_final"), file + ": espera_final") : defaults.waitSeconds();
+        if (wait > EndRules.MAX_WAIT) {
+            throw error(file + ": espera_final", "como mucho " + EndRules.MAX_WAIT + " segundos (vino " + wait + ")");
+        }
+        boolean back = map.containsKey("volver_al_terminar")
+                ? yesNo(map.get("volver_al_terminar"), file + ": volver_al_terminar") : defaults.returnToOrigin();
+        boolean clear = map.containsKey("limpiar_al_terminar")
+                ? yesNo(map.get("limpiar_al_terminar"), file + ": limpiar_al_terminar") : defaults.clearInventory();
+        return new EndRules(back, clear, wait);
     }
 
     // dispersion, borde, limpiar_inventario y kit: cómo empieza la partida.

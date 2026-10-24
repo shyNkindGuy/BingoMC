@@ -66,7 +66,7 @@ public class GameBossBar {
     }
 
     // 754 → "12:34"; con horas, "1:02:03".
-    static String clock(int seconds) {
+    public static String clock(int seconds) {
         int hours = seconds / 3600;
         int minutes = seconds % 3600 / 60;
         int secs = seconds % 60;

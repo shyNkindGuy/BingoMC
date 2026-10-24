@@ -29,8 +29,8 @@ viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
   - `progress/`: `TaskProgress(current, target)` inmutable que solo sube, `ProgressTracker.apply(cartilla,
     evento)` → `ProgressResult` (casillas que avanzaron y tareas completadas) y `StatisticBaseline`
     (valor al empezar por jugador).
-  - `card/`: `BingoCard` N×N de `BingoCell` (tarea + progreso + `completedAt` para desempatar + `lockedBy`
-    en lockout; `ProgressTracker` saltea las bloqueadas).
+  - `card/`: `BingoCard` N×N de `BingoCell` (tarea + progreso + `completedAt` para desempatar y `completedBy`
+    para el resumen + `lockedBy` en lockout; `ProgressTracker` saltea las bloqueadas).
   - `catalog/` (desde la 1.3): `CatalogLoader` lee `cards.yml` + `tasks/*.yml` de una carpeta o los por
     defecto del `.jar` (`core/src/main/resources/adaptivebingo/defaults/`, 67 tareas de todos los tipos en
     `basicos` D, `medios` C y `dificiles` A; cartillas `normal` 5×5 y `rapida` 3×3) y los copia la primera vez;
@@ -42,7 +42,9 @@ viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
   - `game/` (desde la 2.1): `Phase` (`LOBBY → COUNTDOWN → RUNNING ⇄ PAUSED → ENDED`), `GameSession` (máquina de
     estados con `begin`/`tick` por segundo/`finish`, devuelve señales `COUNTDOWN`, `STARTED`, `TIME_UP`) y
     `GameSettings` (de `config.yml`: cartilla, cuenta regresiva, duración, PvP, semilla, modo y `StartRules`:
-    dispersión, borde, limpiar inventario, kit) y `ScatterPlanner` (equipos en círculo alrededor del spawn).
+    dispersión, borde, limpiar inventario, kit; y `EndRules`: espera final, volver, limpiar), `ScatterPlanner`
+    (equipos en círculo alrededor del spawn) y `GameSummary` (desde la 2.6: casillas por equipo con segundo y
+    quién, y el MVP).
   - `text/Messages` (desde la 2.4): textos de `messages.yml` (claves con punto, `{variables}`, `&` → `§`,
     lo que falte sale de los por defecto; una clave desconocida es error).
   - `team/` (desde la 2.2): `TeamColor` (10 colores, en español o inglés), `Team` (de color o `solo`) y
@@ -55,8 +57,8 @@ viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
   `TeamCommand`), `config/`,
   `events/` (`ObjectiveListener`, `ScanQueue`, `CardUpdater`, `StatisticPoller`, `AdvancementReset`),
   `events/SessionListener` (congelar en la cuenta regresiva, PvP, entrar a mitad, chat de equipo, clics en
-  `/bingo card`), `ui/` también con `Texts`, `GameBossBar`, `CardMenu` y `TeamColors`, `game/` (`BingoGame`
-  sobre `GameSession`, con `onStart` al terminar la cuenta y `onEnd`; `PlayerContexts`: el `EventContext`
+  `/bingo card`), `ui/` también con `Texts`, `GameBossBar`, `CardMenu` y `TeamColors`, `game/` (`StartActions`,
+  `EndActions`, `BingoGame` sobre `GameSession`, con `onStart` al terminar la cuenta y `onEnd`; `PlayerContexts`: el `EventContext`
   de cada jugador y sus muertes desde el inicio), `icon/` (+ `TaskIcons`: ícono y marca por tipo), `ui/` (mapa,
   scoreboard, paleta). Íconos: un solo sistema, `icon/IconRegistry` (por `Material`, con fallback por
   categoría) + `icon/IconRenderer` (escala entera que entra en la casilla, centrado; dibuja sobre un
@@ -107,8 +109,14 @@ bloquea con una cruz roja; gana más de la mitad o, sin casillas libres, el que 
 terminar la `duracion` de `config.yml` (20 min; 0 = sin límite), el que tenga más casillas (desempata
 quien llegó antes) o empate
 entre los que más tengan (`TimeLimitWinners`). `/bingo stop` la detiene. Toda partida termina por
-`BingoGame.finish()`: cancela el timer, corre los `onEnd` (scoreboard principal de vuelta y mapas
-quitados del inventario) y borra las cartillas. `/bingo map` vuelve a dar el mapa. Bugs conocidos:
+`BingoGame.finish(ganadores)`: cancela el timer, manda el resumen al chat, guarda `lastWinners` y
+`lastParticipants`, corre los `onEnd` (scoreboard principal de vuelta, mapas quitados del inventario y
+`EndActions`) y borra las cartillas.
+**Fin** (2.6): el resumen lista cada equipo con sus casillas (las de los ganadores una por una con el tiempo
+y quién la completó) y el MVP; `game/EndActions` tira fuegos artificiales del color del equipo ganador
+durante `espera_final` segundos (10) y después, si `volver_al_terminar`, devuelve a cada jugador a donde
+estaba al empezar (`StartActions.origins`) y, si `limpiar_al_terminar`, vacía los inventarios de quienes
+jugaron. Repartir una partida nueva cancela lo pendiente. `/bingo map` vuelve a dar el mapa. Bugs conocidos:
 tabla de `docs/ANALISIS.md` §3.
 
 ## Convenciones
