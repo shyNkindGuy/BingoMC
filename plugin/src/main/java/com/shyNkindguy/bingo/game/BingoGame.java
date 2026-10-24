@@ -14,6 +14,7 @@ import com.shyNkindguy.bingo.core.task.Task;
 import com.shyNkindguy.bingo.core.team.Team;
 import com.shyNkindguy.bingo.core.team.TeamRegistry;
 import com.shyNkindguy.bingo.core.win.TimeLimitWinners;
+import com.shyNkindguy.bingo.ui.Texts;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -34,6 +35,7 @@ public class BingoGame {
     private final Set<UUID> participants = new HashSet<>();
     private final List<Runnable> startListeners = new ArrayList<>();
     private final List<Runnable> endListeners = new ArrayList<>();
+    private final List<Runnable> tickListeners = new ArrayList<>();
     private List<Task> tasks = List.of();
     private GameSettings settings = GameSettings.DEFAULT;
     private BukkitTask clock;
@@ -50,6 +52,11 @@ public class BingoGame {
     // Se ejecuta cada vez que termina una partida (bingo, tiempo agotado o /bingo stop).
     public void onEnd(Runnable listener) {
         endListeners.add(listener);
+    }
+
+    // Se ejecuta cada segundo mientras hay partida (también en la cuenta regresiva), y al empezar.
+    public void onTick(Runnable listener) {
+        tickListeners.add(listener);
     }
 
     // Reparte las cartillas y empieza la cuenta regresiva: las cartillas se ven desde ya, pero nada cuenta
@@ -140,6 +147,10 @@ public class BingoGame {
         return online(teams.members(team.get()));
     }
 
+    public Optional<Team> teamById(String id) {
+        return teamCards().keySet().stream().filter(team -> team.id().equals(id)).findFirst();
+    }
+
     // Los equipos que juegan esta partida y su cartilla, en el orden en que se armaron.
     public Map<Team, BingoCard> teamCards() {
         Map<Team, BingoCard> result = new LinkedHashMap<>();
@@ -164,23 +175,39 @@ public class BingoGame {
             case COUNTDOWN -> {
                 int left = session.countdownLeft();
                 for (Player player : playersInGame()) {
-                    player.sendTitle("§e" + left, "§7El bingo empieza en…", 0, 25, 5);
+                    player.sendTitle(Texts.get("cuenta.titulo", "segundos", left), Texts.get("cuenta.subtitulo"), 0, 25, 5);
                 }
             }
             case STARTED -> {
                 for (Player player : playersInGame()) {
-                    player.sendTitle("§a¡YA!", "§7Gana: " + settings.mode().description(), 0, 30, 10);
+                    player.sendTitle(Texts.get("cuenta.ya_titulo"),
+                            Texts.get("cuenta.ya_subtitulo", "modo", settings.mode().description()), 0, 30, 10);
                 }
-                Bukkit.broadcastMessage("§a§l¡A JUGAR!");
+                Bukkit.broadcastMessage(Texts.get("cuenta.a_jugar"));
                 startListeners.forEach(Runnable::run);
             }
-            case TIME_UP -> endByPoints("§c⏱ Tiempo agotado");
+            case TIME_UP -> endByPoints(Texts.get("puntos.tiempo_agotado"));
             case NONE -> {
             }
         }
+        if (session.inGame()) tickListeners.forEach(Runnable::run);
     }
 
-    private List<Player> playersInGame() {
+    public int countdownLeft() {
+        return session.countdownLeft();
+    }
+
+    public int elapsedSeconds() {
+        return session.elapsedSeconds();
+    }
+
+    // 0 = sin límite.
+    public int durationSeconds() {
+        return session.durationSeconds();
+    }
+
+    // Los jugadores conectados que están jugando (con cartilla).
+    public List<Player> playersInGame() {
         List<Player> players = new ArrayList<>();
         for (Team team : teamCards().keySet()) players.addAll(online(teams.members(team)));
         return players;
@@ -212,14 +239,14 @@ public class BingoGame {
 
         Bukkit.broadcastMessage(reason);
         if (leaders.isEmpty()) {
-            Bukkit.broadcastMessage("§7Nadie completó casillas.");
+            Bukkit.broadcastMessage(Texts.get("puntos.nadie"));
         } else {
             if (leaders.size() == 1) {
-                Bukkit.broadcastMessage("§eGanador: §a" + leaders.get(0));
+                Bukkit.broadcastMessage(Texts.get("puntos.ganador", "ganador", leaders.get(0)));
             } else {
-                Bukkit.broadcastMessage("§eEmpate entre: §a" + String.join("§e, §a", leaders));
+                Bukkit.broadcastMessage(Texts.get("puntos.empate", "ganadores", String.join(", ", leaders)));
             }
-            Bukkit.broadcastMessage("§7Objetivos: §f" + completedByTeam.get(leaders.get(0)));
+            Bukkit.broadcastMessage(Texts.get("puntos.casillas", "casillas", completedByTeam.get(leaders.get(0))));
         }
 
         finish();
@@ -266,9 +293,12 @@ public class BingoGame {
 
     public void end(Player winner) {
         String who = teams.teamOf(winner.getUniqueId()).map(this::describe).orElse(winner.getName());
-        Bukkit.broadcastMessage("§6§lBINGO!");
-        Bukkit.broadcastMessage(who + " §ese los papeó :v§a");
-        Bukkit.broadcastMessage("§7Tiempo: §f" + getElapsedTime());
+        Bukkit.broadcastMessage(Texts.get("partida.bingo"));
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            player.playSound(player.getLocation(), "minecraft:ui.toast.challenge_complete", 1f, 1f);
+        }
+        Bukkit.broadcastMessage(Texts.get("partida.ganador", "ganador", who));
+        Bukkit.broadcastMessage(Texts.get("partida.tiempo", "tiempo", getElapsedTime()));
 
         finish();
     }
@@ -277,7 +307,7 @@ public class BingoGame {
     public boolean stop(String stoppedBy) {
         if (!session.inGame()) return false;
 
-        Bukkit.broadcastMessage("§c§lBINGO DETENIDO §7por " + stoppedBy);
+        Bukkit.broadcastMessage(Texts.get("partida.detenida", "quien", stoppedBy));
         finish();
         return true;
     }

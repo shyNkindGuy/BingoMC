@@ -18,6 +18,12 @@ public record InBiome(Set<String> biomes) implements Condition {
     }
 
     @Override
+    public String description() {
+        return "en el bioma " + String.join(" o ", new TreeSet<>(biomes).stream()
+                .map(biome -> biome.startsWith("minecraft:") ? biome.substring("minecraft:".length()) : biome).toList());
+    }
+
+    @Override
     public String key() {
         return "bioma=" + String.join(",", new TreeSet<>(biomes));
     }

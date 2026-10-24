@@ -9,7 +9,7 @@ import com.shyNkindguy.bingo.game.PlayerContexts;
 import com.shyNkindguy.bingo.ui.BingoMapManager;
 import com.shyNkindguy.bingo.ui.BingoScoreBoard;
 import com.shyNkindguy.bingo.ui.TeamColors;
-import org.bukkit.Bukkit;
+import com.shyNkindguy.bingo.ui.Texts;
 import org.bukkit.entity.Player;
 
 import java.util.List;
@@ -30,16 +30,25 @@ public class CardUpdater {
         this.contexts = contexts;
     }
 
-    // Lockout: a los demás se les avisa qué casilla perdieron.
-    private void announceClaim(Player player, Task task) {
+    // A los demás jugadores de la partida, con el color del equipo: qué completó (en lockout, qué casilla
+    // perdieron ellos).
+    private void announce(Player player, Task task, boolean lockout) {
         game.teamInGame(player).ifPresent(owner -> {
+            String team = TeamColors.chat(owner.color()) + owner.label();
+            String message = lockout
+                    ? Texts.get("progreso.lockout", "equipo", team, "tarea", task.displayName())
+                    : Texts.get("progreso.anuncio", "equipo", team, "tarea", task.displayName(),
+                    "casillas", game.getProgress(player.getUniqueId()), "total", cellsOf(player));
             List<Player> mates = game.teammates(player);
-            for (Player other : Bukkit.getOnlinePlayers()) {
-                if (mates.contains(other) || game.getCard(other) == null) continue;
-                other.sendMessage("§7[Lockout] " + TeamColors.chat(owner.color()) + owner.label()
-                        + " §7se quedó con §f" + task.displayName());
+            for (Player other : game.playersInGame()) {
+                if (!mates.contains(other)) other.sendMessage(message);
             }
         });
+    }
+
+    private int cellsOf(Player player) {
+        int size = game.getCard(player).getSize();
+        return size * size;
     }
 
     public void apply(Player player, List<? extends TaskEvent> events) {
@@ -53,9 +62,14 @@ public class CardUpdater {
             ProgressResult result = game.applyEvent(player, event, context);
             changed |= result.changed();
             for (Task task : result.completed()) {
-                String by = team.size() > 1 ? " §7(" + player.getName() + ")" : "";
-                team.forEach(mate -> mate.sendMessage("§a✔ Objetivo completado: §f" + task.displayName() + by));
-                if (lockout) announceClaim(player, task);
+                String by = team.size() > 1 ? Texts.get("progreso.por", "jugador", player.getName()) : "";
+                for (Player mate : team) {
+                    mate.sendMessage(Texts.get("progreso.completado", "tarea", task.displayName(), "por", by));
+                    mate.sendTitle(Texts.get("progreso.titulo"), Texts.get("progreso.subtitulo", "tarea", task.displayName()),
+                            0, 30, 10);
+                    mate.playSound(mate.getLocation(), "minecraft:entity.player.levelup", 1f, 1.2f);
+                }
+                announce(player, task, lockout);
             }
         }
         if (!changed) return;
@@ -69,7 +83,7 @@ public class CardUpdater {
         if (game.checkWin(player)) {
             game.end(player);
         } else if (game.allClaimed()) {
-            game.endByPoints("§eNo quedan casillas libres");
+            game.endByPoints(Texts.get("puntos.sin_libres"));
         }
     }
 }

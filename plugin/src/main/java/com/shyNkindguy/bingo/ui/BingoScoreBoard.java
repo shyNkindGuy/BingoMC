@@ -4,15 +4,21 @@ import com.shyNkindguy.bingo.core.card.BingoCard;
 import com.shyNkindguy.bingo.core.team.Team;
 import com.shyNkindguy.bingo.game.BingoGame;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.*;
 import java.util.*;
 
-// El scoreboard lateral de cada jugador: su equipo, sus casillas y la tabla de equipos (los primeros
-// MAX_TEAMS), con los nombres de los jugadores pintados del color de su equipo.
+// El scoreboard lateral de cada jugador: su equipo, sus casillas, cómo se gana y la tabla de equipos (los
+// primeros MAX_TEAMS), con los nombres de los jugadores pintados del color de su equipo. Sin parpadeo: cada
+// línea es una entrada fija e invisible ("§0", "§1"…) y el texto va en el prefijo de un Team, así que
+// actualizar es cambiar prefijos, no borrar y volver a escribir.
 public class BingoScoreBoard {
         private static final int MAX_TEAMS = 8;
         private static final String TAG_PREFIX = "bingo";
+        private static final String LINE_PREFIX = "linea";
+        private static final String[] ENTRIES = Arrays.stream(ChatColor.values()).limit(15)
+                .map(color -> color + "§r").toArray(String[]::new);
 
         private final BingoGame game;
         private final ScoreboardManager manager;
@@ -28,7 +34,7 @@ public class BingoScoreBoard {
             Objective objective = board.registerNewObjective(
                     "bingo",
                         Criteria.DUMMY,
-                    "§a§lBINGO - shyNkindev"
+                    Texts.get("marcador.titulo")
             );
             objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 
@@ -64,29 +70,45 @@ public class BingoScoreBoard {
             objectives.clear();
         }
         public void update(Player player, Scoreboard board, Objective objective){
-            board.getEntries().forEach(board::resetScores);
-            int line = 15;
-            objective.getScore("§7──────────").setScore(line--);
+            List<String> lines = lines(player);
+            for (int i = 0; i < ENTRIES.length; i++) {
+                String entry = ENTRIES[i];
+                if (i >= lines.size()) {
+                    board.resetScores(entry);
+                    continue;
+                }
+                org.bukkit.scoreboard.Team line = board.getTeam(LINE_PREFIX + i);
+                if (line == null) {
+                    line = board.registerNewTeam(LINE_PREFIX + i);
+                    line.addEntry(entry);
+                }
+                line.setPrefix(lines.get(i));
+                objective.getScore(entry).setScore(lines.size() - i);
+            }
+            colorNames(board);
+        }
 
+        private List<String> lines(Player player) {
+            List<String> lines = new ArrayList<>();
+            lines.add("§7──────────");
             String own = game.teamInGame(player)
-                    .map(team -> TeamColors.chat(team.color()) + (team.solo() ? "solo" : team.name()))
-                    .orElse("§7—");
-            objective.getScore("§fEquipo: " + own).setScore(line--);
-            objective.getScore("§fCasillas: §a" + game.getProgress(player.getUniqueId())).setScore(line--);
-            objective.getScore("§fGana: §e" + game.getSettings().mode().description()).setScore(line--);
-            objective.getScore("§8 ").setScore(line--);
+                    .map(team -> TeamColors.chat(team.color()) + (team.solo() ? Texts.get("marcador.solo") : team.name()))
+                    .orElse(Texts.get("marcador.sin_equipo"));
+            lines.add(Texts.get("marcador.equipo", "equipo", own));
+            lines.add(Texts.get("marcador.casillas", "casillas", game.getProgress(player.getUniqueId())));
+            lines.add(Texts.get("marcador.gana", "modo", game.getSettings().mode().description()));
+            lines.add("");
 
             List<Map.Entry<Team, BingoCard>> ranking = new ArrayList<>(game.teamCards().entrySet());
             ranking.sort(Comparator.comparingInt((Map.Entry<Team, BingoCard> e) -> e.getValue().countCompleted()).reversed());
             for (Map.Entry<Team, BingoCard> entry : ranking.subList(0, Math.min(MAX_TEAMS, ranking.size()))) {
                 Team team = entry.getKey();
-                objective.getScore(TeamColors.chat(team.color()) + team.name() + "§7: §f" + entry.getValue().countCompleted())
-                        .setScore(line--);
+                lines.add(Texts.get("marcador.fila_equipo", "equipo", TeamColors.chat(team.color()) + team.name(),
+                        "casillas", entry.getValue().countCompleted()));
             }
 
-            String state = game.inCountdown() ? "§eEMPIEZA YA" : "§aEN CURSO";
-            objective.getScore("§fEstado: " + state).setScore(line--);
-            colorNames(board);
+            lines.add(Texts.get(game.inCountdown() ? "marcador.estado_cuenta" : "marcador.estado_juego"));
+            return lines;
         }
 
         // Nombres sobre la cabeza y en la lista de jugadores con el color de su equipo.

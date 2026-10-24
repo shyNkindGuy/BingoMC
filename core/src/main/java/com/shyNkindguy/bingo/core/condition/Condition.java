@@ -10,4 +10,7 @@ public interface Condition {
 
     // Texto corto y estable ("dimension=minecraft:the_nether"): va en el id por defecto de la tarea.
     String key();
+
+    // Para el jugador: "en el Nether", "de noche y sin morir".
+    String description();
 }

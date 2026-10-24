@@ -56,7 +56,7 @@ public class BingoMapManager {
         MapMeta meta = (MapMeta) mapItem.getItemMeta();
 
         meta.setMapView(map);
-        meta.setDisplayName("§aBINGO HUMILDE");
+        meta.setDisplayName(Texts.get("mapa.nombre"));
         meta.getPersistentDataContainer().set(cardKey, PersistentDataType.BYTE, (byte) 1);
         mapItem.setItemMeta(meta);
 

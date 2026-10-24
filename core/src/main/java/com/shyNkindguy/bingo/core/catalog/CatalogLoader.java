@@ -1,6 +1,7 @@
 package com.shyNkindguy.bingo.core.catalog;
 
 import com.shyNkindguy.bingo.core.game.GameSettings;
+import com.shyNkindguy.bingo.core.text.Messages;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
@@ -26,9 +27,10 @@ public final class CatalogLoader {
 
     public static final String CARDS_FILE = "cards.yml";
     public static final String CONFIG_FILE = "config.yml";
+    public static final String MESSAGES_FILE = "messages.yml";
     public static final String TASKS_DIR = "tasks";
     static final List<String> DEFAULT_FILES =
-            List.of(CONFIG_FILE, CARDS_FILE, "tasks/basicos.yml", "tasks/medios.yml", "tasks/dificiles.yml");
+            List.of(CONFIG_FILE, MESSAGES_FILE, CARDS_FILE, "tasks/basicos.yml", "tasks/medios.yml", "tasks/dificiles.yml");
     private static final String DEFAULTS = "/adaptivebingo/defaults/";
 
     private CatalogLoader() {
@@ -75,11 +77,23 @@ public final class CatalogLoader {
                 read(CONFIG_FILE, () -> Files.newBufferedReader(config, StandardCharsets.UTF_8)), catalog);
     }
 
+    // messages.yml de la carpeta encima de los textos por defecto; si no está, los por defecto.
+    public static Messages messagesFromDirectory(Path dir) {
+        Path file = dir.resolve(MESSAGES_FILE);
+        Messages defaults = defaultMessages();
+        if (!Files.isRegularFile(file)) return defaults;
+        return Messages.parse(MESSAGES_FILE, read(MESSAGES_FILE, () -> Files.newBufferedReader(file, StandardCharsets.UTF_8)), defaults);
+    }
+
+    public static Messages defaultMessages() {
+        return Messages.parse(MESSAGES_FILE, read(MESSAGES_FILE, () -> openDefault(MESSAGES_FILE)), null);
+    }
+
     public static GameSettings defaultSettings(Catalog catalog) {
         return CatalogParser.parseSettings(CONFIG_FILE, read(CONFIG_FILE, () -> openDefault(CONFIG_FILE)), catalog);
     }
 
-    // Copia los YAML por defecto que falten: config.yml y cards.yml si no están, y las listas solo si no existe la
+    // Copia los YAML por defecto que falten: config.yml, messages.yml y cards.yml si no están, y las listas solo si no existe la
     // carpeta tasks/ (así una lista borrada a propósito no vuelve). Devuelve los archivos copiados.
     public static List<String> copyDefaults(Path dir) throws IOException {
         boolean tasksMissing = !Files.exists(dir.resolve(TASKS_DIR));

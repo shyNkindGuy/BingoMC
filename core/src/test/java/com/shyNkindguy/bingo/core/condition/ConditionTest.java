@@ -85,4 +85,13 @@ class ConditionTest {
         assertEquals("alguna(bioma=minecraft:desert|sin_morir)",
                 new AnyOf(List.of(new InBiome(Set.of("minecraft:desert")), new NoDeath())).key());
     }
+
+    @Test
+    void lasDescripcionesSeLeenEnEspanol() {
+        assertEquals("en el Nether", new InDimension(Set.of("minecraft:the_nether")).description());
+        assertEquals("de noche y sin morir", new AllOf(List.of(new TimeOfDay(true), new NoDeath())).description());
+        assertEquals("(en el bioma beach o desert o debajo de Y 0)",
+                new AnyOf(List.of(new InBiome(Set.of("minecraft:desert", "minecraft:beach")), new BelowY(0))).description());
+        assertEquals("de día", new TimeOfDay(false).description());
+    }
 }

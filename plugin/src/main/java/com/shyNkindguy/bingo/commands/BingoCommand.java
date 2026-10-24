@@ -8,6 +8,8 @@ import com.shyNkindguy.bingo.core.task.Task;
 import com.shyNkindguy.bingo.game.BingoGame;
 import com.shyNkindguy.bingo.ui.BingoMapManager;
 import com.shyNkindguy.bingo.ui.BingoScoreBoard;
+import com.shyNkindguy.bingo.ui.CardMenu;
+import com.shyNkindguy.bingo.ui.Texts;
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
@@ -20,9 +22,8 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class BingoCommand implements CommandExecutor, TabCompleter {
     private static final String ADMIN_PERMISSION = "bingo.admin";
-    private static final String USAGE = "§eUso: /bingo <start [cartilla] [semilla]|stop|map|reload|team>";
-    private static final List<String> ADMIN_SUBCOMMANDS = List.of("start", "stop", "map", "reload", "team");
-    private static final List<String> PLAYER_SUBCOMMANDS = List.of("map", "team");
+    private static final List<String> ADMIN_SUBCOMMANDS = List.of("start", "stop", "map", "card", "reload", "team");
+    private static final List<String> PLAYER_SUBCOMMANDS = List.of("map", "card", "team");
 
     private final BingoGame game;
     private final BingoScoreBoard scoreboard;
@@ -41,7 +42,7 @@ public class BingoCommand implements CommandExecutor, TabCompleter {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args)
     {
         if (args.length == 0) {
-            sender.sendMessage(USAGE);
+            sender.sendMessage(Texts.get("comando.uso"));
             return true;
         }
         String subcommand = args[0].toLowerCase(Locale.ROOT);
@@ -50,15 +51,16 @@ public class BingoCommand implements CommandExecutor, TabCompleter {
             return true;
         }
         if (!subcommand.equals("start") && args.length != 1) {
-            sender.sendMessage(USAGE);
+            sender.sendMessage(Texts.get("comando.uso"));
             return true;
         }
         switch (subcommand) {
             case "start" -> start(sender, args);
             case "stop" -> stop(sender);
             case "map" -> giveMap(sender);
+            case "card", "cartilla" -> openCard(sender);
             case "reload" -> reload(sender);
-            default -> sender.sendMessage(USAGE);
+            default -> sender.sendMessage(Texts.get("comando.uso"));
         }
         return true;
     }
@@ -87,15 +89,15 @@ public class BingoCommand implements CommandExecutor, TabCompleter {
     // semilla, la de config.yml o una al azar que se anuncia para poder repetir la partida.
     private void start(CommandSender sender, String[] args) {
         if (!sender.hasPermission(ADMIN_PERMISSION)) {
-            sender.sendMessage("§cNo tienes permiso para iniciar el Bingo.");
+            sender.sendMessage(Texts.get("comando.sin_permiso_iniciar"));
             return;
         }
         if (game.inGame()) {
-            sender.sendMessage("§cEl Bingo ya está en curso.");
+            sender.sendMessage(Texts.get("inicio.ya_en_curso"));
             return;
         }
         if (Bukkit.getOnlinePlayers().isEmpty()) {
-            sender.sendMessage("§cNo hay jugadores conectados.");
+            sender.sendMessage(Texts.get("inicio.sin_jugadores"));
             return;
         }
 
@@ -109,8 +111,8 @@ public class BingoCommand implements CommandExecutor, TabCompleter {
             } else if (isNumber(args[i])) {
                 seed = Long.parseLong(args[i]);
             } else {
-                sender.sendMessage("§cNo existe la cartilla §f" + args[i] + "§c. Hay: §f"
-                        + String.join(", ", catalog.cards().keySet()));
+                sender.sendMessage(Texts.get("inicio.cartilla_no_existe", "cartilla", args[i],
+                        "cartillas", String.join(", ", catalog.cards().keySet())));
                 return;
             }
         }
@@ -120,23 +122,24 @@ public class BingoCommand implements CommandExecutor, TabCompleter {
         try {
             tasks = catalog.generate(cardName, new Random(usedSeed), catalogs::isAvailable);
         } catch (CatalogException e) {
-            sender.sendMessage("§c" + e.getMessage());
+            sender.sendMessage(Texts.get("inicio.error", "error", e.getMessage()));
             return;
         }
         GameSettings used = settings.withCard(cardName).withSeed(usedSeed);
         int size = catalog.cards().get(cardName).size();
         String problem = used.mode().problemWith(size);
         if (problem != null) {
-            sender.sendMessage("§cEl modo " + used.mode().description() + " no se puede con la cartilla " + cardName
-                    + ": " + problem + ". Cámbialo en config.yml.");
+            sender.sendMessage(Texts.get("inicio.modo_imposible", "modo", used.mode().description(),
+                    "cartilla", cardName, "problema", problem));
             return;
         }
-        String duration = used.durationMinutes() == 0 ? "sin límite" : used.durationMinutes() + " min";
-        Bukkit.broadcastMessage("§a§lBINGO INICIADO!");
-        Bukkit.broadcastMessage("§7Cartilla §f" + cardName + " §7(" + size + "×" + size + ") · semilla §f" + usedSeed
-                + " §7· gana: §f" + used.mode().description() + " §7· " + duration + (used.pvp() ? "" : " · sin PvP"));
+        String duration = used.durationMinutes() == 0 ? Texts.get("inicio.sin_limite")
+                : Texts.get("inicio.minutos", "minutos", used.durationMinutes());
+        Bukkit.broadcastMessage(Texts.get("inicio.anuncio"));
+        Bukkit.broadcastMessage(Texts.get("inicio.detalle", "cartilla", cardName, "lado", size, "semilla", usedSeed,
+                "modo", used.mode().description(), "duracion", duration, "pvp", used.pvp() ? "" : Texts.get("inicio.sin_pvp")));
         if (!game.start(Bukkit.getOnlinePlayers(), tasks, used)) {
-            sender.sendMessage("§cNo se pudo empezar la partida.");
+            sender.sendMessage(Texts.get("inicio.no_se_pudo"));
             return;
         }
         for (Player p : Bukkit.getOnlinePlayers()){
@@ -156,40 +159,48 @@ public class BingoCommand implements CommandExecutor, TabCompleter {
 
     private void stop(CommandSender sender) {
         if (!sender.hasPermission(ADMIN_PERMISSION)) {
-            sender.sendMessage("§cNo tienes permiso para detener el Bingo.");
+            sender.sendMessage(Texts.get("comando.sin_permiso_detener"));
             return;
         }
         if (!game.stop(sender.getName())) {
-            sender.sendMessage("§cNo hay ninguna partida en curso.");
+            sender.sendMessage(Texts.get("partida.no_hay"));
         }
     }
 
     // Vuelve a leer cards.yml y tasks/*.yml. Con un error, avisa dónde y sigue el catálogo anterior.
     private void reload(CommandSender sender) {
         if (!sender.hasPermission(ADMIN_PERMISSION)) {
-            sender.sendMessage("§cNo tienes permiso para recargar el Bingo.");
+            sender.sendMessage(Texts.get("comando.sin_permiso_recargar"));
             return;
         }
         try {
             List<String> summary = catalogs.reload();
-            sender.sendMessage("§aTareas recargadas.");
-            summary.forEach(line -> sender.sendMessage("§7" + line));
+            sender.sendMessage(Texts.get("recarga.ok"));
+            summary.forEach(line -> sender.sendMessage(Texts.get("recarga.linea", "linea", line)));
             if (game.inGame()) {
-                sender.sendMessage("§7La partida en curso sigue con sus tareas; los cambios salen en la próxima.");
+                sender.sendMessage(Texts.get("recarga.partida_en_curso"));
             }
         } catch (CatalogException e) {
-            sender.sendMessage("§cNo se recargó: §f" + e.getMessage());
-            sender.sendMessage("§7Siguen las tareas de antes.");
+            sender.sendMessage(Texts.get("recarga.error", "error", e.getMessage()));
+            sender.sendMessage(Texts.get("recarga.sigue"));
+        }
+    }
+
+    private void openCard(CommandSender sender) {
+        if (sender instanceof Player player) {
+            CardMenu.open(player, game);
+        } else {
+            sender.sendMessage(Texts.get("comando.solo_jugador"));
         }
     }
 
     private void giveMap(CommandSender sender) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("§cSolo un jugador puede recibir la cartilla.");
+            sender.sendMessage(Texts.get("comando.solo_jugador"));
             return;
         }
         mapManager.giveMap(player);
-        player.sendMessage("§aCartilla de Bingo invocada");
+        player.sendMessage(Texts.get("mapa.dado"));
     }
 
     }

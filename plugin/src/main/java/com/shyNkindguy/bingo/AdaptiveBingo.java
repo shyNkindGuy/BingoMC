@@ -11,6 +11,7 @@ import com.shyNkindguy.bingo.events.StatisticPoller;
 import com.shyNkindguy.bingo.game.BingoGame;
 import com.shyNkindguy.bingo.game.PlayerContexts;
 import com.shyNkindguy.bingo.ui.BingoMapManager;
+import com.shyNkindguy.bingo.ui.GameBossBar;
 import com.shyNkindguy.bingo.ui.BingoScoreBoard;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
@@ -39,7 +40,10 @@ public final class AdaptiveBingo extends JavaPlugin {
             statistics.start();
             scoreboard.updateAll();
         });
+        GameBossBar bossBar = new GameBossBar(game);
+        game.onTick(bossBar::update);
         game.onEnd(() -> {
+            bossBar.hide();
             statistics.stop();
             scoreboard.hideAll();
             mapManager.removeMaps();

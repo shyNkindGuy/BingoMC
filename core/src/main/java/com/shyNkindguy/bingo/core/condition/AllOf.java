@@ -19,6 +19,11 @@ public record AllOf(List<Condition> conditions) implements Condition {
     }
 
     @Override
+    public String description() {
+        return conditions.stream().map(Condition::description).collect(Collectors.joining(" y "));
+    }
+
+    @Override
     public String key() {
         return conditions.stream().map(Condition::key).collect(Collectors.joining("&"));
     }
