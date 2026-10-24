@@ -27,6 +27,8 @@ public class BingoPalette {
     // marcas del tipo de tarea: color base del mapa × 4 + 2 (el tono más claro) de oro (30) y lapislázuli (32)
     public static final byte BADGE_GOLD = (byte) 122;
     public static final byte BADGE_BLUE = (byte) 130;
+    // punto de "tiene condiciones": morado (24)
+    public static final byte CONDITION_MARK = (byte) 98;
     public static final byte OUTLINE = (byte) 119; // Negro
     public static final byte TRANSPARENT = 0;
 

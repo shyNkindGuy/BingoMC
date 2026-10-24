@@ -4,6 +4,7 @@ import com.shyNkindguy.bingo.adapter.Keys;
 import com.shyNkindguy.bingo.core.task.AdvancementTask;
 import com.shyNkindguy.bingo.core.task.ItemTask;
 import com.shyNkindguy.bingo.core.task.KillTask;
+import com.shyNkindguy.bingo.core.task.SetTask;
 import com.shyNkindguy.bingo.core.task.StatisticTask;
 import com.shyNkindguy.bingo.core.task.Task;
 import org.bukkit.Material;
@@ -36,10 +37,14 @@ public class TaskAvailability {
         return problem(task) == null;
     }
 
-    // null si se puede hacer; si no, el motivo ("el mob no existe").
+    // null si se puede hacer; si no, el motivo ("el mob no existe"). Las condiciones no se revisan: los
+    // biomas y dimensiones de datapacks recién se conocen en el juego.
     public String problem(Task task) {
-        return switch (task) {
+        return switch (task.base()) {
             case ItemTask item -> Keys.toMaterial(item.item()) == null ? "el ítem no existe" : null;
+            case SetTask set -> set.items().stream()
+                    .filter(item -> Keys.toMaterial(item) == null)
+                    .findFirst().map(item -> "el ítem " + item + " no existe").orElse(null);
             case KillTask kill -> killProblem(kill);
             case AdvancementTask advancement ->
                     advancementExists.test(advancement.advancement()) ? null : "el logro no existe";

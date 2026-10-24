@@ -31,3 +31,7 @@ tareas:
   - { tipo: logro, logro: story/deflect_arrow, nombre: Parar una flecha con el escudo }
   - { tipo: logro, logro: husbandry/fishy_business, nombre: Pescar un pez }
   - { tipo: estadistica, estadistica: mine_block, de: stone, nombre: Piedra picada, cantidad: 64 }
+  - { tipo: alguno, nombre: 3 lanas de colores, necesita: 3,
+      de: [red_wool, blue_wool, yellow_wool, lime_wool, black_wool, orange_wool] }
+  - { tipo: todos, nombre: Herramientas de hierro, de: [iron_pickaxe, iron_axe, iron_shovel] }
+  - { item: raw_gold, nombre: Oro crudo debajo de Y 0, condiciones: [ { debajo_de_y: 0 } ] }

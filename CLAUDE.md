@@ -15,18 +15,23 @@ viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
   reemplazada y que el `.jar` traiga `core`).
 - `core` (nada de `org.bukkit` ahí):
   - `task/`: `Task` (`id`, `displayName`, `icon` = clave del ítem a dibujar o null, `target`,
-    `apply(evento, progreso)`): `ItemTask(id, nombre, ítem, cantidad[, ícono])` (el máximo que tuvo a la
-    vez), `KillTask` (mob + cantidad; ícono por defecto, su huevo), `AdvancementTask` (logro; sin ícono, el
-    plugin usa el del logro) y `StatisticTask` (estadística [+ `subject` bloque/ítem/mob] ≥ cantidad desde
-    que empezó la partida; ícono por defecto, el `subject`).
-  - `event/`: `TaskEvent` sellado: `ItemObtained(ítem, total)`, `EntityKilled(mob)`,
-    `AdvancementDone(logro)`, `StatisticReached(estadística, subject, valor desde el inicio)`.
+    `apply(evento, contexto, progreso)`, `base()`): `ItemTask(id, nombre, ítem, cantidad[, ícono])` (el
+    máximo que tuvo a la vez), `KillTask` (mob + cantidad; ícono por defecto, su huevo), `AdvancementTask`
+    (logro; sin ícono, el plugin usa el del logro), `StatisticTask` (estadística [+ `subject`
+    bloque/ítem/mob] ≥ cantidad desde que empezó la partida; ícono por defecto, el `subject`), `SetTask`
+    (alguno/todos: N ítems distintos de una lista a la vez) y `ConditionalTask` (otra tarea + `Condition`;
+    `base()` da la de adentro: usarlo para preguntar el tipo).
+  - `condition/`: `Condition.test(EventContext)` + `key()`: `InDimension`, `TimeOfDay` (noche = 13000–22999),
+    `InBiome`, `BelowY`, `NoDeath`, `AllOf`, `AnyOf`.
+  - `event/`: `TaskEvent` sellado: `ItemObtained(ítem, total)`, `InventoryScanned(totales)`,
+    `EntityKilled(mob)`, `AdvancementDone(logro)`, `StatisticReached(estadística, subject, valor desde el
+    inicio)`; y `EventContext(dimensión, bioma, hora, Y, muertes)` (`NONE`: no se cumple ninguna condición).
   - `progress/`: `TaskProgress(current, target)` inmutable que solo sube, `ProgressTracker.apply(cartilla,
     evento)` → `ProgressResult` (casillas que avanzaron y tareas completadas) y `StatisticBaseline`
     (valor al empezar por jugador).
   - `card/`: `BingoCard` N×N de `BingoCell` (tarea + progreso).
   - `catalog/` (desde la 1.3): `CatalogLoader` lee `cards.yml` + `tasks/*.yml` de una carpeta o los por
-    defecto del `.jar` (`core/src/main/resources/adaptivebingo/defaults/`, 59 tareas de los cuatro tipos en
+    defecto del `.jar` (`core/src/main/resources/adaptivebingo/defaults/`, 67 tareas de todos los tipos en
     `basicos` D, `medios` C y `dificiles` A; cartillas `normal` 5×5 y `rapida` 3×3) y los copia la primera vez;
     `CatalogParser` valida todo con mensajes "archivo, tarea N: problema"; `Catalog` (listas `TaskList` +
     `Tier`, cartillas `CardSpec` con mín/máx por lista) y `CardGenerator` (semilla, sin repetidos).
@@ -37,7 +42,8 @@ viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
 - `plugin.yml` clásico de Bukkit (no `paper-plugin.yml`). Main: `com.shyNkindguy.bingo.AdaptiveBingo`.
 - Paquete `com.shyNkindguy.bingo` del plugin: `commands/` (`/bingo start|stop|map|reload`), `config/`,
   `events/` (`ObjectiveListener`, `ScanQueue`, `CardUpdater`, `StatisticPoller`, `AdvancementReset`),
-  `game/` (`BingoGame` con `onStart`/`onEnd`), `icon/` (+ `TaskIcons`: ícono y marca por tipo), `ui/` (mapa,
+  `game/` (`BingoGame` con `onStart`/`onEnd`, `PlayerContexts`: el `EventContext` de cada jugador y sus
+  muertes desde el inicio), `icon/` (+ `TaskIcons`: ícono y marca por tipo), `ui/` (mapa,
   scoreboard, paleta). Íconos: un solo sistema, `icon/IconRegistry` (por `Material`, con fallback por
   categoría) + `icon/IconRenderer` (escala entera que entra en la casilla, centrado; dibuja sobre un
   `PixelSink` para poder testearlo).
@@ -57,8 +63,11 @@ Matar un mob (`EntityDeathEvent` con `getKiller`) manda `EntityKilled` y un logr
 (`PlayerAdvancementDoneEvent`) `AdvancementDone`; las estadísticas se leen cada segundo
 (`StatisticPoller`) y cuentan desde el inicio. Al empezar, a cada jugador se le quitan los logros de su
 cartilla (`AdvancementReset`), si no nunca podría volver a conseguirlos. Todo pasa por
-`CardUpdater.apply` (mensaje, scoreboard, mapa, victoria). En el mapa, las tareas que no son de ítem
-llevan una marca 5×5 arriba a la izquierda: espada (matar), estrella (logro), barras (estadística).
+`CardUpdater.apply`, que arma el `EventContext` del jugador (para las condiciones) y se encarga del
+mensaje, el scoreboard, el mapa y la victoria; el escaneo además manda `InventoryScanned` (conjuntos) y
+cambiar de mundo pide un escaneo. En el mapa, las tareas de matar, logro y estadística llevan una marca
+5×5 arriba a la izquierda (espada, estrella, barras), los conjuntos dibujan sus dos primeros ítems y las
+que tienen condiciones un punto morado abajo a la izquierda.
 En el mapa, las tareas de varias unidades muestran la cantidad pedida y una barra de avance. La cartilla es un mapa marcado con PDC `adaptivebingo:cartilla` (`BingoMapManager.isBingoMap`):
 no pisa la mano izquierda (lo que había pasa al inventario o se suelta), no se duplica, no cae al morir y
 no se puede tirar. Gana la primera línea (`WinConditionChecker`); a los 20 min (`MAX_TIME`), el que tenga más casillas o empate

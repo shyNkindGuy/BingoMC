@@ -1,5 +1,6 @@
 package com.shyNkindguy.bingo.core.task;
 
+import com.shyNkindguy.bingo.core.event.EventContext;
 import com.shyNkindguy.bingo.core.event.TaskEvent;
 import com.shyNkindguy.bingo.core.progress.TaskProgress;
 
@@ -18,6 +19,17 @@ public interface Task {
     // Cuánto hay que juntar para completarla (1 si es "conseguirlo una vez").
     int target();
 
-    // El progreso después del evento; el mismo objeto si el evento no le importa a esta tarea.
-    TaskProgress apply(TaskEvent event, TaskProgress progress);
+    // El progreso después del evento, que pasó con el jugador en `context`; el mismo objeto si el evento
+    // no le importa a esta tarea.
+    TaskProgress apply(TaskEvent event, EventContext context, TaskProgress progress);
+
+    // Sin contexto: para tareas y tests a los que no les importa dónde estaba el jugador.
+    default TaskProgress apply(TaskEvent event, TaskProgress progress) {
+        return apply(event, EventContext.NONE, progress);
+    }
+
+    // La tarea de verdad, sin las condiciones que la envuelven (ConditionalTask): para saber de qué tipo es.
+    default Task base() {
+        return this;
+    }
 }

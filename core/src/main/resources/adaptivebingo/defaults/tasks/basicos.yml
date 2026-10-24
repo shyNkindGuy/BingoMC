@@ -13,6 +13,15 @@
 #                                      partida se le quitan a cada jugador los logros de su cartilla
 #     estadistica (o statistic)        estadistica: jump, cantidad: cuánto desde que empezó la partida;
 #                                      las de bloque, ítem o mob llevan `de` (mine_block, de: stone)
+#     alguno (o any_of)                de: [ítems], necesita: cuántos distintos a la vez (si falta, 1)
+#     todos (o all_of)                 de: [ítems]: todos a la vez
+#                                      (en los dos, `cantidad` es de cada ítem; si falta, 1)
+#   condiciones (cualquier tipo): la tarea solo avanza si se cumplen todas en ese momento
+#     dimension: overworld, nether o end (o una lista)    hora: dia o noche
+#     bioma: desert (o una lista)    debajo_de_y: 0    sin_morir: true (sin morir desde que empezó)
+#     alguna: [ { bioma: desert }, { hora: noche } ]   (alcanza con una de la lista)
+#   Ej.: { item: cooked_porkchop, nombre: Chuleta en el Nether, condiciones: [ { dimension: nether } ] }
+#   Las estadísticas miran las condiciones al leerse (cada segundo), no en cada salto.
 #   Nombres de ítems, mobs, logros y estadísticas: https://minecraft.wiki/w/Java_Edition_data_values
 #   (oak_log y minecraft:oak_log son lo mismo). Las estadísticas usan los nombres de Bukkit:
 #   https://jd.papermc.io/paper/1.21.11/org/bukkit/Statistic.html (en minúsculas).
@@ -40,3 +49,9 @@ tareas:
   - { tipo: logro, logro: adventure/sleep_in_bed, nombre: Dormir en una cama }
   - { tipo: estadistica, estadistica: jump, nombre: Saltos, cantidad: 100, icono: rabbit_foot }
   - { tipo: estadistica, estadistica: animals_bred, nombre: Animales criados, cantidad: 2, icono: wheat }
+  - { tipo: todos, nombre: Herramientas de piedra, de: [stone_pickaxe, stone_axe, stone_shovel] }
+  - { tipo: alguno, nombre: 3 flores distintas, necesita: 3,
+      de: [poppy, dandelion, cornflower, oxeye_daisy, azure_bluet, allium] }
+  - { item: sand, nombre: Arena del desierto o la playa, cantidad: 8,
+      condiciones: [ { alguna: [ { bioma: desert }, { bioma: beach } ] } ] }
+  - { tipo: matar, mob: chicken, nombre: Gallina de noche, icono: feather, condiciones: [ { hora: noche } ] }

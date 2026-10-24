@@ -1,8 +1,17 @@
 package com.shyNkindguy.bingo.core.catalog;
 
+import com.shyNkindguy.bingo.core.condition.AllOf;
+import com.shyNkindguy.bingo.core.condition.AnyOf;
+import com.shyNkindguy.bingo.core.condition.BelowY;
+import com.shyNkindguy.bingo.core.condition.InBiome;
+import com.shyNkindguy.bingo.core.condition.InDimension;
+import com.shyNkindguy.bingo.core.condition.NoDeath;
+import com.shyNkindguy.bingo.core.condition.TimeOfDay;
 import com.shyNkindguy.bingo.core.task.AdvancementTask;
+import com.shyNkindguy.bingo.core.task.ConditionalTask;
 import com.shyNkindguy.bingo.core.task.ItemTask;
 import com.shyNkindguy.bingo.core.task.KillTask;
+import com.shyNkindguy.bingo.core.task.SetTask;
 import com.shyNkindguy.bingo.core.task.StatisticTask;
 import com.shyNkindguy.bingo.core.task.Task;
 import org.junit.jupiter.api.Test;
@@ -11,6 +20,7 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -140,6 +150,66 @@ class CatalogParserTest {
                 cualquiera("{ tipo: statistic, estadistica: mine_block, de: stone, nombre: Piedra, cantidad: 64 }"));
         assertTrue(error(() -> cualquiera("{ tipo: estadistica, estadistica: jump, nombre: Saltos }"))
                 .contains("falta cantidad"));
+    }
+
+    @Test
+    void conjuntos() {
+        SetTask lanas = (SetTask) cualquiera("{ tipo: alguno, nombre: 2 lanas, necesita: 2, de: [red_wool, blue_wool, black_wool] }");
+        assertEquals(List.of("minecraft:red_wool", "minecraft:blue_wool", "minecraft:black_wool"), lanas.items());
+        assertEquals(2, lanas.needed());
+        assertEquals("any_of:2:red_wool+blue_wool+black_wool", lanas.id());
+
+        SetTask herramientas = (SetTask) cualquiera("{ tipo: todos, nombre: Hierro, de: [iron_pickaxe, iron_axe], cantidad: 1 }");
+        assertTrue(herramientas.all());
+        assertEquals("all_of:iron_pickaxe+iron_axe", herramientas.id());
+        assertEquals(1, ((SetTask) cualquiera("{ tipo: any_of, nombre: X, de: [a, b] }")).needed());
+
+        assertTrue(error(() -> cualquiera("{ tipo: alguno, nombre: X, de: [a] }")).contains("al menos 2"));
+        assertTrue(error(() -> cualquiera("{ tipo: alguno, nombre: X, de: [a, a] }")).contains("está dos veces"));
+        assertTrue(error(() -> cualquiera("{ tipo: alguno, nombre: X, necesita: 3, de: [a, b] }"))
+                .contains("pide 3 y en de hay 2"));
+        assertTrue(error(() -> cualquiera("{ tipo: todos, nombre: X, necesita: 1, de: [a, b] }"))
+                .contains("no conozco \"necesita\""));
+    }
+
+    @Test
+    void condiciones() {
+        Task chuleta = cualquiera("{ item: cooked_porkchop, nombre: Chuleta, condiciones: [ { dimension: nether } ] }");
+        ConditionalTask condicional = (ConditionalTask) chuleta;
+        assertEquals("item:cooked_porkchop[dimension=minecraft:the_nether]", chuleta.id());
+        assertEquals(new InDimension(Set.of("minecraft:the_nether")), condicional.condition());
+        assertTrue(chuleta.base() instanceof ItemTask);
+
+        // varias en la lista (o en un mapa) = todas
+        assertEquals(new AllOf(List.of(new TimeOfDay(true), new BelowY(-10), new NoDeath())),
+                ((ConditionalTask) cualquiera("{ tipo: matar, mob: zombie, nombre: Z, "
+                        + "condiciones: [ { hora: noche }, { debajo_de_y: -10, sin_morir: true } ] }")).condition());
+        assertEquals(new TimeOfDay(false),
+                ((ConditionalTask) cualquiera("{ item: bread, nombre: Pan, condiciones: { hora: día } }")).condition());
+        assertEquals(new AnyOf(List.of(new InBiome(Set.of("minecraft:desert")), new InBiome(Set.of("minecraft:beach")))),
+                ((ConditionalTask) cualquiera("{ item: sand, nombre: Arena, "
+                        + "condiciones: [ { alguna: [ { bioma: desert }, { bioma: beach } ] } ] }")).condition());
+        assertEquals(new InDimension(Set.of("minecraft:the_end", "minecraft:overworld")),
+                ((ConditionalTask) cualquiera("{ item: bread, nombre: Pan, condiciones: [ { dimension: [end, overworld] } ] }"))
+                        .condition());
+
+        // con id a mano, ese
+        assertEquals("pan_noche", cualquiera("{ id: pan_noche, item: bread, nombre: Pan, condiciones: [ { hora: noche } ] }").id());
+    }
+
+    @Test
+    void erroresDeCondiciones() {
+        assertTrue(error(() -> cualquiera("{ item: bread, nombre: Pan, condiciones: [ { dimension: luna } ] }"))
+                .contains("no es una dimensión"));
+        assertTrue(error(() -> cualquiera("{ item: bread, nombre: Pan, condiciones: [ { hora: tarde } ] }"))
+                .contains("dia o noche"));
+        assertTrue(error(() -> cualquiera("{ item: bread, nombre: Pan, condiciones: [ { sin_morir: false } ] }"))
+                .contains("sin_morir: true"));
+        assertTrue(error(() -> cualquiera("{ item: bread, nombre: Pan, condiciones: [ { volando: true } ] }"))
+                .contains("no conozco \"volando\""));
+        assertTrue(error(() -> cualquiera("{ item: bread, nombre: Pan, condiciones: [] }")).contains("vacía"));
+        assertTrue(error(() -> cualquiera("{ item: bread, nombre: Pan, condiciones: [ { debajo_de_y: abajo } ] }"))
+                .contains("número entero"));
     }
 
     @Test

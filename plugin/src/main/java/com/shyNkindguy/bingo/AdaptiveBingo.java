@@ -8,6 +8,7 @@ import com.shyNkindguy.bingo.events.CardUpdater;
 import com.shyNkindguy.bingo.events.ObjectiveListener;
 import com.shyNkindguy.bingo.events.StatisticPoller;
 import com.shyNkindguy.bingo.game.BingoGame;
+import com.shyNkindguy.bingo.game.PlayerContexts;
 import com.shyNkindguy.bingo.ui.BingoMapManager;
 import com.shyNkindguy.bingo.ui.BingoScoreBoard;
 import org.bukkit.Bukkit;
@@ -28,9 +29,11 @@ public final class AdaptiveBingo extends JavaPlugin {
         game = new BingoGame(this);
         scoreboard = new BingoScoreBoard(game);
         mapManager = new BingoMapManager(this, game);
-        CardUpdater updater = new CardUpdater(game, scoreboard, mapManager);
+        PlayerContexts contexts = new PlayerContexts();
+        CardUpdater updater = new CardUpdater(game, scoreboard, mapManager, contexts);
         StatisticPoller statistics = new StatisticPoller(this, game, updater);
         game.onStart(() -> {
+            contexts.reset(Bukkit.getOnlinePlayers());
             AdvancementReset.forGame(game);
             statistics.start();
         });

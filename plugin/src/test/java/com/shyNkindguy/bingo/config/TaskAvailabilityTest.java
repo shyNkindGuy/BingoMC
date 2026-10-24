@@ -1,12 +1,16 @@
 package com.shyNkindguy.bingo.config;
 
+import com.shyNkindguy.bingo.core.condition.TimeOfDay;
 import com.shyNkindguy.bingo.core.task.AdvancementTask;
+import com.shyNkindguy.bingo.core.task.ConditionalTask;
 import com.shyNkindguy.bingo.core.task.ItemTask;
 import com.shyNkindguy.bingo.core.task.KillTask;
+import com.shyNkindguy.bingo.core.task.SetTask;
 import com.shyNkindguy.bingo.core.task.StatisticTask;
 import org.bukkit.Material;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -44,6 +48,19 @@ class TaskAvailabilityTest {
         assertTrue(availability.isAvailable(new AdvancementTask("a", "Nether", "minecraft:story/enter_the_nether")));
         assertEquals("el logro no existe",
                 availability.problem(new AdvancementTask("a", "X", "minecraft:story/no_existe")));
+    }
+
+    @Test
+    void conjuntosYCondiciones() {
+        assertNull(availability.problem(new SetTask("s", "S", List.of("minecraft:bread", "minecraft:apple"), 1, 1, null)));
+        assertEquals("el ítem minecraft:no_existe no existe", availability.problem(
+                new SetTask("s", "S", List.of("minecraft:bread", "minecraft:no_existe"), 1, 1, null)));
+
+        // con condiciones se revisa la tarea de adentro
+        assertEquals("el mob no existe", availability.problem(new ConditionalTask("c",
+                new KillTask("k", "X", "minecraft:no_existe", 1), new TimeOfDay(true))));
+        assertNull(availability.problem(new ConditionalTask("c",
+                new ItemTask("i", "Pan", "minecraft:bread", 1), new TimeOfDay(true))));
     }
 
     @Test

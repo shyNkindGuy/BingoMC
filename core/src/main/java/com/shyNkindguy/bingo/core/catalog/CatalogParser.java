@@ -1,13 +1,24 @@
 package com.shyNkindguy.bingo.core.catalog;
 
+import com.shyNkindguy.bingo.core.condition.AllOf;
+import com.shyNkindguy.bingo.core.condition.AnyOf;
+import com.shyNkindguy.bingo.core.condition.BelowY;
+import com.shyNkindguy.bingo.core.condition.Condition;
+import com.shyNkindguy.bingo.core.condition.InBiome;
+import com.shyNkindguy.bingo.core.condition.InDimension;
+import com.shyNkindguy.bingo.core.condition.NoDeath;
+import com.shyNkindguy.bingo.core.condition.TimeOfDay;
 import com.shyNkindguy.bingo.core.task.AdvancementTask;
+import com.shyNkindguy.bingo.core.task.ConditionalTask;
 import com.shyNkindguy.bingo.core.task.ItemTask;
 import com.shyNkindguy.bingo.core.task.KillTask;
+import com.shyNkindguy.bingo.core.task.SetTask;
 import com.shyNkindguy.bingo.core.task.StatisticTask;
 import com.shyNkindguy.bingo.core.task.Task;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -15,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 // Pasa lo que devuelve SnakeYAML (mapas, listas, textos y números) a listas, cartillas y catálogo.
 // Valida todo al leer, así un error se ve en /bingo reload y no a mitad de partida. Los mensajes dicen
@@ -26,23 +38,40 @@ public final class CatalogParser {
 
     private static final Set<String> LIST_KEYS = Set.of("lista", "tier", "tareas");
     // tipo de tarea en el YAML (en inglés o en español) → tipo
-    private static final Map<String, String> TYPES = Map.of(
-            "item", "item",
-            "kill", "kill", "matar", "kill",
-            "advancement", "advancement", "logro", "advancement",
-            "statistic", "statistic", "estadistica", "statistic");
-    private static final String TYPE_NAMES = "item, kill (o matar), advancement (o logro), statistic (o estadistica)";
+    private static final Map<String, String> TYPES = Map.ofEntries(
+            Map.entry("item", "item"),
+            Map.entry("kill", "kill"), Map.entry("matar", "kill"),
+            Map.entry("advancement", "advancement"), Map.entry("logro", "advancement"),
+            Map.entry("statistic", "statistic"), Map.entry("estadistica", "statistic"),
+            Map.entry("any_of", "any_of"), Map.entry("alguno", "any_of"),
+            Map.entry("all_of", "all_of"), Map.entry("todos", "all_of"));
+    private static final String TYPE_NAMES = "item, kill (o matar), advancement (o logro), statistic (o estadistica), "
+            + "any_of (o alguno), all_of (o todos)";
 
-    private static final Set<String> ITEM_KEYS = Set.of("tipo", "id", "nombre", "item", "cantidad", "icono");
-    private static final Set<String> KILL_KEYS = Set.of("tipo", "id", "nombre", "mob", "cantidad", "icono");
-    private static final Set<String> ADVANCEMENT_KEYS = Set.of("tipo", "id", "nombre", "logro", "icono");
-    private static final Set<String> STATISTIC_KEYS =
-            Set.of("tipo", "id", "nombre", "estadistica", "de", "cantidad", "icono");
+    private static final Set<String> ITEM_KEYS = keys("item", "cantidad");
+    private static final Set<String> KILL_KEYS = keys("mob", "cantidad");
+    private static final Set<String> ADVANCEMENT_KEYS = keys("logro");
+    private static final Set<String> STATISTIC_KEYS = keys("estadistica", "de", "cantidad");
+    private static final Set<String> ANY_OF_KEYS = keys("de", "necesita", "cantidad");
+    private static final Set<String> ALL_OF_KEYS = keys("de", "cantidad");
+    private static final Set<String> CONDITION_KEYS = Set.of("dimension", "hora", "time", "bioma", "biome",
+            "debajo_de_y", "below_y", "sin_morir", "no_death", "alguna", "any_of");
+    private static final Map<String, String> DIMENSIONS = Map.of(
+            "overworld", "minecraft:overworld", "superficie", "minecraft:overworld",
+            "nether", "minecraft:the_nether", "the_nether", "minecraft:the_nether",
+            "end", "minecraft:the_end", "the_end", "minecraft:the_end", "fin", "minecraft:the_end");
     private static final Set<String> CARDS_KEYS = Set.of("por_defecto", "cartillas");
     private static final Set<String> CARD_KEYS = Set.of("tamaño", "tamano", "listas");
     private static final Set<String> QUOTA_KEYS = Set.of("min", "max");
 
     private CatalogParser() {
+    }
+
+    // Las claves que puede tener una tarea de un tipo: las comunes a todas más las propias.
+    private static Set<String> keys(String... own) {
+        Set<String> keys = new HashSet<>(Set.of("tipo", "id", "nombre", "icono", "condiciones"));
+        keys.addAll(List.of(own));
+        return Set.copyOf(keys);
     }
 
     // Un archivo de tasks/. `fileName` ("tasks/basicos.yml") va en los mensajes y da el nombre de la
@@ -71,12 +100,20 @@ public final class CatalogParser {
                 : "item";
         String type = TYPES.get(written);
         if (type == null) throw error(where, "el tipo \"" + written + "\" no existe (se puede usar: " + TYPE_NAMES + ")");
-        return switch (type) {
+        Task task = switch (type) {
             case "item" -> parseItem(map, where);
             case "kill" -> parseKill(map, where);
             case "advancement" -> parseAdvancement(map, where);
-            default -> parseStatistic(map, where);
+            case "statistic" -> parseStatistic(map, where);
+            case "any_of" -> parseSet(map, where, false);
+            default -> parseSet(map, where, true);
         };
+        if (!map.containsKey("condiciones")) return task;
+
+        // con condiciones el id por defecto las lleva, así no choca con la misma tarea sin condición
+        Condition condition = conditions(map.get("condiciones"), where + ": condiciones");
+        String id = map.containsKey("id") ? task.id() : task.id() + "[" + condition.key() + "]";
+        return new ConditionalTask(id, task, condition);
     }
 
     private static ItemTask parseItem(Map<String, Object> map, String where) {
@@ -114,6 +151,116 @@ public final class CatalogParser {
         String id = map.containsKey("id") ? text(map.get("id"), where + ": id")
                 : defaultId("statistic", statistic) + (subject == null ? "" : "/" + shortKey(subject));
         return new StatisticTask(id, name, statistic, subject, amount, icon(map, where));
+    }
+
+    // alguno: `{ tipo: alguno, de: [white_wool, red_wool, blue_wool], necesita: 2, nombre: … }`;
+    // todos: `{ tipo: todos, de: [iron_pickaxe, iron_axe], nombre: … }`. `cantidad` es de cada ítem.
+    private static SetTask parseSet(Map<String, Object> map, String where, boolean all) {
+        checkKeys(map, all ? ALL_OF_KEYS : ANY_OF_KEYS, where);
+        List<?> rawItems = list(required(map, "de", where), where + ": de");
+        List<String> items = new ArrayList<>();
+        for (Object rawItem : rawItems) {
+            String item = key(rawItem, where + ": de");
+            if (items.contains(item)) throw error(where + ": de", item + " está dos veces");
+            items.add(item);
+        }
+        if (items.size() < 2) throw error(where + ": de", "hacen falta al menos 2 ítems");
+
+        String name = text(required(map, "nombre", where), where + ": nombre");
+        int needed = all ? items.size()
+                : map.containsKey("necesita") ? positive(map.get("necesita"), where + ": necesita") : 1;
+        if (needed > items.size()) {
+            throw error(where + ": necesita", "pide " + needed + " y en de hay " + items.size() + " ítems");
+        }
+        int each = map.containsKey("cantidad") ? positive(map.get("cantidad"), where + ": cantidad") : 1;
+        String joined = items.stream().map(CatalogParser::shortKey).collect(Collectors.joining("+"));
+        String id = map.containsKey("id") ? text(map.get("id"), where + ": id")
+                : (all ? "all_of:" : "any_of:" + needed + ":") + joined;
+        return new SetTask(id, name, items, needed, each, icon(map, where));
+    }
+
+    // `condiciones: [ { dimension: nether }, { hora: noche } ]`: se tienen que cumplir todas. Una entrada con
+    // varias claves también pide todas; `alguna: [ … ]` pide una de su lista.
+    private static Condition conditions(Object raw, String where) {
+        List<Condition> all = new ArrayList<>();
+        if (raw instanceof Map<?, ?>) {
+            all.addAll(conditionEntry(map(raw, where), where));
+        } else {
+            List<?> entries = list(raw, where);
+            for (int i = 0; i < entries.size(); i++) {
+                String entryWhere = where + " " + (i + 1);
+                all.addAll(conditionEntry(map(entries.get(i), entryWhere), entryWhere));
+            }
+        }
+        return all.size() == 1 ? all.get(0) : new AllOf(all);
+    }
+
+    private static List<Condition> conditionEntry(Map<String, Object> map, String where) {
+        checkKeys(map, CONDITION_KEYS, where);
+        if (map.isEmpty()) throw error(where, "está vacía");
+        List<Condition> conditions = new ArrayList<>();
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            conditions.add(condition(entry.getKey(), entry.getValue(), where + ": " + entry.getKey()));
+        }
+        return conditions;
+    }
+
+    private static Condition condition(String key, Object value, String where) {
+        return switch (key) {
+            case "dimension" -> new InDimension(texts(value, where).stream()
+                    .map(text -> dimension(text, where)).collect(Collectors.toSet()));
+            case "hora", "time" -> timeOfDay(value, where);
+            case "bioma", "biome" -> new InBiome(texts(value, where).stream()
+                    .map(text -> key(text, where)).collect(Collectors.toSet()));
+            case "debajo_de_y", "below_y" -> new BelowY(integer(value, where));
+            case "sin_morir", "no_death" -> {
+                if (!isYes(value)) throw error(where, "se pone sin_morir: true (o se quita)");
+                yield new NoDeath();
+            }
+            default -> {
+                List<?> options = list(value, where);
+                List<Condition> any = new ArrayList<>();
+                for (int i = 0; i < options.size(); i++) {
+                    String optionWhere = where + " " + (i + 1);
+                    List<Condition> option = conditionEntry(map(options.get(i), optionWhere), optionWhere);
+                    any.add(option.size() == 1 ? option.get(0) : new AllOf(option));
+                }
+                yield new AnyOf(any);
+            }
+        };
+    }
+
+    // nether, the_nether o minecraft:the_nether → "minecraft:the_nether"; con otro namespace, la que sea
+    // (dimensiones de datapacks).
+    private static String dimension(String text, String where) {
+        String lower = text.toLowerCase(Locale.ROOT);
+        String path = lower.startsWith(MINECRAFT) ? lower.substring(MINECRAFT.length()) : lower;
+        if (DIMENSIONS.containsKey(path)) return DIMENSIONS.get(path);
+        if (lower.contains(":") && !lower.startsWith(MINECRAFT)) return key(lower, where);
+        throw error(where, "\"" + text + "\" no es una dimensión (se puede usar: overworld, nether, end)");
+    }
+
+    private static TimeOfDay timeOfDay(Object value, String where) {
+        String text = text(value, where).toLowerCase(Locale.ROOT);
+        return switch (text) {
+            case "dia", "día", "day" -> new TimeOfDay(false);
+            case "noche", "night" -> new TimeOfDay(true);
+            default -> throw error(where, "tiene que ser dia o noche (vino " + value + ")");
+        };
+    }
+
+    private static boolean isYes(Object value) {
+        return Boolean.TRUE.equals(value) || (value instanceof String text
+                && Set.of("si", "sí", "true").contains(text.trim().toLowerCase(Locale.ROOT)));
+    }
+
+    // Un texto o una lista de textos.
+    private static List<String> texts(Object raw, String where) {
+        if (!(raw instanceof List<?> list)) return List.of(text(raw, where));
+        if (list.isEmpty()) throw error(where, "está vacía");
+        List<String> texts = new ArrayList<>();
+        for (Object item : list) texts.add(text(item, where));
+        return texts;
     }
 
     // `icono: rotten_flesh`: el ítem que se dibuja en la casilla en vez del de por defecto del tipo.

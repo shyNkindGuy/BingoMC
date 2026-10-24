@@ -2,6 +2,7 @@ package com.shyNkindguy.bingo.game;
 
 
 import com.shyNkindguy.bingo.core.card.BingoCard;
+import com.shyNkindguy.bingo.core.event.EventContext;
 import com.shyNkindguy.bingo.core.event.TaskEvent;
 import com.shyNkindguy.bingo.core.progress.ProgressResult;
 import com.shyNkindguy.bingo.core.progress.ProgressTracker;
@@ -129,12 +130,13 @@ public class BingoGame {
         endListeners.forEach(Runnable::run);
         cards.clear();
     }
-    // Aplica un evento a la cartilla del jugador: qué casillas avanzaron y cuáles se completaron.
-    public ProgressResult applyEvent(Player player, TaskEvent event) {
+    // Aplica un evento a la cartilla del jugador, que estaba en `context`: qué casillas avanzaron y cuáles
+    // se completaron.
+    public ProgressResult applyEvent(Player player, TaskEvent event, EventContext context) {
         BingoCard card = cards.get(player.getUniqueId());
         if (card == null) return ProgressResult.NONE;
 
-        return ProgressTracker.apply(card, event);
+        return ProgressTracker.apply(card, event, context);
     }
 
     public BingoCard getCard(Player player){

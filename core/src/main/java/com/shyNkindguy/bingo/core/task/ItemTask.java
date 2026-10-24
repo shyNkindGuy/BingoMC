@@ -1,6 +1,7 @@
 package com.shyNkindguy.bingo.core.task;
 
 import com.shyNkindguy.bingo.core.event.ItemObtained;
+import com.shyNkindguy.bingo.core.event.EventContext;
 import com.shyNkindguy.bingo.core.event.TaskEvent;
 import com.shyNkindguy.bingo.core.progress.TaskProgress;
 
@@ -28,7 +29,7 @@ public record ItemTask(String id, String name, String item, int amount, String i
     }
 
     @Override
-    public TaskProgress apply(TaskEvent event, TaskProgress progress) {
+    public TaskProgress apply(TaskEvent event, EventContext context, TaskProgress progress) {
         return switch (event) {
             case ItemObtained obtained when obtained.item().equals(item) -> progress.reach(obtained.total());
             default -> progress;

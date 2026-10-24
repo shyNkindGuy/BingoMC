@@ -3,6 +3,7 @@ package com.shyNkindguy.bingo.events;
 import com.shyNkindguy.bingo.adapter.Keys;
 import com.shyNkindguy.bingo.core.event.AdvancementDone;
 import com.shyNkindguy.bingo.core.event.EntityKilled;
+import com.shyNkindguy.bingo.core.event.InventoryScanned;
 import com.shyNkindguy.bingo.core.event.ItemObtained;
 import com.shyNkindguy.bingo.core.event.TaskEvent;
 import com.shyNkindguy.bingo.game.BingoGame;
@@ -22,6 +23,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerAdvancementDoneEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
@@ -71,9 +73,14 @@ public class ObjectiveListener implements Listener {
         }
 
         List<TaskEvent> events = new ArrayList<>();
+        Map<String, Integer> byKey = new HashMap<>();
         for (Map.Entry<Material, Integer> total : totals.entrySet()) {
-            events.add(new ItemObtained(Keys.of(total.getKey()), total.getValue()));
+            String item = Keys.of(total.getKey());
+            events.add(new ItemObtained(item, total.getValue()));
+            byKey.put(item, total.getValue());
         }
+        // y el inventario entero, para los conjuntos ("3 lanas distintas")
+        events.add(new InventoryScanned(byKey));
         updater.apply(player, events);
     }
     @EventHandler
@@ -114,6 +121,11 @@ public class ObjectiveListener implements Listener {
     public void onCraft(CraftItemEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
         requestScan(player);
+    }
+    @EventHandler
+    public void onChangedWorld(PlayerChangedWorldEvent event) {
+        // para las tareas con condición de dimensión: lo que ya lleva puede contar en el mundo nuevo
+        requestScan(event.getPlayer());
     }
     @EventHandler
     public void onSmelt(FurnaceExtractEvent event) {

@@ -34,7 +34,7 @@ class CatalogServiceTest {
 
     @Test
     void elResumenCuentaListasTareasYCartillas() {
-        assertEquals(List.of("3 listas, 59 tareas; cartillas: normal 5×5 (por defecto), rapida 3×3"),
+        assertEquals(List.of("3 listas, 67 tareas; cartillas: normal 5×5 (por defecto), rapida 3×3"),
                 CatalogService.summary(CatalogLoader.defaults(), SIN_SERVIDOR));
     }
 
