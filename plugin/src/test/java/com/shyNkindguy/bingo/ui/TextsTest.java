@@ -23,6 +23,8 @@ class TextsTest {
             "especiales.brujula_lejos", "especiales.brujula_espera", "especiales.escudo", "especiales.escudo_bloquea",
             "recarga.pieza", "conjuntos.lore", "conjuntos.activo", "conjuntos.inactivo", "conjuntos.dado", "conjuntos.uso",
             "conjuntos.no_existe", "conjuntos.ninguno",
+            "top.titulo", "top.linea", "top.vacio", "top.no_existe", "top.victorias", "top.partidas", "top.casillas",
+            "top.tiempo", "placeholders.si", "placeholders.no", "placeholders.ninguno",
             "resumen.titulo", "resumen.equipo", "resumen.casilla", "resumen.mvp", "fin.aviso_volver", "fin.aviso_limpiar",
             "inicio.ya_en_curso", "inicio.sin_jugadores", "inicio.cartilla_no_existe", "inicio.error",
             "inicio.modo_imposible", "inicio.no_se_pudo", "inicio.anuncio", "inicio.detalle", "inicio.minutos",

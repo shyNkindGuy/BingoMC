@@ -3,7 +3,7 @@
 # la de por defecto. Después de editar, /bingo reload.
 
 comando:
-  uso: "&eUso: /bingo <start [cartilla] [semilla]|stop|pause|map|card|stats [jugador]|logros|item <id> [jugador]|conjunto <id> [jugador]|reload|team>"
+  uso: "&eUso: /bingo <start [cartilla] [semilla]|stop|pause|map|card|stats [jugador]|top [métrica]|logros|item <id> [jugador]|conjunto <id> [jugador]|reload|team>"
   sin_permiso_iniciar: "&cNo tienes permiso para iniciar el Bingo."
   sin_permiso_detener: "&cNo tienes permiso para detener el Bingo."
   sin_permiso_recargar: "&cNo tienes permiso para recargar el Bingo."
@@ -96,6 +96,22 @@ estadisticas:
   sin_victorias: "&7Todavía sin victorias."
   sin_datos: "&7{jugador} todavía no terminó ninguna partida."
   uso_consola: "&eDesde la consola: /bingo stats <jugador>"
+
+top:
+  titulo: "&6&lTop · {metrica}"
+  linea: "&e{puesto}. &f{jugador} &7— &f{valor}"
+  vacio: "&7Nadie terminó una partida todavía."
+  no_existe: "&cNo existe &f{metrica}&c. Hay: &f{metricas}"
+  victorias: "victorias"
+  partidas: "partidas"
+  casillas: "casillas"
+  tiempo: "victoria más rápida"
+
+# Lo que devuelven %adaptivebingo_en_partida%, %adaptivebingo_equipo% y los que no tienen valor (PlaceholderAPI)
+placeholders:
+  si: "sí"
+  "no": "no"
+  ninguno: "-"
 
 logros:
   anuncio: "&6★ &f{jugador} &7desbloqueó el logro &6{logro}&7: {descripcion}"

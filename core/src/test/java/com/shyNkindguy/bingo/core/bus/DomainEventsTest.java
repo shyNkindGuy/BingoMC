@@ -67,4 +67,18 @@ class DomainEventsTest {
         assertEquals(true, end.won(ana));
         assertEquals(false, end.won(beto));
     }
+
+    @Test
+    void unaSuscripcionCanceladaNoRecibeMas() {
+        DomainEvents events = new DomainEvents();
+        List<String> seen = new ArrayList<>();
+        DomainEvents.Subscription first = events.subscribe(CellCompleted.class, event -> seen.add("uno"));
+        events.subscribe(CellCompleted.class, event -> seen.add("dos"));
+
+        events.publish(CELL);
+        first.cancel();
+        events.publish(CELL);
+
+        assertEquals(List.of("uno", "dos", "dos"), seen);
+    }
 }

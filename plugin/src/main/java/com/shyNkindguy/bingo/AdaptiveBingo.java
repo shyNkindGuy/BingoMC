@@ -1,5 +1,7 @@
 package com.shyNkindguy.bingo;
 
+import com.shyNkindguy.bingo.api.AdaptiveBingoApi;
+import com.shyNkindguy.bingo.api.BingoApi;
 import com.shyNkindguy.bingo.commands.BingoCommand;
 import com.shyNkindguy.bingo.config.CatalogService;
 import com.shyNkindguy.bingo.config.TaskAvailability;
@@ -14,6 +16,7 @@ import com.shyNkindguy.bingo.game.EndActions;
 import com.shyNkindguy.bingo.game.PlayerContexts;
 import com.shyNkindguy.bingo.game.StartActions;
 import com.shyNkindguy.bingo.game.StatusApplier;
+import com.shyNkindguy.bingo.hooks.BingoExpansion;
 import com.shyNkindguy.bingo.items.ChaosDealer;
 import com.shyNkindguy.bingo.items.SpecialItems;
 import com.shyNkindguy.bingo.core.stats.YamlStatsRepository;
@@ -25,6 +28,7 @@ import com.shyNkindguy.bingo.ui.BingoScoreBoard;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class AdaptiveBingo extends JavaPlugin {
@@ -42,6 +46,11 @@ public final class AdaptiveBingo extends JavaPlugin {
         StatsService stats = new StatsService(getLogger(), new YamlStatsRepository(getDataFolder().toPath()));
         stats.start(game.events(), catalogs::achievements);
         AchievementAnnouncer.subscribeTo(game.events(), this);
+        Bukkit.getServicesManager().register(AdaptiveBingoApi.class, new BingoApi(game, stats), this, ServicePriority.Normal);
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            new BingoExpansion(getDescription().getVersion(), game, stats).register();
+            getLogger().info("PlaceholderAPI: %adaptivebingo_...% registrados");
+        }
         scoreboard = new BingoScoreBoard(game);
         mapManager = new BingoMapManager(this, game);
         PlayerContexts contexts = new PlayerContexts();

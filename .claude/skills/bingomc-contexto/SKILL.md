@@ -106,7 +106,11 @@ personal, con idea de llegar a servidor. Todo en español (commits, mensajes, do
 - 2026-10-24 · tarea **3.4**: conjuntos y estados. `core/status` (`PlayerStatus`, `ItemSet`, `StatusResolver`),
   `sets.yml` (`SetParser`) y `config.yml` `estados` (en `StartRules`); plugin: piezas en `SpecialItems` (PDC
   `pieza`), caos con piezas, `game/StatusApplier` (efectos de 20 s refrescados cada segundo) y `/bingo conjunto`.
-  **Siguiente: 3.5** (ranking y API). Ver `docs/PLAN.md` para el estado al día.
+  (PR #29).
+- 2026-10-24 · tarea **3.5**: ranking y API. `core/stats/Ranking` + `/bingo top`, `core/stats/Placeholders` +
+  `hooks/BingoExpansion` (PlaceholderAPI `softdepend`, dependencia `provided` de repo.extendedclip.com),
+  `api/AdaptiveBingoApi` en el `ServicesManager` (`docs/API.md`), `DomainEvents.Subscription`. **Fase 3
+  completa.** Lo que sigue es la **Fase 4** (servidor): la decide el dueño, la automatización no la empieza.
 
 ## Decisiones (no volver a preguntar)
 | Tema | Decisión |
