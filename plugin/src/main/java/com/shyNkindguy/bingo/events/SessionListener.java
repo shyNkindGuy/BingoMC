@@ -6,7 +6,7 @@ import com.shyNkindguy.bingo.game.BingoGame;
 import com.shyNkindguy.bingo.game.StartActions;
 import com.shyNkindguy.bingo.ui.BingoMapManager;
 import com.shyNkindguy.bingo.ui.BingoScoreBoard;
-import com.shyNkindguy.bingo.ui.CardMenu;
+import com.shyNkindguy.bingo.ui.ReadOnlyMenu;
 import com.shyNkindguy.bingo.ui.TeamColors;
 import com.shyNkindguy.bingo.ui.Texts;
 import org.bukkit.Bukkit;
@@ -67,15 +67,15 @@ public class SessionListener implements Listener {
         }
     }
 
-    // La cartilla de /bingo card es para mirar: no se saca ni se mueve nada.
+    // /bingo card y /bingo logros son para mirar: no se saca ni se mueve nada.
     @EventHandler
     public void onMenuClick(InventoryClickEvent event) {
-        if (event.getInventory().getHolder() instanceof CardMenu) event.setCancelled(true);
+        if (event.getInventory().getHolder() instanceof ReadOnlyMenu) event.setCancelled(true);
     }
 
     @EventHandler
     public void onMenuDrag(InventoryDragEvent event) {
-        if (event.getInventory().getHolder() instanceof CardMenu) event.setCancelled(true);
+        if (event.getInventory().getHolder() instanceof ReadOnlyMenu) event.setCancelled(true);
     }
 
     @EventHandler

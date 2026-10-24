@@ -189,7 +189,7 @@ public final class CatalogParser {
 
     // `condiciones: [ { dimension: nether }, { hora: noche } ]`: se tienen que cumplir todas. Una entrada con
     // varias claves también pide todas; `alguna: [ … ]` pide una de su lista.
-    private static Condition conditions(Object raw, String where) {
+    static Condition conditions(Object raw, String where) {
         List<Condition> all = new ArrayList<>();
         if (raw instanceof Map<?, ?>) {
             all.addAll(conditionEntry(map(raw, where), where));
@@ -459,7 +459,7 @@ public final class CatalogParser {
         return new StartRules(scatter, border, clear, kit);
     }
 
-    private static boolean yesNo(Object raw, String where) {
+    static boolean yesNo(Object raw, String where) {
         if (raw instanceof Boolean value) return value;
         if (raw instanceof String text) {
             String lower = text.trim().toLowerCase(Locale.ROOT);
@@ -498,7 +498,7 @@ public final class CatalogParser {
     }
 
     // `oak_log` → `minecraft:oak_log`; en minúsculas y con la forma de una clave de Minecraft.
-    private static String key(Object raw, String where) {
+    static String key(Object raw, String where) {
         String key = text(raw, where).toLowerCase(Locale.ROOT);
         if (!key.contains(":")) key = MINECRAFT + key;
         if (!KEY.matcher(key).matches()) {
@@ -520,13 +520,13 @@ public final class CatalogParser {
         return name.endsWith(".yml") ? name.substring(0, name.length() - ".yml".length()) : name;
     }
 
-    private static Object required(Map<String, Object> map, String key, String where) {
+    static Object required(Map<String, Object> map, String key, String where) {
         Object value = map.get(key);
         if (value == null) throw error(where, "falta " + key);
         return value;
     }
 
-    private static void checkKeys(Map<String, Object> map, Set<String> allowed, String where) {
+    static void checkKeys(Map<String, Object> map, Set<String> allowed, String where) {
         for (String key : map.keySet()) {
             if (!allowed.contains(key)) {
                 throw error(where, "no conozco \"" + key + "\" (se puede usar: " + String.join(", ", new TreeSet<>(allowed)) + ")");
@@ -534,7 +534,7 @@ public final class CatalogParser {
         }
     }
 
-    private static Map<String, Object> map(Object raw, String where) {
+    static Map<String, Object> map(Object raw, String where) {
         if (raw == null) throw error(where, "está vacío");
         if (!(raw instanceof Map<?, ?> rawMap)) throw error(where, "tiene que ser un mapa (clave: valor)");
         Map<String, Object> map = new LinkedHashMap<>();
@@ -542,26 +542,26 @@ public final class CatalogParser {
         return map;
     }
 
-    private static List<?> list(Object raw, String where) {
+    static List<?> list(Object raw, String where) {
         if (!(raw instanceof List<?> list)) throw error(where, "tiene que ser una lista (líneas con -)");
         if (list.isEmpty()) throw error(where, "está vacía");
         return list;
     }
 
-    private static String text(Object raw, String where) {
+    static String text(Object raw, String where) {
         if (!(raw instanceof String) && !(raw instanceof Number)) throw error(where, "tiene que ser un texto");
         String text = raw.toString().trim();
         if (text.isEmpty()) throw error(where, "está vacío");
         return text;
     }
 
-    private static int positive(Object raw, String where) {
+    static int positive(Object raw, String where) {
         int value = integer(raw, where);
         if (value < 1) throw error(where, "tiene que ser mayor que 0 (vino " + value + ")");
         return value;
     }
 
-    private static int nonNegative(Object raw, String where) {
+    static int nonNegative(Object raw, String where) {
         int value = integer(raw, where);
         if (value < 0) throw error(where, "no puede ser negativo (vino " + value + ")");
         return value;
@@ -575,7 +575,7 @@ public final class CatalogParser {
         throw error(where, "tiene que ser un número entero (vino " + raw + ")");
     }
 
-    private static CatalogException error(String where, String problem) {
+    static CatalogException error(String where, String problem) {
         return new CatalogException(where + ": " + problem);
     }
 }

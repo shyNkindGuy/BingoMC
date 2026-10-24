@@ -1,0 +1,109 @@
+# Logros de AdaptiveBingo. Cada uno se desbloquea una sola vez por jugador (quedan en stats.yml) y se ven con
+# /bingo logros. Después de editar: /bingo reload.
+#
+# Cada logro lleva id (minúsculas, números y _), nombre, descripcion, icono (opcional, un ítem: gold_ingot) y
+# `al`, que dice cuándo se revisa:
+#   al: partida (por defecto) — al terminar cada partida (las detenidas con /bingo stop no cuentan). Puede pedir:
+#     gana: true (o false)      en_menos_de: 10 (minutos que duró la partida)
+#     modo: lockout (como en config.yml: linea, 2 lineas, carta llena, 10 casillas, tiempo)
+#     casillas: 5 (completadas por él en esa partida)      sin_morir: true
+#     partidas: 10, victorias: 5, casillas_total: 100 (lo que lleva desde siempre)
+#   al: casilla — cada vez que completa una casilla. Puede pedir:
+#     tarea: item:diamond (el id de una tarea de tasks/)   en_menos_de: 1 (minutos desde que empezó)
+#     condiciones: como en tasks/*.yml (dimension, hora, bioma, debajo_de_y, sin_morir, alguna)
+# Lo que no se pone, no se pide: un logro "al: partida" sin nada se desbloquea al terminar la primera.
+
+logros:
+  - id: primera_partida
+    nombre: "Primera partida"
+    descripcion: "Termina tu primera partida de bingo"
+    icono: map
+
+  - id: primera_victoria
+    nombre: "¡Bingo!"
+    descripcion: "Gana una partida"
+    icono: gold_ingot
+    gana: true
+
+  - id: veterano
+    nombre: "Veterano"
+    descripcion: "Juega 10 partidas"
+    icono: clock
+    partidas: 10
+
+  - id: campeon
+    nombre: "Campeón"
+    descripcion: "Gana 5 partidas"
+    icono: golden_helmet
+    victorias: 5
+
+  - id: coleccionista
+    nombre: "Coleccionista"
+    descripcion: "Completa 100 casillas en total"
+    icono: chest
+    casillas_total: 100
+
+  - id: relampago
+    nombre: "Relámpago"
+    descripcion: "Gana una partida en menos de 10 minutos"
+    icono: lightning_rod
+    gana: true
+    en_menos_de: 10
+
+  - id: incansable
+    nombre: "Incansable"
+    descripcion: "Completa 10 casillas en una sola partida"
+    icono: golden_pickaxe
+    casillas: 10
+
+  - id: intocable
+    nombre: "Intocable"
+    descripcion: "Gana sin morir ni una vez"
+    icono: totem_of_undying
+    gana: true
+    sin_morir: true
+
+  - id: amo_del_lockout
+    nombre: "Amo del lockout"
+    descripcion: "Gana una partida en modo lockout"
+    icono: iron_bars
+    gana: true
+    modo: lockout
+
+  - id: carta_llena
+    nombre: "Carta llena"
+    descripcion: "Gana una partida de carta llena"
+    icono: filled_map
+    gana: true
+    modo: carta llena
+
+  - id: madrugador
+    nombre: "Madrugador"
+    descripcion: "Completa una casilla en el primer minuto"
+    icono: sunflower
+    al: casilla
+    en_menos_de: 1
+
+  - id: noctambulo
+    nombre: "Noctámbulo"
+    descripcion: "Completa una casilla de noche"
+    icono: black_bed
+    al: casilla
+    condiciones:
+      hora: noche
+
+  - id: infernal
+    nombre: "Infernal"
+    descripcion: "Completa una casilla en el Nether"
+    icono: netherrack
+    al: casilla
+    condiciones:
+      dimension: nether
+
+  - id: minero
+    nombre: "Minero de las profundidades"
+    descripcion: "Completa una casilla debajo de la capa Y 0"
+    icono: deepslate
+    al: casilla
+    condiciones:
+      debajo_de_y: 0

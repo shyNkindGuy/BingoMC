@@ -3,7 +3,7 @@
 # la de por defecto. Después de editar, /bingo reload.
 
 comando:
-  uso: "&eUso: /bingo <start [cartilla] [semilla]|stop|pause|map|card|stats [jugador]|reload|team>"
+  uso: "&eUso: /bingo <start [cartilla] [semilla]|stop|pause|map|card|stats [jugador]|logros|reload|team>"
   sin_permiso_iniciar: "&cNo tienes permiso para iniciar el Bingo."
   sin_permiso_detener: "&cNo tienes permiso para detener el Bingo."
   sin_permiso_recargar: "&cNo tienes permiso para recargar el Bingo."
@@ -93,6 +93,15 @@ estadisticas:
   sin_victorias: "&7Todavía sin victorias."
   sin_datos: "&7{jugador} todavía no terminó ninguna partida."
   uso_consola: "&eDesde la consola: /bingo stats <jugador>"
+
+logros:
+  anuncio: "&6★ &f{jugador} &7desbloqueó el logro &6{logro}&7: {descripcion}"
+  titulo: "&6★ Logro"
+  subtitulo: "&f{logro}"
+  menu_titulo: "Logros · {desbloqueados}/{total}"
+  desbloqueado: "&a✔ Desbloqueado"
+  bloqueado: "&8✘ Todavía no"
+  ninguno: "&7No hay logros en achievements.yml."
 
 mapa:
   nombre: "&aBINGO HUMILDE"

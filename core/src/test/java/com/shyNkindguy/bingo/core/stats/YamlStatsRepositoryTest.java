@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -33,7 +34,7 @@ class YamlStatsRepositoryTest {
     @Test
     void guardaYVuelveALeerLoMismo() throws IOException {
         Map<String, PlayerStats> stats = new LinkedHashMap<>();
-        stats.put("0b7e3c1a-0000-4000-8000-000000000001", new PlayerStats("Ana", 3, 2, 14, 754));
+        stats.put("0b7e3c1a-0000-4000-8000-000000000001", new PlayerStats("Ana", 3, 2, 14, 754, Set.of("veterano", "campeon")));
         stats.put("0b7e3c1a-0000-4000-8000-000000000002", new PlayerStats("Ñandú_7", 1, 0, 0, -1));
         YamlStatsRepository repository = new YamlStatsRepository(folder);
 
@@ -43,6 +44,7 @@ class YamlStatsRepositoryTest {
         String text = Files.readString(folder.resolve("stats.yml"), StandardCharsets.UTF_8);
         assertTrue(text.startsWith("# Estadísticas de AdaptiveBingo"), text);
         assertTrue(text.contains("mejor_tiempo: 754"), text);
+        assertTrue(text.contains("logros:\n    - campeon\n    - veterano"), text);
         assertFalse(Files.exists(folder.resolve("stats.yml.tmp")));
     }
 
@@ -61,7 +63,7 @@ class YamlStatsRepositoryTest {
 
     @Test
     void validaConMensajesQueDicenDonde() throws IOException {
-        assertEquals("stats.yml, jugador id-ana: no conozco \"partida\" (se puede usar: casillas, mejor_tiempo, "
+        assertEquals("stats.yml, jugador id-ana: no conozco \"partida\" (se puede usar: casillas, logros, mejor_tiempo, "
                 + "nombre, partidas, victorias)", loadError("jugadores:\n  id-ana:\n    nombre: Ana\n    partida: 3\n"));
         assertEquals("stats.yml, jugador id-ana: falta nombre", loadError("jugadores:\n  id-ana:\n    partidas: 3\n"));
         assertEquals("stats.yml, jugador id-ana: tiene más victorias (4) que partidas (3)",
@@ -73,6 +75,10 @@ class YamlStatsRepositoryTest {
         assertEquals("stats.yml, jugador id-ana: tiene mejor_tiempo pero ninguna victoria",
                 loadError("jugadores:\n  id-ana:\n    nombre: Ana\n    partidas: 1\n    mejor_tiempo: 300\n"));
         assertEquals("stats.yml: version: solo se conoce la 1 (vino 2)", loadError("version: 2\n"));
+        assertEquals("stats.yml, jugador id-ana: logros: tiene que ser una lista de ids",
+                loadError("jugadores:\n  id-ana:\n    nombre: Ana\n    logros: veterano\n"));
+        assertEquals("stats.yml, jugador id-ana: logros: tiene un id vacío o que no es texto (3)",
+                loadError("jugadores:\n  id-ana:\n    nombre: Ana\n    logros: [3]\n"));
         assertEquals("stats.yml: no conozco \"jugador\" (se puede usar: jugadores, version)", loadError("jugador: {}\n"));
         assertTrue(loadError("jugadores: [\n").startsWith("stats.yml: YAML mal escrito"));
     }
