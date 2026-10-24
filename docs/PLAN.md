@@ -46,7 +46,7 @@ Leyenda: `[ ]` pendiente · `[x]` hecha (se marca dentro del PR que la resuelve)
   `dimension`, `time` (día/noche), `biome`, `below_y`, `no_death` combinables en YAML. Tests de cada una.
 
 ## Fase 2 — Partida completa
-- [ ] **2.1 Sesión con fases.** `LOBBY → COUNTDOWN → RUNNING → ENDED`, `GameSettings` (tamaño 3/4/5,
+- [x] **2.1 Sesión con fases.** `LOBBY → COUNTDOWN → RUNNING → ENDED`, `GameSettings` (tamaño 3/4/5,
   duración, modo, PvP, semilla) desde `config.yml`; quien entra a mitad recibe su cartilla. Tests de
   transiciones.
 - [ ] **2.2 Equipos.** `/bingo team crear|unir|salir|random`, colores, cartilla por equipo (solo =

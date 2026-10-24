@@ -1,5 +1,6 @@
 package com.shyNkindguy.bingo.core.catalog;
 
+import com.shyNkindguy.bingo.core.game.GameSettings;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
@@ -19,13 +20,15 @@ import java.util.List;
 import java.util.stream.Stream;
 
 // Lee el catálogo de una carpeta (cards.yml + tasks/*.yml, en UTF-8) o el que viene adentro del .jar
-// (recursos en adaptivebingo/defaults/). La carpeta del plugin se llena con esos la primera vez.
+// (recursos en adaptivebingo/defaults/), y la configuración de las partidas (config.yml). La carpeta del
+// plugin se llena con esos la primera vez.
 public final class CatalogLoader {
 
     public static final String CARDS_FILE = "cards.yml";
+    public static final String CONFIG_FILE = "config.yml";
     public static final String TASKS_DIR = "tasks";
     static final List<String> DEFAULT_FILES =
-            List.of(CARDS_FILE, "tasks/basicos.yml", "tasks/medios.yml", "tasks/dificiles.yml");
+            List.of(CONFIG_FILE, CARDS_FILE, "tasks/basicos.yml", "tasks/medios.yml", "tasks/dificiles.yml");
     private static final String DEFAULTS = "/adaptivebingo/defaults/";
 
     private CatalogLoader() {
@@ -64,7 +67,19 @@ public final class CatalogLoader {
         return CatalogParser.parseCatalog(CARDS_FILE, read(CARDS_FILE, () -> openDefault(CARDS_FILE)), lists);
     }
 
-    // Copia los YAML por defecto que falten: cards.yml si no está, y las listas solo si no existe la
+    // config.yml de la carpeta; si no está, la configuración por defecto.
+    public static GameSettings settingsFromDirectory(Path dir, Catalog catalog) {
+        Path config = dir.resolve(CONFIG_FILE);
+        if (!Files.isRegularFile(config)) return GameSettings.DEFAULT;
+        return CatalogParser.parseSettings(CONFIG_FILE,
+                read(CONFIG_FILE, () -> Files.newBufferedReader(config, StandardCharsets.UTF_8)), catalog);
+    }
+
+    public static GameSettings defaultSettings(Catalog catalog) {
+        return CatalogParser.parseSettings(CONFIG_FILE, read(CONFIG_FILE, () -> openDefault(CONFIG_FILE)), catalog);
+    }
+
+    // Copia los YAML por defecto que falten: config.yml y cards.yml si no están, y las listas solo si no existe la
     // carpeta tasks/ (así una lista borrada a propósito no vuelve). Devuelve los archivos copiados.
     public static List<String> copyDefaults(Path dir) throws IOException {
         boolean tasksMissing = !Files.exists(dir.resolve(TASKS_DIR));

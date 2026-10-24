@@ -151,7 +151,7 @@ public class ObjectiveListener implements Listener {
     public void onRespawn(PlayerRespawnEvent event){
         Player player = event.getPlayer();
 
-        if (game.isRunning()) {
+        if (game.inGame()) {
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 mapManager.giveMap(player);
             }, 1L);

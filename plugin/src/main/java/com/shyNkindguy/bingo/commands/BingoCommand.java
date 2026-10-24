@@ -3,6 +3,7 @@ package com.shyNkindguy.bingo.commands;
 import com.shyNkindguy.bingo.config.CatalogService;
 import com.shyNkindguy.bingo.core.catalog.Catalog;
 import com.shyNkindguy.bingo.core.catalog.CatalogException;
+import com.shyNkindguy.bingo.core.game.GameSettings;
 import com.shyNkindguy.bingo.core.task.Task;
 import com.shyNkindguy.bingo.game.BingoGame;
 import com.shyNkindguy.bingo.ui.BingoMapManager;
@@ -72,25 +73,30 @@ public class BingoCommand implements CommandExecutor, TabCompleter {
         return options.stream().filter(option -> option.toLowerCase(Locale.ROOT).startsWith(prefix)).toList();
     }
 
-    // /bingo start [cartilla] [semilla]: sin cartilla, la por defecto de cards.yml; sin semilla, una al azar
-    // que se anuncia para poder repetir la partida.
+    // /bingo start [cartilla] [semilla]: sin cartilla, la de config.yml o la por defecto de cards.yml; sin
+    // semilla, la de config.yml o una al azar que se anuncia para poder repetir la partida.
     private void start(CommandSender sender, String[] args) {
         if (!sender.hasPermission(ADMIN_PERMISSION)) {
             sender.sendMessage("§cNo tienes permiso para iniciar el Bingo.");
             return;
         }
-        if (game.isRunning()) {
+        if (game.inGame()) {
             sender.sendMessage("§cEl Bingo ya está en curso.");
+            return;
+        }
+        if (Bukkit.getOnlinePlayers().isEmpty()) {
+            sender.sendMessage("§cNo hay jugadores conectados.");
             return;
         }
 
         Catalog catalog = catalogs.get();
-        String cardName = catalog.defaultCard();
-        Long seed = null;
+        GameSettings settings = catalogs.settings();
+        String cardName = settings.card() != null ? settings.card() : catalog.defaultCard();
+        Long seed = settings.seed();
         for (int i = 1; i < args.length; i++) {
             if (catalog.cards().containsKey(args[i])) {
                 cardName = args[i];
-            } else if (seed == null && isNumber(args[i])) {
+            } else if (isNumber(args[i])) {
                 seed = Long.parseLong(args[i]);
             } else {
                 sender.sendMessage("§cNo existe la cartilla §f" + args[i] + "§c. Hay: §f"
@@ -107,14 +113,16 @@ public class BingoCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage("§c" + e.getMessage());
             return;
         }
-        if (!game.start(Bukkit.getOnlinePlayers(), tasks)) {
-            sender.sendMessage("§cNo hay jugadores conectados.");
+        GameSettings used = settings.withCard(cardName).withSeed(usedSeed);
+        int size = catalog.cards().get(cardName).size();
+        String duration = used.durationMinutes() == 0 ? "sin límite" : used.durationMinutes() + " min";
+        Bukkit.broadcastMessage("§a§lBINGO INICIADO!");
+        Bukkit.broadcastMessage("§7Cartilla §f" + cardName + " §7(" + size + "×" + size + ") · semilla §f" + usedSeed
+                + " §7· " + duration + (used.pvp() ? "" : " · sin PvP"));
+        if (!game.start(Bukkit.getOnlinePlayers(), tasks, used)) {
+            sender.sendMessage("§cNo se pudo empezar la partida.");
             return;
         }
-
-        int size = catalog.cards().get(cardName).size();
-        Bukkit.broadcastMessage("§a§lBINGO INICIADO!");
-        Bukkit.broadcastMessage("§7Cartilla §f" + cardName + " §7(" + size + "×" + size + ") · semilla §f" + usedSeed);
         for (Player p : Bukkit.getOnlinePlayers()){
             mapManager.giveMap(p);
             scoreboard.show(p);
@@ -150,7 +158,7 @@ public class BingoCommand implements CommandExecutor, TabCompleter {
             List<String> summary = catalogs.reload();
             sender.sendMessage("§aTareas recargadas.");
             summary.forEach(line -> sender.sendMessage("§7" + line));
-            if (game.isRunning()) {
+            if (game.inGame()) {
                 sender.sendMessage("§7La partida en curso sigue con sus tareas; los cambios salen en la próxima.");
             }
         } catch (CatalogException e) {
