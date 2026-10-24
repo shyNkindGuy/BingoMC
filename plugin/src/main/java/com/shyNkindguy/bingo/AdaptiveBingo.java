@@ -1,11 +1,13 @@
 package com.shyNkindguy.bingo;
 
 import com.shyNkindguy.bingo.commands.BingoCommand;
+import com.shyNkindguy.bingo.config.CatalogService;
 import com.shyNkindguy.bingo.events.ObjectiveListener;
 import com.shyNkindguy.bingo.game.BingoGame;
 import com.shyNkindguy.bingo.ui.BingoMapManager;
 import com.shyNkindguy.bingo.ui.BingoScoreBoard;
 import org.bukkit.Bukkit;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class AdaptiveBingo extends JavaPlugin {
@@ -17,6 +19,8 @@ public final class AdaptiveBingo extends JavaPlugin {
     public void onEnable(){
 
         getLogger().info("Mi Bingo Habilitado :)))");
+        CatalogService catalogs = new CatalogService(this);
+        catalogs.load();
         game = new BingoGame(this);
         scoreboard = new BingoScoreBoard(game);
         mapManager = new BingoMapManager(this, game);
@@ -29,9 +33,10 @@ public final class AdaptiveBingo extends JavaPlugin {
                 new ObjectiveListener(this,game,scoreboard,mapManager),
                 this
         );
-        getCommand("bingo").setExecutor(
-                new BingoCommand(game, scoreboard, mapManager)
-        );
+        BingoCommand command = new BingoCommand(game, scoreboard, mapManager, catalogs);
+        PluginCommand bingo = getCommand("bingo");
+        bingo.setExecutor(command);
+        bingo.setTabCompleter(command);
     }
 
     }

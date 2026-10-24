@@ -4,8 +4,9 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- Núcleo del bingo: cartilla, objetivos, victoria y sorteo. Sin Bukkit ni Paper: solo Java y JUnit,
-         así `mvn -pl core verify` corre sin el repositorio de Paper. -->
+    <!-- Núcleo del bingo: cartilla, tareas, catálogo YAML, victoria y sorteo. Sin Bukkit ni Paper: solo
+         Java, SnakeYAML (provided: en el servidor la pone Paper) y JUnit, así `mvn -pl core verify` corre sin
+         el repositorio de Paper. -->
     <parent>
         <groupId>com.shyNkindguy.bingo</groupId>
         <artifactId>adaptive-bingo-parent</artifactId>
@@ -15,6 +16,10 @@
     <artifactId>adaptive-bingo-core</artifactId>
 
     <dependencies>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>

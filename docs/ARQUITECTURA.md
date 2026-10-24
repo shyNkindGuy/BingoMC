@@ -62,7 +62,8 @@ BingoMC/
 │       ├── condition/           Condition, InDimension, TimeOfDay, InBiome, BelowY, NoDeath, AllOf/AnyOf
 │       ├── event/               TaskEvent (sealed): ItemObtained, EntityKilled, AdvancementDone,
 │       │                        StatisticChanged · EventContext (dimensión, bioma, hora, Y, muertes)
-│       ├── card/                Card (N×N), Cell, CellState, CardGenerator, TaskPool, Tier
+│       ├── card/                Card (N×N), Cell, CellState
+│       ├── catalog/             Catalog, TaskList + Tier, CardSpec, CardGenerator, lector de YAML
 │       ├── progress/            ProgressTracker (por equipo), TaskProgress (n/m)
 │       ├── win/                 WinCondition: Line, Blackout, Lockout, CompleteX, TimeLimit
 │       ├── game/                GameSession, Phase (LOBBY, COUNTDOWN, RUNNING, ENDED), GameSettings
@@ -73,7 +74,7 @@ BingoMC/
     └── com.shyNkindguy.bingo
         ├── AdaptiveBingo        arranque: carga config, crea servicios, registra listeners/comandos
         ├── command/             /bingo start|stop|card|team|settings|reload|stats
-        ├── config/              YamlTaskLoader, SettingsLoader, Messages (messages.yml)
+        ├── config/              CatalogService (tasks/ + cards.yml), SettingsLoader, Messages (messages.yml)
         ├── listener/            traducen eventos de Paper → TaskEvent (+ EventContext)
         ├── adapter/             Keys (Material ↔ "minecraft:..."), Teleport, WorldBorder
         ├── ui/map/              BingoMapRenderer (contextual), MapManager, icon/
@@ -81,8 +82,9 @@ BingoMC/
         └── storage/             (Fase 3) StatsRepository: YAML → SQLite
 ```
 
-Desde la tarea 1.1 el repo ya tiene esta forma: `core/` (hoy `card/` y `win/`) y `plugin/` (con
-`adapter/Keys`). Los paquetes que faltan se crean así a medida que llegan sus tareas.
+Desde la tarea 1.1 el repo ya tiene esta forma: `core/` (hoy `task/`, `event/`, `progress/`, `card/`,
+`catalog/` y `win/`) y `plugin/` (con `adapter/Keys` y `config/CatalogService`). Los paquetes que faltan
+se crean así a medida que llegan sus tareas.
 
 ## 4. Modelo de dominio
 
@@ -176,40 +178,51 @@ horno, balde o clic, y emite `ItemObtained` con el total real.
 
 ## 6. Configuración por datos (YAML)
 
+Desde la tarea 1.3 las tareas de ítem ya se leen así (`tipo` por defecto `item`, `cantidad` por defecto
+1, `id` por defecto `item:<ítem>`); los otros tipos llegan en las tareas 1.4 y 1.5:
+
 ```yaml
 # plugins/AdaptiveBingo/tasks/basicos.yml
 lista: basicos
 tier: D
 tareas:
-  - { tipo: item, item: oak_log, cantidad: 16 }
-  - { tipo: item, item: bread }
-  - { tipo: kill, mob: zombie, cantidad: 3 }
+  - { item: oak_log, nombre: Tronco de roble, cantidad: 16 }
+  - { item: bread, nombre: Pan }
+  - { tipo: kill, mob: zombie, nombre: Zombi, cantidad: 3 }                  # 1.4
 
 # plugins/AdaptiveBingo/tasks/dificiles.yml
 lista: dificiles
 tier: S
 tareas:
-  - { tipo: item, item: diamond, cantidad: 3 }
-  - { tipo: advancement, logro: "minecraft:story/enter_the_nether" }
-  - { tipo: any_of, nombre: "3 lanas distintas", necesita: 3,
+  - { item: diamond, nombre: Diamante, cantidad: 3 }
+  - { tipo: advancement, logro: "minecraft:story/enter_the_nether", nombre: Al Nether }  # 1.4
+  - { tipo: any_of, nombre: "3 lanas distintas", necesita: 3,                # 1.5
       de: [white_wool, red_wool, blue_wool, yellow_wool, black_wool] }
-  - { tipo: item, item: cooked_beef, condiciones: [ { dimension: the_nether } ] }
-  - { tipo: statistic, estadistica: jump, valor: 500 }
+  - { item: cooked_beef, nombre: Filete en el Nether, condiciones: [ { dimension: the_nether } ] }  # 1.5
+  - { tipo: statistic, estadistica: jump, valor: 500, nombre: 500 saltos }   # 1.4
 ```
 
 ```yaml
 # plugins/AdaptiveBingo/cards.yml — cuántas tareas salen de cada lista
-normal:
-  tamaño: 5
-  listas:
-    basicos:   { min: 10, max: 15 }
-    medios:    { min: 6,  max: 10 }
-    dificiles: { min: 2,  max: 5 }
+por_defecto: normal
+cartillas:
+  normal:
+    tamaño: 5                      # de 3 a 7
+    listas:
+      basicos:   { min: 8, max: 12 }
+      medios:    { min: 8, max: 14 }
+      dificiles: { min: 2, max: 4 }
+  rapida:
+    tamaño: 3
+    listas: { basicos: { min: 5, max: 7 }, medios: { min: 2, max: 4 } }
 ```
 
-El generador elige con semilla (partidas repetibles), sin repetir tareas, respetando los mínimos y
+El generador (`CardGenerator`) elige con semilla (`/bingo start [cartilla] [semilla]`: partidas
+repetibles), sin repetir tareas (los ids son únicos en todo el catálogo), respetando los mínimos y
 máximos de cada lista (idea de las listas de BingoReloaded y los tiers S–D de
-[minecraft-bingo](https://github.com/Extremelyd1/minecraft-bingo)).
+[minecraft-bingo](https://github.com/Extremelyd1/minecraft-bingo)). Todo se valida al leer: un error
+en `/bingo reload` dice archivo y tarea ("tasks/basicos.yml, tarea 3: falta nombre") y deja el
+catálogo anterior.
 
 ## 7. Capa de servidor (Fase 3, encima del bingo)
 

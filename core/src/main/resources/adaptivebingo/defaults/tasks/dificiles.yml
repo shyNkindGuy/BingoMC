@@ -1,0 +1,9 @@
+# Tareas difíciles. El formato está explicado en basicos.yml.
+lista: dificiles
+tier: A
+tareas:
+  - { item: diamond, nombre: Diamante }
+  - { item: emerald, nombre: Esmeralda }
+  - { item: diamond_pickaxe, nombre: Pico de diamante }
+  - { item: golden_apple, nombre: Manzana dorada }
+  - { item: obsidian, nombre: Obsidiana }

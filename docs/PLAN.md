@@ -37,7 +37,7 @@ Leyenda: `[ ]` pendiente · `[x]` hecha (se marca dentro del PR que la resuelve)
 - [x] **1.2 Modelo de tareas.** Interfaz `Task`, `TaskEvent` (sealed), `TaskProgress` (n/m),
   `ItemTask` con cantidad ("16 troncos"), `ProgressTracker`; los listeners traducen eventos de Paper a
   `TaskEvent`. Tests de progreso.
-- [ ] **1.3 Tareas en YAML.** `tasks/*.yml` (listas con tier S–D) y `cards.yml` (mín/máx por lista),
+- [x] **1.3 Tareas en YAML.** `tasks/*.yml` (listas con tier S–D) y `cards.yml` (mín/máx por lista),
   copiados por defecto en el primer arranque; `/bingo reload`; generador con semilla y sin repetidos.
   Tests del parser y del generador.
 - [ ] **1.4 Tipos nuevos.** `kill` (mob con cantidad), `advancement` (logro de Minecraft),

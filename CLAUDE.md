@@ -9,7 +9,7 @@ viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
 ## Stack
 - **Java 21, Paper API 1.21.11** (desde la tarea 0.2), Maven **multi-módulo** (desde la 1.1): `pom.xml`
   padre (versión, Java y versiones de plugins de Maven) + **`core/`** (lógica del bingo **sin Bukkit**,
-  paquete `com.shyNkindguy.bingo.core`, solo JUnit) + **`plugin/`** (adaptador Paper, artifactId
+  paquete `com.shyNkindguy.bingo.core`; JUnit y SnakeYAML `provided`, que en el servidor la pone Paper) + **`plugin/`** (adaptador Paper, artifactId
   `AdaptiveBingo`; `maven-shade-plugin` mete las clases de `core` en su `.jar`). La versión sale solo del
   `pom` padre (el `plugin.yml` usa `${project.version}` con resource filtering; el CI revisa que quede
   reemplazada y que el `.jar` traiga `core`).
@@ -20,23 +20,29 @@ viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
   - `event/`: `TaskEvent` sellado; por ahora solo `ItemObtained(ítem, total)`.
   - `progress/`: `TaskProgress(current, target)` inmutable que solo sube, y `ProgressTracker.apply(cartilla,
     evento)` → `ProgressResult` (casillas que avanzaron y tareas completadas).
-  - `card/`: `BingoCard` N×N de `BingoCell` (tarea + progreso) y `ObjectivePool` (43 candidatos con
-    cantidad, `draw`).
+  - `card/`: `BingoCard` N×N de `BingoCell` (tarea + progreso).
+  - `catalog/` (desde la 1.3): `CatalogLoader` lee `cards.yml` + `tasks/*.yml` de una carpeta o los por
+    defecto del `.jar` (`core/src/main/resources/adaptivebingo/defaults/`, 43 tareas en `basicos` D,
+    `medios` C y `dificiles` A; cartillas `normal` 5×5 y `rapida` 3×3) y los copia la primera vez;
+    `CatalogParser` valida todo con mensajes "archivo, tarea N: problema"; `Catalog` (listas `TaskList` +
+    `Tier`, cartillas `CardSpec` con mín/máx por lista) y `CardGenerator` (semilla, sin repetidos).
   - `win/`: `WinConditionChecker` y `TimeLimitWinners`.
-- `plugin`: `adapter/Keys` traduce `Material` ↔ clave; el resto como abajo.
+- `plugin`: `adapter/Keys` traduce `Material` ↔ clave; `config/CatalogService` tiene el catálogo
+  (carga al arrancar, `/bingo reload`, "disponible" = el ítem existe en esta versión); el resto como abajo.
 - `plugin.yml` clásico de Bukkit (no `paper-plugin.yml`). Main: `com.shyNkindguy.bingo.AdaptiveBingo`.
-- Paquete `com.shyNkindguy.bingo` del plugin: `commands/` (`/bingo start|stop|map`), `events/`
-  (`ObjectiveListener`, `ScanQueue`), `game/` (`BingoGame`, `ObjectiveFactory`), `icon/`, `ui/` (mapa,
+- Paquete `com.shyNkindguy.bingo` del plugin: `commands/` (`/bingo start|stop|map|reload`), `config/`,
+  `events/` (`ObjectiveListener`, `ScanQueue`), `game/` (`BingoGame`), `icon/`, `ui/` (mapa,
   scoreboard, paleta). Íconos: un solo sistema, `icon/IconRegistry` (por `Material`, con fallback por
   categoría) + `icon/IconRenderer` (escala entera que entra en la casilla, centrado; dibuja sobre un
   `PixelSink` para poder testearlo).
 
 ## Cómo se juega hoy
-`/bingo start` (permiso `bingo.admin`, ops por defecto; también desde la consola) crea una cartilla 5×5
-por jugador conectado con 25 tareas sorteadas **una vez por partida** de las 43 de `ObjectivePool`
-(ítem + nombre en español + cantidad, p. ej. "16 × Tronco de roble"; el id se deriva del ítem), las mismas
-para todos en distinto orden;
-da el mapa y el scoreboard. El mapa usa un renderer contextual (cada jugador ve su cartilla) que solo
+`/bingo start [cartilla] [semilla]` (permiso `bingo.admin`, ops por defecto; también desde la consola)
+crea una cartilla por jugador conectado (la `por_defecto` de `cards.yml`: `normal` 5×5) con tareas
+sorteadas **una vez por partida** de `plugins/AdaptiveBingo/tasks/*.yml` (ítem + nombre en español +
+cantidad, p. ej. "16 × Tronco de roble"; id `item:<ítem>`), las mismas para todos en distinto orden; anuncia
+la semilla (la misma semilla repite las tareas) y da el mapa y el scoreboard. `/bingo reload` relee los
+YAML: con un error lo dice y sigue el catálogo anterior (al arrancar con error, usa los del `.jar`). El mapa usa un renderer contextual (cada jugador ve su cartilla) que solo
 redibuja tras `invalidate()`. Una casilla se completa cuando el ítem está **en el inventario del jugador**: recoger, clic,
 arrastrar, cerrar el inventario, craftear, horno o balde piden revisar el inventario un tick después
 (`ObjectiveListener.requestScan`; `ScanQueue` junta los pedidos del mismo tick), nunca se mira el ítem
@@ -53,7 +59,11 @@ tabla de `docs/ANALISIS.md` §3.
 - Commits, mensajes del juego y documentación **en español**. Java (no migrar a Kotlin sin pedirlo).
 - Lógica nueva **sin Bukkit** siempre que se pueda (clases puras con tests JUnit 5 en `src/test`); los
   listeners solo traducen eventos de Paper. Claves de texto (`"minecraft:diamond"`) en la lógica nueva.
-- Nada de objetivos ni textos fijos nuevos en el código: van a YAML (desde la tarea 1.3).
+- Nada de objetivos en el código: van a `tasks/*.yml` (desde la 1.3), y los por defecto a
+  `core/src/main/resources/adaptivebingo/defaults/` (si se agrega un archivo, sumarlo a
+  `CatalogLoader.DEFAULT_FILES`). Los textos del juego pasan a `messages.yml` en la 2.4.
+- Todo YAML nuevo se valida al leer, con mensajes en español que digan archivo y entrada, y claves
+  desconocidas = error (atrapa errores de tipeo).
 - No usar `_` como identificador (es palabra reservada desde Java 9).
 - No copiar código de BingoReloaded ni minecraft-bingo (GPL-3.0); sí sus ideas.
 
@@ -67,7 +77,7 @@ Paper 1.21.11 (Java 21) y reiniciar.
 
 **El contenedor en la nube de Claude no llega a `repo.papermc.io`** (y Maven Central a veces responde
 429): ahí solo `mvn -pl core verify` funciona de verdad. El módulo `plugin` se compila con `javac`
-contra stubs mínimos de Bukkit en el scratchpad + el `.jar` de `core`, y sus tests con
+contra stubs mínimos de Bukkit en el scratchpad + el `.jar` de `core` + `snakeyaml-2.2.jar` de `~/.m2`, y sus tests con
 `junit-platform-console-standalone`. La validación real del plugin es `.github/workflows/build.yml` en
 cada PR. Lógica nueva: ponerla en `core` siempre que no necesite Bukkit.
 

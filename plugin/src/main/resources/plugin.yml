@@ -6,9 +6,9 @@ api-version: '1.21'
 commands:
   bingo:
     description: Controlar el Bingo
-    usage: /bingo <start|stop|map>
+    usage: /bingo <start [cartilla] [semilla]|stop|map|reload>
 
 permissions:
   bingo.admin:
-    description: Iniciar y detener partidas de Bingo
+    description: Iniciar, detener y recargar el Bingo
     default: op
