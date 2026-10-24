@@ -22,6 +22,8 @@
         <maven.compiler.release>${java.version}</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.11.4</junit.version>
+        <!-- la que trae Paper 1.21.11: core la usa para leer los YAML y no la mete en el .jar -->
+        <snakeyaml.version>2.2</snakeyaml.version>
     </properties>
 
     <dependencyManagement>
@@ -30,6 +32,12 @@
                 <groupId>com.shyNkindguy.bingo</groupId>
                 <artifactId>adaptive-bingo-core</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>${snakeyaml.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.junit.jupiter</groupId>

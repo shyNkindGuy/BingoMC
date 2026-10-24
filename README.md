@@ -1,14 +1,24 @@
 # AdaptiveBingo (BingoMC)
 
-Plugin de bingo para servidores **Paper 1.21.11** de Minecraft (Java 21). Cada jugador recibe una cartilla 5×5 de
-objetivos dibujada en un mapa en la mano izquierda; gana el primero en completar una línea (fila,
-columna o diagonal). Si pasan 20 minutos, gana quien tenga más casillas (o empatan los que tengan más).
+Plugin de bingo para servidores **Paper 1.21.11** de Minecraft (Java 21). Cada jugador recibe una cartilla
+(5×5 por defecto) de objetivos dibujada en un mapa en la mano izquierda; gana el primero en completar una
+línea (fila, columna o diagonal). Si pasan 20 minutos, gana quien tenga más casillas (o empatan los que
+tengan más).
 
 | Comando | Qué hace |
 |---|---|
-| `/bingo start` | Empieza la partida con todos los jugadores conectados (permiso `bingo.admin`, ops por defecto) |
+| `/bingo start [cartilla] [semilla]` | Empieza la partida con todos los jugadores conectados (permiso `bingo.admin`, ops por defecto). Sin cartilla usa la por defecto de `cards.yml`; la semilla se anuncia y con la misma salen las mismas tareas |
 | `/bingo stop` | Detiene la partida en curso (permiso `bingo.admin`) |
+| `/bingo reload` | Vuelve a leer `cards.yml` y `tasks/*.yml`; si tienen un error, dice dónde y sigue con los de antes (permiso `bingo.admin`) |
 | `/bingo map` | Vuelve a dar el mapa con la cartilla |
+
+## Tareas y cartillas
+La primera vez que arranca, el plugin crea en `plugins/AdaptiveBingo/`:
+- `tasks/basicos.yml`, `tasks/medios.yml`, `tasks/dificiles.yml`: listas de tareas (`item`, `nombre`,
+  `cantidad`), cada una con su dificultad (`tier` S–D). Cualquier otro `.yml` en `tasks/` es otra lista.
+- `cards.yml`: las cartillas (`normal` 5×5 y `rapida` 3×3) con cuántas tareas salen de cada lista.
+
+El formato está explicado en los comentarios de los propios archivos. Después de editar: `/bingo reload`.
 
 **Documentación:** [arquitectura](docs/ARQUITECTURA.md) · [plan de trabajo](docs/PLAN.md) ·
 [análisis y viabilidad](docs/ANALISIS.md)

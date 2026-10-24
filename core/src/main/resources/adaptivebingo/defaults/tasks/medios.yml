@@ -1,0 +1,26 @@
+# Tareas de dificultad media. El formato está explicado en basicos.yml.
+lista: medios
+tier: C
+tareas:
+  - { item: iron_ingot, nombre: Lingote de hierro, cantidad: 3 }
+  - { item: gold_ingot, nombre: Lingote de oro }
+  - { item: redstone, nombre: Polvo de redstone }
+  - { item: lapis_lazuli, nombre: Lapislázuli }
+  - { item: acacia_boat, nombre: Bote de acacia }
+  - { item: purple_dye, nombre: Tinte morado }
+  - { item: acacia_wood, nombre: Madera de acacia }
+  - { item: arrow, nombre: Flecha, cantidad: 8 }
+  - { item: bucket, nombre: Balde }
+  - { item: milk_bucket, nombre: Balde de leche }
+  - { item: water_bucket, nombre: Balde de agua }
+  - { item: flint_and_steel, nombre: Mechero }
+  - { item: lava_bucket, nombre: Balde de lava }
+  - { item: bow, nombre: Arco }
+  - { item: shield, nombre: Escudo }
+  - { item: book, nombre: Libro }
+  - { item: pumpkin, nombre: Calabaza }
+  - { item: compass, nombre: Brújula }
+  - { item: shears, nombre: Tijeras }
+  - { item: string, nombre: Hilo, cantidad: 4 }
+  - { item: bone, nombre: Hueso, cantidad: 4 }
+  - { item: gunpowder, nombre: Pólvora }

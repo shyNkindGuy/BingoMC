@@ -1,0 +1,31 @@
+# Lista de tareas de AdaptiveBingo. Cada archivo .yml de esta carpeta es una lista y cards.yml dice
+# cuántas tareas salen de cada una. Después de editar, /bingo reload (la partida en curso no cambia).
+#
+#   lista:  nombre de la lista (si falta, el del archivo)
+#   tier:   dificultad, de S (la más difícil) a D (la más fácil)
+#   tareas: una por línea, con
+#     item:     el ítem de Minecraft: oak_log o minecraft:oak_log
+#               (nombres en https://minecraft.wiki/w/Java_Edition_data_values)
+#     nombre:   lo que se lee en el juego
+#     cantidad: cuántos tiene que tener a la vez en el inventario (si falta, 1)
+#     id:       opcional, por defecto item:<ítem>; solo hace falta si el mismo ítem va dos veces
+#     tipo:     opcional; por ahora solo item
+lista: basicos
+tier: D
+tareas:
+  - { item: oak_log, nombre: Tronco de roble, cantidad: 16 }
+  - { item: cobblestone, nombre: Roca, cantidad: 32 }
+  - { item: bread, nombre: Pan, cantidad: 3 }
+  - { item: coal, nombre: Carbón, cantidad: 8 }
+  - { item: barrel, nombre: Barril }
+  - { item: red_dye, nombre: Tinte rojo }
+  - { item: diorite, nombre: Diorita }
+  - { item: flint, nombre: Pedernal }
+  - { item: composter, nombre: Compostador }
+  - { item: copper_ingot, nombre: Lingote de cobre }
+  - { item: apple, nombre: Manzana }
+  - { item: cooked_beef, nombre: Filete }
+  - { item: white_wool, nombre: Lana blanca, cantidad: 3 }
+  - { item: sugar_cane, nombre: Caña de azúcar, cantidad: 6 }
+  - { item: torch, nombre: Antorcha, cantidad: 16 }
+  - { item: glass, nombre: Vidrio, cantidad: 8 }

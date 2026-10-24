@@ -1,6 +1,7 @@
 package com.shyNkindguy.bingo.adapter;
 
-import com.shyNkindguy.bingo.core.card.ObjectivePool;
+import com.shyNkindguy.bingo.core.catalog.CatalogLoader;
+import com.shyNkindguy.bingo.core.task.Task;
 import org.bukkit.Material;
 import org.junit.jupiter.api.Test;
 
@@ -16,9 +17,9 @@ class KeysTest {
     }
 
     @Test
-    void cadaItemDelPoolVaYVuelveIgual() {
-        for (ObjectivePool.Entry entry : ObjectivePool.DEFAULT) {
-            assertEquals(entry.item(), Keys.of(Keys.toMaterial(entry.item())));
+    void cadaItemDeLasTareasPorDefectoVaYVuelveIgual() {
+        for (Task task : CatalogLoader.defaults().tasks()) {
+            assertEquals(task.icon(), Keys.of(Keys.toMaterial(task.icon())));
         }
     }
 

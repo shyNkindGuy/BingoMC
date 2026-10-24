@@ -8,9 +8,10 @@ description: Contexto del proyecto BingoMC / AdaptiveBingo, el plugin de bingo p
 Repo `shyNkindGuy/BingoMC`, plugin `AdaptiveBingo` (`com.shyNkindguy.bingo.AdaptiveBingo`). Proyecto
 personal, con idea de llegar a servidor. Todo en español (commits, mensajes, docs).
 
-## Qué está hecho (v1.0)
-- `/bingo start`: cartilla 5×5 por jugador con 25 ítems sorteados por partida de los 43 de
-  `ObjectivePool` (los mismos para todos, en distinto orden), mapa en la mano izquierda
+## Qué está hecho
+- `/bingo start [cartilla] [semilla]`: cartilla por jugador (`normal` 5×5 o `rapida` 3×3 de
+  `cards.yml`) con tareas sorteadas por partida de `tasks/*.yml` (43 por defecto, los mismos para todos,
+  en distinto orden), `/bingo reload` para releer los YAML, mapa en la mano izquierda
   (`BingoMapManager` + `BingoMapRenderer` contextual, íconos 8×8 de `icon/IconRegistry` al doble), scoreboard
   lateral (`BingoScoreBoard`). `/bingo map` vuelve a dar el mapa; `/bingo stop` la detiene (start/stop
   piden `bingo.admin`).
@@ -42,7 +43,14 @@ personal, con idea de llegar a servidor. Todo en español (commits, mensajes, do
 - 2026-10-24 · tarea **1.2**: modelo de tareas en `core`: `Task`/`ItemTask` (con cantidad), `TaskEvent`
   sellado (`ItemObtained`), `TaskProgress` (solo sube) y `ProgressTracker`; `BingoCell` guarda tarea +
   progreso (adiós `BingoObjective` y `ObjectiveType`). El escaneo suma totales por ítem; el mapa muestra
-  cantidad y barra. **Siguiente: 1.3** (tareas en YAML). Ver `docs/PLAN.md` para el estado al día.
+  cantidad y barra (PR #16).
+- 2026-10-24 · tarea **1.3**: tareas en YAML. `core/catalog/` (`CatalogLoader` con SnakeYAML `provided`,
+  `CatalogParser` que valida con mensajes "archivo, tarea N: …", `Catalog`, `TaskList` + `Tier`,
+  `CardSpec` con mín/máx, `CardGenerator` con semilla); por defecto `tasks/{basicos,medios,dificiles}.yml`
+  y `cards.yml` (`normal` 5×5, `rapida` 3×3) que se copian a `plugins/AdaptiveBingo/` la primera vez;
+  plugin `config/CatalogService`, `/bingo reload`, `/bingo start [cartilla] [semilla]` y autocompletado.
+  Adiós `ObjectivePool` y `ObjectiveFactory`. **Siguiente: 1.4** (kill, advancement, statistic). Ver
+  `docs/PLAN.md` para el estado al día.
 
 ## Decisiones (no volver a preguntar)
 | Tema | Decisión |
@@ -50,7 +58,7 @@ personal, con idea de llegar a servidor. Todo en español (commits, mensajes, do
 | Alcance | 1º motor del bingo (tipos de casilla: ítem con cantidad, mob, logro de MC, estadística, conjuntos any_of/all_of, condiciones dimensión/hora/bioma/Y/sin morir, fases de partida, equipos, modos). 2º capa de servidor encima (estadísticas y logros propios persistentes, ítems especiales PDC, sets con bonus, estados del jugador) |
 | Versión | Paper **1.21.11 + Java 21** (26.x/Java 25 más adelante, solo toca el módulo `plugin`) |
 | Aprobación | Claude fusiona su PR si el CI está verde; 1 PR a la vez; rama `claude/compassionate-davinci-y5x96q` reiniciada desde `master` tras cada merge |
-| Ritmo | Tarea programada cada hora: trabaja 4 horas y descansa 1 en ciclos de 5 h (ventana del límite de uso), todos los días |
+| Ritmo | Continuo hasta el límite de uso: al ponerse verde el CI se fusiona y se sigue con la próxima tarea en el momento; la tarea programada de cada hora solo retoma después de que el límite se reinicia (2026-10-24) |
 | Servidor (Fase 4) | Lo decide el dueño después de jugar las Fases 0–2 con amigos |
 
 ## Arquitectura objetivo (resumen de `docs/ARQUITECTURA.md`)

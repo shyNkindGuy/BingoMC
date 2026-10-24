@@ -84,4 +84,4 @@ ellos).
 | Alcance | Primero el motor del bingo (tipos de casilla, conjuntos, condiciones, estados de partida); después, encima, la capa de servidor (logros y estadísticas persistentes, ítems especiales, sets, estados) |
 | Versión | Paper 1.21.11 + Java 21 |
 | Aprobación | Claude fusiona el PR cuando el CI está verde (1 PR a la vez) |
-| Ritmo | Ventanas de 5 h: 4 corridas por ventana y una hora de descanso hasta que se reinicia el límite, todos los días |
+| Ritmo | Ventanas de 5 h, todos los días. Desde 2026-10-24: trabajo continuo hasta el límite de uso (al ponerse verde el CI, fusionar y seguir); la tarea programada de cada hora retoma cuando el límite se reinicia |

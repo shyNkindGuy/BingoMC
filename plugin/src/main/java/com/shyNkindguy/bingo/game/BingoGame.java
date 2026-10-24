@@ -34,7 +34,9 @@ public class BingoGame {
         endListeners.add(listener);
     }
 
-    public boolean start(Collection<? extends Player> players) {
+    // `tasks` son las N² tareas de la partida (Catalog.generate), las mismas para todos; cada cartilla
+    // las baraja en su propia copia.
+    public boolean start(Collection<? extends Player> players, List<Task> tasks) {
         if (state == GameState.RUNNING || players.isEmpty()) return false;
 
         state = GameState.RUNNING;
@@ -42,8 +44,6 @@ public class BingoGame {
 
         cards.clear();
 
-        // los mismos objetivos para todos; cada cartilla los baraja en su propia copia
-        List<Task> tasks = ObjectiveFactory.createObjectives();
         for (Player p : players) {
             cards.put(
                     p.getUniqueId(),

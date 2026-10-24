@@ -1,0 +1,20 @@
+# Cartillas de AdaptiveBingo: cuántas tareas salen de cada lista de tasks/.
+# /bingo start usa la de por_defecto; /bingo start <cartilla> [semilla] elige otra (la misma semilla
+# saca las mismas tareas). Después de editar, /bingo reload.
+#
+#   tamaño: lado de la cartilla, de 3 a 7 (5 = 5×5 = 25 casillas)
+#   listas: <lista>: { min: N, max: M }, o <lista>: N para exactamente N.
+#           Los mínimos no pueden pasar de las casillas y los máximos tienen que alcanzar para llenarlas.
+por_defecto: normal
+cartillas:
+  normal:
+    tamaño: 5
+    listas:
+      basicos:   { min: 8, max: 12 }
+      medios:    { min: 8, max: 14 }
+      dificiles: { min: 2, max: 4 }
+  rapida:
+    tamaño: 3
+    listas:
+      basicos: { min: 5, max: 7 }
+      medios:  { min: 2, max: 4 }
