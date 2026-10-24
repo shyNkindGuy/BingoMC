@@ -34,7 +34,10 @@ La primera vez que arranca, el plugin crea en `plugins/AdaptiveBingo/`:
   `linea` (o `2 lineas`…), `carta llena`, `10 casillas`, `lockout` (la casilla es del primer equipo que la
   completa) o `tiempo` (gana quien tenga más al final; si empatan, quien llegó primero). Y cómo empieza:
   `dispersion` (repartir a los equipos en círculo a N bloques del spawn), `borde` (borde del mundo durante la
-  partida), `limpiar_inventario` y un `kit` para cada jugador.
+  partida), `limpiar_inventario` y un `kit` para cada jugador. Y cómo termina: un resumen en el chat (casillas
+  de cada equipo, las del ganador con el tiempo y quién, y el MVP), fuegos artificiales durante
+  `espera_final` segundos y, si se quiere, `volver_al_terminar` (cada uno a donde estaba al empezar) y
+  `limpiar_al_terminar`.
 
 - `messages.yml`: todos los textos del juego (con colores `&` y variables `{jugador}`); si borras uno, vuelve
   el de por defecto.

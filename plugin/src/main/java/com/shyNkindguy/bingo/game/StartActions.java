@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+import java.util.UUID;
 
 // Lo que pasa con el mundo y los jugadores al empezar, según config.yml: vaciar inventarios, repartir a los
 // equipos alrededor del spawn del mundo principal, poner el borde (y devolver el de antes al terminar) y
@@ -28,6 +29,7 @@ public class StartActions {
 
     private final BingoGame game;
     private final Map<String, Location> spawns = new HashMap<>(); // equipo → dónde arrancó
+    private final Map<UUID, Location> origins = new HashMap<>();  // jugador → dónde estaba al empezar
     private final Random random = new Random();
     private World borderWorld;
     private double previousBorderSize;
@@ -41,6 +43,8 @@ public class StartActions {
     public void prepare() {
         StartRules rules = game.getSettings().start();
         spawns.clear();
+        origins.clear();
+        game.playersInGame().forEach(player -> origins.put(player.getUniqueId(), player.getLocation()));
         if (rules.clearInventory()) game.playersInGame().forEach(player -> player.getInventory().clear());
 
         World world = Bukkit.getWorlds().get(0);
@@ -73,6 +77,7 @@ public class StartActions {
     // arrancó, el kit.
     public void joinLate(Player player) {
         StartRules rules = game.getSettings().start();
+        origins.putIfAbsent(player.getUniqueId(), player.getLocation());
         if (rules.clearInventory()) player.getInventory().clear();
         Optional<Team> team = game.teamInGame(player);
         if (rules.scatterRadius() > 0 && team.isPresent()) {
@@ -82,6 +87,11 @@ public class StartActions {
             player.teleport(spot);
         }
         if (game.isRunning()) giveKit(player);
+    }
+
+    // Dónde estaba cada jugador cuando empezó la partida (o cuando entró, si llegó tarde).
+    public Map<UUID, Location> origins() {
+        return Map.copyOf(origins);
     }
 
     // Al terminar: el borde de antes.

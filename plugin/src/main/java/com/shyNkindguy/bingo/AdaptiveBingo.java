@@ -9,6 +9,7 @@ import com.shyNkindguy.bingo.events.ObjectiveListener;
 import com.shyNkindguy.bingo.events.SessionListener;
 import com.shyNkindguy.bingo.events.StatisticPoller;
 import com.shyNkindguy.bingo.game.BingoGame;
+import com.shyNkindguy.bingo.game.EndActions;
 import com.shyNkindguy.bingo.game.PlayerContexts;
 import com.shyNkindguy.bingo.game.StartActions;
 import com.shyNkindguy.bingo.ui.BingoMapManager;
@@ -36,6 +37,8 @@ public final class AdaptiveBingo extends JavaPlugin {
         CardUpdater updater = new CardUpdater(game, scoreboard, mapManager, contexts);
         StatisticPoller statistics = new StatisticPoller(this, game, updater);
         StartActions startActions = new StartActions(game);
+        EndActions endActions = new EndActions(this, game, startActions);
+        game.onDeal(endActions::cancel);
         game.onDeal(startActions::prepare);
         game.onStart(() -> {
             startActions.giveKits();
@@ -47,6 +50,7 @@ public final class AdaptiveBingo extends JavaPlugin {
         GameBossBar bossBar = new GameBossBar(game);
         game.onTick(bossBar::update);
         game.onEnd(() -> {
+            endActions.finish();
             startActions.restore();
             bossBar.hide();
             statistics.stop();

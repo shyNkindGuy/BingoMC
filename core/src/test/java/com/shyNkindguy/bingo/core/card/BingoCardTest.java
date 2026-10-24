@@ -90,9 +90,10 @@ class BingoCardTest {
         celda.markCompletedAt(10);
         assertEquals(-1, celda.completedAt());
         celda.complete();
-        celda.markCompletedAt(20);
-        celda.markCompletedAt(30);
+        celda.markCompleted(20, "Ana");
+        celda.markCompleted(30, "Beto");
         assertEquals(20, celda.completedAt());
+        assertEquals("Ana", celda.completedBy());
     }
 
     @Test

@@ -57,7 +57,7 @@ Leyenda: `[ ]` pendiente · `[x]` hecha (se marca dentro del PR que la resuelve)
   equipo, GUI `/bingo card` con lore de progreso, scoreboard sin parpadeo, textos en `messages.yml`.
 - [x] **2.5 Inicio de partida.** Teletransporte disperso por equipo, world border, cuenta regresiva,
   kit inicial opcional, `/bingo pause`.
-- [ ] **2.6 Fin de partida.** Resumen (tiempo por casilla, MVP), fuegos artificiales, vuelta al lobby y
+- [x] **2.6 Fin de partida.** Resumen (tiempo por casilla, MVP), fuegos artificiales, vuelta al lobby y
   limpieza de inventarios.
 
 ## Fase 3 — Capa de servidor (encima del bingo)

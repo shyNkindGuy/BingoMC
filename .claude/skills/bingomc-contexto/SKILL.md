@@ -83,7 +83,13 @@ personal, con idea de llegar a servidor. Todo en español (commits, mensajes, do
   `dispersion`, `borde`, `limpiar_inventario`, `kit`; `game/StartActions` (al repartir: inventarios,
   teletransporte por equipo a un lugar seguro, borde; al "¡YA!": kit; restaura el borde; lo mismo para
   quien entra tarde). `/bingo pause` (`Phase.PAUSED`: tiempo quieto, nada cuenta, jugadores congelados,
-  bossbar "En pausa"). **Siguiente: 2.6** (fin de partida). Ver `docs/PLAN.md` para el estado al día.
+  bossbar "En pausa") (PR #24).
+- 2026-10-24 · tarea **2.6**: fin de partida. `core/game/GameSummary` (casillas por equipo con segundo y
+  quién —`BingoCell.completedBy`—, MVP) y `EndRules` (`config.yml` `espera_final`, `volver_al_terminar`,
+  `limpiar_al_terminar`); `BingoGame.finish(ganadores)` manda el resumen; `game/EndActions`: fuegos
+  artificiales del color del ganador, vuelta a donde empezó cada uno (`StartActions.origins`) y limpieza.
+  **Fase 2 completa. Siguiente: 3.1** (eventos de dominio + estadísticas). Ver `docs/PLAN.md` para el
+  estado al día.
 
 ## Decisiones (no volver a preguntar)
 | Tema | Decisión |

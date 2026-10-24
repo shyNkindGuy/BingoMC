@@ -38,6 +38,14 @@ limpiar_inventario: false
 #   - { item: stone_pickaxe }
 kit: []
 
+# Al terminar:
+# Segundos de festejo (fuegos artificiales sobre el equipo ganador) antes de lo que sigue (como mucho 120).
+espera_final: 10
+# Después del festejo, cada jugador vuelve a donde estaba cuando empezó la partida.
+volver_al_terminar: false
+# Después del festejo, se vacía el inventario de quienes jugaron.
+limpiar_al_terminar: false
+
 # Semilla fija: con la misma salen siempre las mismas tareas. Si falta, una al azar en cada partida
 # (se anuncia al empezar). /bingo start <cartilla> <semilla> la cambia para una partida.
 # semilla: 12345

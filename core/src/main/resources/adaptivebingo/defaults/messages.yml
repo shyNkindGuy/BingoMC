@@ -47,6 +47,17 @@ pausa:
   sigue: "&a▶ Sigue la partida &7({quien})"
   no_se_puede: "&cSolo se puede pausar una partida en curso."
 
+resumen:
+  titulo: "&6&l— Resumen —"
+  equipo: "{equipo}&7: &f{casillas} casillas"
+  # las de los ganadores, una por una
+  casilla: "&8  {tiempo} &f{tarea} &7· {jugador}"
+  mvp: "&6MVP: &f{jugador} &7({casillas} casillas)"
+
+fin:
+  aviso_volver: "&7En {segundos} s vuelven todos a donde empezaron."
+  aviso_limpiar: "&7En {segundos} s se vacían los inventarios de quienes jugaron."
+
 puntos:
   tiempo_agotado: "&c⏱ Tiempo agotado"
   sin_libres: "&eNo quedan casillas libres"

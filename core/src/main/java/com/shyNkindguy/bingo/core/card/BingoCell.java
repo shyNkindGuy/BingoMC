@@ -3,12 +3,13 @@ package com.shyNkindguy.bingo.core.card;
 import com.shyNkindguy.bingo.core.progress.TaskProgress;
 import com.shyNkindguy.bingo.core.task.Task;
 
-// Una casilla: su tarea, el avance, en qué segundo de la partida se completó (para desempatar) y, en
-// lockout, qué equipo se la quedó antes (bloqueada: ya no se puede completar).
+// Una casilla: su tarea, el avance, en qué segundo de la partida se completó y quién (para desempatar y el
+// resumen del final) y, en lockout, qué equipo se la quedó antes (bloqueada: ya no se puede completar).
 public class BingoCell {
     private final Task task;
     private TaskProgress progress;
     private int completedAt = -1;
+    private String completedBy;
     private String lockedBy;
 
     public BingoCell(Task task){
@@ -42,9 +43,21 @@ public class BingoCell {
         return completedAt;
     }
 
+    // Quién la completó (null si no se anotó).
+    public String completedBy() {
+        return completedBy;
+    }
+
     // Anota el segundo la primera vez que se ve completa.
     public void markCompletedAt(int second) {
-        if (isCompleted() && completedAt < 0) completedAt = second;
+        markCompleted(second, null);
+    }
+
+    // Anota el segundo y quién la completó, la primera vez que se ve completa.
+    public void markCompleted(int second, String by) {
+        if (!isCompleted() || completedAt >= 0) return;
+        completedAt = second;
+        completedBy = by;
     }
 
     public boolean isLocked() {
