@@ -70,7 +70,12 @@ personal, con idea de llegar a servidor. Todo en español (commits, mensajes, do
   `BingoGame` con cartilla por equipo (`teamCards`, `teammates`, `teamInGame`; solos al empezar, se deshacen
   al terminar); `/bingo team unir|salir|random|lista` (`TeamCommand`, solo fuera de partida); avisos y
   mapas para todo el equipo; scoreboard con tabla de equipos y nombres coloreados (`TeamColors`); chat
-  `#mensaje`; sin fuego amigo. **Siguiente: 2.3** (modos de victoria). Ver `docs/PLAN.md` para el estado al día.
+  `#mensaje`; sin fuego amigo (PR #21).
+- 2026-10-24 · tarea **2.3**: modos de victoria (`core/win/WinMode`: N líneas, carta llena, N casillas,
+  lockout, por tiempo) en `config.yml` `modo` (texto en español: "2 lineas", "carta llena"…); desempate por
+  tiempo (`BingoCell.completedAt`, `TimeLimitWinners.winners`); lockout bloquea la tarea en las cartillas
+  de los demás (cruz roja en el mapa, aviso, fin si no quedan libres). **Siguiente: 2.4** (UX en partida).
+  Ver `docs/PLAN.md` para el estado al día.
 
 ## Decisiones (no volver a preguntar)
 | Tema | Decisión |

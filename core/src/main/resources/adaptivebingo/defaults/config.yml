@@ -10,7 +10,17 @@ cuenta_regresiva: 10
 # Minutos de partida (como mucho 600). Al terminar gana quien tenga más casillas. 0 = sin límite.
 duracion: 20
 
-# Si los jugadores se pueden pegar entre ellos.
+# Cómo se gana:
+#   linea (o "2 lineas", "3 lineas"…)   la primera línea completa: fila, columna o diagonal
+#   carta llena                          todas las casillas
+#   10 casillas (o las que sean)         esa cantidad de casillas, en cualquier lugar
+#   lockout                              cada tarea es del primer equipo que la completa (a los demás se
+#                                        les bloquea); gana quien tenga más de la mitad
+#   tiempo                               nadie gana antes: al terminar la duracion, el que tenga más casillas
+# En todos, si se acaba el tiempo gana quien tenga más casillas; si empatan, quien llegó primero.
+modo: linea
+
+# Si los jugadores se pueden pegar entre ellos (a su propio equipo, nunca).
 pvp: true
 
 # Semilla fija: con la misma salen siempre las mismas tareas. Si falta, una al azar en cada partida

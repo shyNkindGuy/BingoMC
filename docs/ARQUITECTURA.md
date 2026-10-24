@@ -65,7 +65,7 @@ BingoMC/
 │       ├── card/                Card (N×N), Cell, CellState
 │       ├── catalog/             Catalog, TaskList + Tier, CardSpec, CardGenerator, lector de YAML
 │       ├── progress/            ProgressTracker (por equipo), TaskProgress (n/m)
-│       ├── win/                 WinCondition: Line, Blackout, Lockout, CompleteX, TimeLimit
+│       ├── win/                 WinMode: Lines, Blackout, Lockout, CompleteX, TimeOnly (2.3 ✔)
 │       ├── game/                GameSession, Phase (LOBBY, COUNTDOWN, RUNNING, ENDED), GameSettings (2.1 ✔)
 │       ├── team/                Team, TeamColor, TeamRegistry (2.2 ✔)
 │       ├── bus/                 DomainEvents (CellCompleted, GameEnded, TeamEliminated)

@@ -51,7 +51,7 @@ Leyenda: `[ ]` pendiente · `[x]` hecha (se marca dentro del PR que la resuelve)
   transiciones.
 - [x] **2.2 Equipos.** `/bingo team crear|unir|salir|random`, colores, cartilla por equipo (solo =
   equipo de 1), scoreboard con colores, chat de equipo.
-- [ ] **2.3 Modos de victoria.** Línea (N líneas), Carta llena, Lockout, Complete-X, Por tiempo con
+- [x] **2.3 Modos de victoria.** Línea (N líneas), Carta llena, Lockout, Complete-X, Por tiempo con
   desempate. Tests de cada modo.
 - [ ] **2.4 UX en partida.** Bossbar con tiempo, título + sonido al completar, anuncio con color de
   equipo, GUI `/bingo card` con lore de progreso, scoreboard sin parpadeo, textos en `messages.yml`.

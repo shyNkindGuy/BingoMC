@@ -2,6 +2,7 @@ package com.shyNkindguy.bingo.game;
 
 
 import com.shyNkindguy.bingo.core.card.BingoCard;
+import com.shyNkindguy.bingo.core.card.BingoCell;
 import com.shyNkindguy.bingo.core.event.EventContext;
 import com.shyNkindguy.bingo.core.event.TaskEvent;
 import com.shyNkindguy.bingo.core.game.GameSession;
@@ -13,7 +14,6 @@ import com.shyNkindguy.bingo.core.task.Task;
 import com.shyNkindguy.bingo.core.team.Team;
 import com.shyNkindguy.bingo.core.team.TeamRegistry;
 import com.shyNkindguy.bingo.core.win.TimeLimitWinners;
-import com.shyNkindguy.bingo.core.win.WinConditionChecker;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -65,7 +65,7 @@ public class BingoGame {
         for (Player p : players) {
             participants.add(p.getUniqueId());
             Team team = teams.soloIfAlone(p.getUniqueId(), p.getName());
-            cards.computeIfAbsent(team.id(), id -> new BingoCard(this.tasks));
+            cards.computeIfAbsent(team.id(), this::newCard);
         }
 
         GameSession.Signal first = session.begin(settings.countdownSeconds(), settings.durationSeconds());
@@ -82,7 +82,41 @@ public class BingoGame {
         if (!session.inGame()) return null;
         participants.add(player.getUniqueId());
         Team team = teams.soloIfAlone(player.getUniqueId(), player.getName());
-        return cards.computeIfAbsent(team.id(), id -> new BingoCard(tasks));
+        return cards.computeIfAbsent(team.id(), this::newCard);
+    }
+
+    // Una cartilla nueva con las tareas de la partida; en lockout, con las que ya tienen dueño bloqueadas.
+    private BingoCard newCard(String teamId) {
+        BingoCard card = new BingoCard(tasks);
+        if (settings.mode().lockout()) {
+            for (Map.Entry<String, BingoCard> other : cards.entrySet()) {
+                for (BingoCell[] row : other.getValue().getGrid()) {
+                    for (BingoCell cell : row) {
+                        if (cell.isCompleted()) lock(card, cell.getTask().id(), other.getKey());
+                    }
+                }
+            }
+        }
+        return card;
+    }
+
+    private static void lock(BingoCard card, String taskId, String owner) {
+        for (BingoCell[] row : card.getGrid()) {
+            for (BingoCell cell : row) {
+                if (cell.getTask().id().equals(taskId)) cell.lock(owner);
+            }
+        }
+    }
+
+    // Lockout: ya no queda ninguna tarea sin dueño (todas las cartillas tienen las mismas tareas).
+    public boolean allClaimed() {
+        if (!settings.mode().lockout() || cards.isEmpty()) return false;
+        for (BingoCell[] row : cards.values().iterator().next().getGrid()) {
+            for (BingoCell cell : row) {
+                if (!cell.isCompleted() && !cell.isLocked()) return false;
+            }
+        }
+        return true;
     }
 
     // Si ya jugó esta partida (aunque se haya desconectado).
@@ -135,12 +169,12 @@ public class BingoGame {
             }
             case STARTED -> {
                 for (Player player : playersInGame()) {
-                    player.sendTitle("§a¡YA!", "§7Completa una línea", 0, 30, 10);
+                    player.sendTitle("§a¡YA!", "§7Gana: " + settings.mode().description(), 0, 30, 10);
                 }
                 Bukkit.broadcastMessage("§a§l¡A JUGAR!");
                 startListeners.forEach(Runnable::run);
             }
-            case TIME_UP -> endByPoints();
+            case TIME_UP -> endByPoints("§c⏱ Tiempo agotado");
             case NONE -> {
             }
         }
@@ -163,14 +197,20 @@ public class BingoGame {
         return team.label() + (names.isEmpty() ? "" : " (" + String.join(", ", names) + ")");
     }
 
-    private void endByPoints() {
+    // Termina por puntos (se acabó el tiempo o, en lockout, no quedan casillas libres): gana quien tenga
+    // más casillas; si empatan, quien llegó primero a esa cantidad.
+    public void endByPoints(String reason) {
         Map<String, Integer> completedByTeam = new LinkedHashMap<>();
+        List<TimeLimitWinners.Score> scores = new ArrayList<>();
         for (Map.Entry<Team, BingoCard> entry : teamCards().entrySet()) {
-            completedByTeam.put(describe(entry.getKey()), entry.getValue().countCompleted());
+            String name = describe(entry.getKey());
+            BingoCard card = entry.getValue();
+            completedByTeam.put(name, card.countCompleted());
+            scores.add(new TimeLimitWinners.Score(name, card.countCompleted(), lastCompletedAt(card)));
         }
-        List<String> leaders = TimeLimitWinners.leaders(completedByTeam);
+        List<String> leaders = TimeLimitWinners.winners(scores);
 
-        Bukkit.broadcastMessage("§c⏱ Tiempo agotado");
+        Bukkit.broadcastMessage(reason);
         if (leaders.isEmpty()) {
             Bukkit.broadcastMessage("§7Nadie completó casillas.");
         } else {
@@ -186,9 +226,18 @@ public class BingoGame {
     }
 
 
+    private static int lastCompletedAt(BingoCard card) {
+        int last = -1;
+        for (BingoCell[] row : card.getGrid()) {
+            for (BingoCell cell : row) last = Math.max(last, cell.completedAt());
+        }
+        return last;
+    }
+
+    // Según el modo de config.yml (una línea, carta llena, …).
     public boolean checkWin(Player player) {
         BingoCard card = getCard(player);
-        return card != null && WinConditionChecker.hasBingo(card);
+        return card != null && settings.mode().wins(card);
     }
 
     // Casillas completas de la cartilla de su equipo.
@@ -246,11 +295,22 @@ public class BingoGame {
     }
     // Aplica un evento a la cartilla del jugador, que estaba en `context`: qué casillas avanzaron y cuáles
     // se completaron.
+    // Las casillas que se completan anotan el segundo (para desempatar) y, en lockout, se bloquean en las
+    // cartillas de los demás equipos.
     public ProgressResult applyEvent(Player player, TaskEvent event, EventContext context) {
-        BingoCard card = getCard(player);
-        if (card == null) return ProgressResult.NONE;
+        Optional<Team> team = teamInGame(player);
+        if (team.isEmpty()) return ProgressResult.NONE;
 
-        return ProgressTracker.apply(card, event, context);
+        ProgressResult result = ProgressTracker.apply(cards.get(team.get().id()), event, context);
+        for (BingoCell cell : result.advanced()) {
+            if (!cell.isCompleted()) continue;
+            cell.markCompletedAt(session.elapsedSeconds());
+            if (!settings.mode().lockout()) continue;
+            for (Map.Entry<String, BingoCard> other : cards.entrySet()) {
+                if (!other.getKey().equals(team.get().id())) lock(other.getValue(), cell.getTask().id(), team.get().id());
+            }
+        }
+        return result;
     }
 
     // La cartilla de su equipo; null si no está jugando.

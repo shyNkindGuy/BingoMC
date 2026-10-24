@@ -73,6 +73,7 @@ public class BingoScoreBoard {
                     .orElse("§7—");
             objective.getScore("§fEquipo: " + own).setScore(line--);
             objective.getScore("§fCasillas: §a" + game.getProgress(player.getUniqueId())).setScore(line--);
+            objective.getScore("§fGana: §e" + game.getSettings().mode().description()).setScore(line--);
             objective.getScore("§8 ").setScore(line--);
 
             List<Map.Entry<Team, BingoCard>> ranking = new ArrayList<>(game.teamCards().entrySet());

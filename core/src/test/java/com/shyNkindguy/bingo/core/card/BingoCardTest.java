@@ -83,4 +83,28 @@ class BingoCardTest {
         assertEquals(25, ids.stream().distinct().count());
         assertTrue(ids.contains("T0") && ids.contains("T24"));
     }
+
+    @Test
+    void unaCasillaAnotaCuandoSeCompletoUnaSolaVez() {
+        BingoCell celda = new BingoCell(new ItemTask("t", "T", "minecraft:t", 1));
+        celda.markCompletedAt(10);
+        assertEquals(-1, celda.completedAt());
+        celda.complete();
+        celda.markCompletedAt(20);
+        celda.markCompletedAt(30);
+        assertEquals(20, celda.completedAt());
+    }
+
+    @Test
+    void enLockoutUnaCasillaPendienteSeBloqueaYUnaCompletaNo() {
+        BingoCell pendiente = new BingoCell(new ItemTask("t", "T", "minecraft:t", 1));
+        pendiente.lock("rojo");
+        assertTrue(pendiente.isLocked());
+        assertEquals("rojo", pendiente.lockedBy());
+
+        BingoCell completa = new BingoCell(new ItemTask("t", "T", "minecraft:t", 1));
+        completa.complete();
+        completa.lock("rojo");
+        assertFalse(completa.isLocked());
+    }
 }

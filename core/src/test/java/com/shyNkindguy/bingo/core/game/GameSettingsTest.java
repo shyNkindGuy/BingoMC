@@ -1,5 +1,6 @@
 package com.shyNkindguy.bingo.core.game;
 
+import com.shyNkindguy.bingo.core.win.WinMode;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -25,8 +26,9 @@ class GameSettingsTest {
 
     @Test
     void fueraDeRangoEsError() {
-        assertThrows(IllegalArgumentException.class, () -> new GameSettings(null, -1, 20, true, null));
-        assertThrows(IllegalArgumentException.class, () -> new GameSettings(null, 61, 20, true, null));
-        assertThrows(IllegalArgumentException.class, () -> new GameSettings(null, 10, 601, true, null));
+        assertThrows(IllegalArgumentException.class, () -> new GameSettings(null, -1, 20, true, null, WinMode.DEFAULT));
+        assertThrows(IllegalArgumentException.class, () -> new GameSettings(null, 61, 20, true, null, WinMode.DEFAULT));
+        assertThrows(IllegalArgumentException.class, () -> new GameSettings(null, 10, 601, true, null, WinMode.DEFAULT));
+        assertThrows(IllegalArgumentException.class, () -> new GameSettings(null, 10, 0, true, null, new WinMode.TimeOnly()));
     }
 }
