@@ -68,7 +68,7 @@ Leyenda: `[ ]` pendiente · `[x]` hecha (se marca dentro del PR que la resuelve)
   desbloquear, GUI `/bingo logros`.
 - [x] **3.3 Ítems especiales.** Ítems con `PersistentDataContainer` para un modo "Caos" (reroll de
   casilla, brújula al bioma, escudo anti-PvP), configurables en YAML.
-- [ ] **3.4 Conjuntos con bonus y estados.** Llevar N piezas marcadas da un efecto; `PlayerStatus`
+- [x] **3.4 Conjuntos con bonus y estados.** Llevar N piezas marcadas da un efecto; `PlayerStatus`
   (velocidad, visión nocturna, sin hambre) como modificador de partida o recompensa.
 - [ ] **3.5 Ranking y API.** `/bingo top`, expansión de PlaceholderAPI opcional (`softdepend`), API
   pública para otros plugins.

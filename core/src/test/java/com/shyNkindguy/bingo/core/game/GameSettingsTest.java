@@ -37,10 +37,10 @@ class GameSettingsTest {
 
     @Test
     void reglasDeInicio() {
-        assertThrows(IllegalArgumentException.class, () -> new StartRules(-1, 0, false, List.of()));
-        assertThrows(IllegalArgumentException.class, () -> new StartRules(0, 8, false, List.of()));
+        assertThrows(IllegalArgumentException.class, () -> new StartRules(-1, 0, false, List.of(), List.of()));
+        assertThrows(IllegalArgumentException.class, () -> new StartRules(0, 8, false, List.of(), List.of()));
         // con borde, los equipos tienen que quedar adentro
-        assertThrows(IllegalArgumentException.class, () -> new StartRules(500, 1000, false, List.of()));
-        assertEquals(1, new StartRules(400, 1000, true, List.of(new StartRules.KitItem("minecraft:bread", 8))).kit().size());
+        assertThrows(IllegalArgumentException.class, () -> new StartRules(500, 1000, false, List.of(), List.of()));
+        assertEquals(1, new StartRules(400, 1000, true, List.of(new StartRules.KitItem("minecraft:bread", 8)), List.of()).kit().size());
     }
 }

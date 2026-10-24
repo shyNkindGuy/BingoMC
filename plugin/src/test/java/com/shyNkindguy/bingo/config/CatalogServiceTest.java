@@ -61,6 +61,7 @@ class CatalogServiceTest {
     @Test
     void losItemsEspecialesYLosIconosDeLosLogrosPorDefectoExisten() {
         assertEquals(List.of(), CatalogService.itemProblems(CatalogLoader.defaultItems()));
+        assertEquals(List.of(), CatalogService.pieceProblems(CatalogLoader.defaultSets()));
         for (Achievement achievement : CatalogLoader.defaultAchievements(CatalogLoader.defaults())) {
             if (achievement.icon() != null) {
                 assertNotNull(Keys.toMaterial(achievement.icon()), "No existe el ícono de " + achievement.id());

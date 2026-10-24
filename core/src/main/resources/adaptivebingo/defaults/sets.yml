@@ -1,0 +1,44 @@
+# Conjuntos de AdaptiveBingo. Sus piezas son ítems marcados: salen en el modo caos (junto con los ítems
+# especiales de items.yml) o con /bingo conjunto <id> [jugador]. Llevando `necesita` piezas distintas del mismo
+# conjunto a la vez (en cualquier lugar del inventario, también puestas) se tienen sus `estados`. Las piezas no
+# cuentan para las casillas y se quitan al terminar la partida. Después de editar: /bingo reload.
+#
+# Estados: velocidad, vision_nocturna, sin_hambre, prisa, salto, resistencia_al_fuego, respirar_bajo_el_agua,
+# gracia_del_delfin, fuerza, resistencia, regeneracion; con nivel, "velocidad 2" (de 1 a 5).
+# Mejor piezas que no se pongan como bloque: al ponerlas se pierden.
+
+conjuntos:
+  - id: explorador
+    nombre: "Explorador"
+    necesita: 2
+    estados: [velocidad, vision_nocturna]
+    piezas:
+      - { item: leather_boots, nombre: "Botas del explorador" }
+      - { item: leather_helmet, nombre: "Gorro del explorador" }
+      - { item: spyglass, nombre: "Catalejo del explorador" }
+
+  - id: minero
+    nombre: "Minero"
+    necesita: 2
+    estados: ["prisa 2", vision_nocturna]
+    piezas:
+      - { item: iron_helmet, nombre: "Casco del minero" }
+      - { item: iron_pickaxe, nombre: "Pico del minero" }
+      - { item: echo_shard, nombre: "Eco del minero" }
+
+  - id: nadador
+    nombre: "Nadador"
+    necesita: 2
+    estados: [respirar_bajo_el_agua, gracia_del_delfin]
+    piezas:
+      - { item: turtle_helmet, nombre: "Caparazón del nadador" }
+      - { item: prismarine_shard, nombre: "Escama del nadador" }
+      - { item: nautilus_shell, nombre: "Concha del nadador" }
+
+  - id: gloton
+    nombre: "Glotón"
+    necesita: 2
+    estados: [sin_hambre]
+    piezas:
+      - { item: bowl, nombre: "Cuenco del glotón" }
+      - { item: stick, nombre: "Tenedor del glotón" }

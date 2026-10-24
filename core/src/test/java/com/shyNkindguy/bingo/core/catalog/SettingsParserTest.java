@@ -63,7 +63,8 @@ class SettingsParserTest {
         StartRules inicio = config("dispersion: 300\nborde: 1000\nlimpiar_inventario: true\n"
                 + "kit:\n  - { item: bread, cantidad: 8 }\n  - { item: minecraft:stone_pickaxe }").start();
         assertEquals(new StartRules(300, 1000, true, java.util.List.of(
-                new StartRules.KitItem("minecraft:bread", 8), new StartRules.KitItem("minecraft:stone_pickaxe", 1))), inicio);
+                new StartRules.KitItem("minecraft:bread", 8), new StartRules.KitItem("minecraft:stone_pickaxe", 1)),
+                java.util.List.of()), inicio);
 
         assertTrue(error("dispersion: 600\nborde: 1000").contains("menor que 500"));
         assertTrue(error("borde: 10").contains("de 16"));
@@ -89,5 +90,15 @@ class SettingsParserTest {
         assertEquals(new ChaosRules(5), config("caos: 5").chaos());
         assertEquals(ChaosRules.DEFAULT, config("caos: 0").chaos());
         assertEquals("config.yml: caos: como mucho 60 minutos (vino 90)", error("caos: 90"));
+    }
+
+    @Test
+    void estadosParaTodos() {
+        assertEquals(java.util.List.of(com.shyNkindguy.bingo.core.status.PlayerStatus.parse("vision_nocturna"),
+                com.shyNkindguy.bingo.core.status.PlayerStatus.parse("velocidad 2")),
+                config("estados: [vision_nocturna, \"velocidad 2\"]").start().statuses());
+        assertEquals(java.util.List.of(), config("estados: []").start().statuses());
+        assertTrue(error("estados: [volar]").startsWith("config.yml: estados 1: \"volar\" no es un estado"));
+        assertEquals("config.yml: estados: tiene que ser una lista ([velocidad, vision_nocturna])", error("estados: velocidad"));
     }
 }

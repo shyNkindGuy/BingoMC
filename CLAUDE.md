@@ -37,14 +37,15 @@ viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
     `CatalogParser` valida todo con mensajes "archivo, tarea N: problema"; `Catalog` (listas `TaskList` +
     `Tier`, cartillas `CardSpec` con mín/máx por lista) y `CardGenerator` (semilla, sin repetidos).
     `AchievementParser` (desde la 3.2) lee `achievements.yml` con los mismos ayudantes (y las mismas
-    `condiciones`) de `CatalogParser`, y `SpecialItemParser` (desde la 3.3), `items.yml`.
+    `condiciones`) de `CatalogParser`, `SpecialItemParser` (desde la 3.3), `items.yml`, y `SetParser` (desde la
+    3.4), `sets.yml`.
   - `win/`: `WinMode` sellado (desde la 2.3: `Lines(n)`, `Blackout`, `CompleteX(n)`, `Lockout`, `TimeOnly`;
     `parse("2 lineas")`, `problemWith(tamaño)`), `WinConditionChecker` (`countLines`) y `TimeLimitWinners`
     (`winners`: más casillas y, si empatan, quien llegó antes).
   - `game/` (desde la 2.1): `Phase` (`LOBBY → COUNTDOWN → RUNNING ⇄ PAUSED → ENDED`), `GameSession` (máquina de
     estados con `begin`/`tick` por segundo/`finish`, devuelve señales `COUNTDOWN`, `STARTED`, `TIME_UP`) y
     `GameSettings` (de `config.yml`: cartilla, cuenta regresiva, duración, PvP, semilla, modo y `StartRules`:
-    dispersión, borde, limpiar inventario, kit; `EndRules`: espera final, volver, limpiar; y `ChaosRules`:
+    dispersión, borde, limpiar inventario, kit y, desde la 3.4, `estados` para todos; `EndRules`: espera final, volver, limpiar; y `ChaosRules`:
     cada cuántos minutos un ítem especial, desde la 3.3), `Timers` (escudo, esperas), `ScatterPlanner`
     (equipos en círculo alrededor del spawn) y `GameSummary` (desde la 2.6: casillas por equipo con segundo y
     quién, y el MVP).
@@ -68,18 +69,21 @@ viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
     sellado (`Reroll`, `BiomeCompass(radio)`, `PvpShield(segundos)`), `Reroll` (casilla pendiente al azar →
     otra tarea de la misma lista que no esté en ninguna cartilla; `BingoCell.replaceTask`) y `BiomeTargets`
     (biomas que piden las casillas pendientes).
+  - `status/` (desde la 3.4): `PlayerStatus` (nombre del YAML → efecto de Minecraft + nivel; `parse("prisa 2")`,
+    `description()`), `ItemSet` (piezas, cuántas hacen falta, estados) y `StatusResolver` (estados de la partida
+    + los de los conjuntos con piezas suficientes; si se repite un efecto, el nivel más alto).
 - `plugin`: `adapter/Keys` traduce `Material`/`EntityType`/`Statistic`/`Advancement` ↔ clave;
   `config/CatalogService` tiene el catálogo (carga al arrancar, `/bingo reload`) y `config/TaskAvailability`
   dice si una tarea se puede hacer en esta versión y por qué no (las que no, no salen); el resto como abajo.
 - `plugin.yml` clásico de Bukkit (no `paper-plugin.yml`). Main: `com.shyNkindguy.bingo.AdaptiveBingo`.
-- Paquete `com.shyNkindguy.bingo` del plugin: `commands/` (`/bingo start|stop|pause|map|card|stats|logros|item|reload|team`;
+- Paquete `com.shyNkindguy.bingo` del plugin: `commands/` (`/bingo start|stop|pause|map|card|stats|logros|item|conjunto|reload|team`;
   `TeamCommand`), `config/`, `storage/StatsService` (carga `stats.yml`, suscribe el `StatsBook` a
   `BingoGame.events()` y guarda al terminar cada partida; con un error no pisa el archivo),
   `events/` (`ObjectiveListener`, `ScanQueue`, `CardUpdater`, `StatisticPoller`, `AdvancementReset`),
   `events/SessionListener` (congelar en la cuenta regresiva, PvP, entrar a mitad, chat de equipo, clics en
   `/bingo card`), `ui/` también con `Texts`, `GameBossBar`, `CardMenu` y `AchievementMenu` (los dos `ReadOnlyMenu`),
-  `AchievementAnnouncer` y `TeamColors`, `items/` (`SpecialItems`: ItemStack con PDC `adaptivebingo:especial`;
-  `ChaosDealer`), `events/SpecialItemListener` (uso con clic derecho y escudo), `game/` (`StartActions`,
+  `AchievementAnnouncer` y `TeamColors`, `items/` (`SpecialItems`: ItemStack con PDC `adaptivebingo:especial`
+  o `adaptivebingo:pieza`; `ChaosDealer`), `game/StatusApplier` (estados por segundo), `events/SpecialItemListener` (uso con clic derecho y escudo), `game/` (`StartActions`,
   `EndActions`, `BingoGame` sobre `GameSession`, con `onStart` al terminar la cuenta y `onEnd`; `PlayerContexts`: el `EventContext`
   de cada jugador y sus muertes desde el inicio), `icon/` (+ `TaskIcons`: ícono y marca por tipo), `ui/` (mapa,
   scoreboard, paleta). Íconos: un solo sistema, `icon/IconRegistry` (por `Material`, con fallback por
@@ -156,7 +160,13 @@ un ítem al azar para cada jugador, `ChaosDealer` en `onTick`; 0 = apagado); `/b
 partida en curso. Dado: `BingoGame.reroll` (en lockout cambia la tarea en todas las cartillas y en las de
 los que entren; nunca sale una de logro). Brújula: `World.locateNearestBiome` con los biomas de las
 pendientes y la apunta como lodestone, sin gastarse (espera 10 s). Escudo: `Timers` con el segundo de
-partida; `SpecialItemListener.onHit` cancela el golpe de un jugador. `/bingo map` vuelve a dar el mapa. Bugs conocidos:
+partida; `SpecialItemListener.onHit` cancela el golpe de un jugador.
+**Conjuntos y estados** (3.4): `config.yml` `estados` (para todos durante la partida) y `sets.yml` (4 conjuntos:
+piezas marcadas; con `necesita` piezas distintas a la vez, en cualquier lugar del inventario, sus `estados`).
+Las piezas salen en el caos (junto con los ítems especiales) o con `/bingo conjunto <id> [jugador]`; no cuentan
+en el escaneo y se quitan al terminar. `StatusApplier` (en `onTick`, solo en curso) pone cada efecto por 20 s
+(`Registry.EFFECT`) cada segundo, saca los que ya no tocan, avisa al activar o perder un conjunto y limpia al
+terminar. `/bingo map` vuelve a dar el mapa. Bugs conocidos:
 tabla de `docs/ANALISIS.md` §3.
 
 ## Convenciones

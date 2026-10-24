@@ -6,7 +6,7 @@ api-version: '1.21'
 commands:
   bingo:
     description: Controlar el Bingo
-    usage: /bingo <start [cartilla] [semilla]|stop|pause|map|card|stats [jugador]|logros|item <id> [jugador]|reload|team>
+    usage: /bingo <start [cartilla] [semilla]|stop|pause|map|card|stats [jugador]|logros|item <id> [jugador]|conjunto <id> [jugador]|reload|team>
 
 permissions:
   bingo.admin:

@@ -13,6 +13,7 @@ import com.shyNkindguy.bingo.game.BingoGame;
 import com.shyNkindguy.bingo.game.EndActions;
 import com.shyNkindguy.bingo.game.PlayerContexts;
 import com.shyNkindguy.bingo.game.StartActions;
+import com.shyNkindguy.bingo.game.StatusApplier;
 import com.shyNkindguy.bingo.items.ChaosDealer;
 import com.shyNkindguy.bingo.items.SpecialItems;
 import com.shyNkindguy.bingo.core.stats.YamlStatsRepository;
@@ -52,11 +53,13 @@ public final class AdaptiveBingo extends JavaPlugin {
         StatisticPoller statistics = new StatisticPoller(this, game, updater);
         StartActions startActions = new StartActions(game);
         EndActions endActions = new EndActions(this, game, startActions);
-        SpecialItems specialItems = new SpecialItems(this, catalogs::items);
+        SpecialItems specialItems = new SpecialItems(this, catalogs::items, catalogs::sets);
+        StatusApplier statuses = new StatusApplier(game, specialItems);
         ChaosDealer chaos = new ChaosDealer(game, specialItems);
         SpecialItemListener itemListener = new SpecialItemListener(game, specialItems, catalogs, mapManager, scoreboard);
         game.onDeal(chaos::reset);
         game.onDeal(itemListener::reset);
+        game.onDeal(statuses::clear);
         game.onDeal(endActions::cancel);
         game.onDeal(startActions::prepare);
         game.onStart(() -> {
@@ -69,6 +72,7 @@ public final class AdaptiveBingo extends JavaPlugin {
         GameBossBar bossBar = new GameBossBar(game);
         game.onTick(bossBar::update);
         game.onTick(chaos::tick);
+        game.onTick(statuses::tick);
         game.onEnd(() -> {
             endActions.finish();
             startActions.restore();
@@ -77,6 +81,7 @@ public final class AdaptiveBingo extends JavaPlugin {
             scoreboard.hideAll();
             mapManager.removeMaps();
             specialItems.removeAll();
+            statuses.clear();
         });
 
         Bukkit.getPluginManager().registerEvents(

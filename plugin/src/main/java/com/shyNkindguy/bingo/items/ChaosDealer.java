@@ -1,7 +1,6 @@
 package com.shyNkindguy.bingo.items;
 
 import com.shyNkindguy.bingo.core.game.ChaosRules;
-import com.shyNkindguy.bingo.core.item.SpecialItem;
 import com.shyNkindguy.bingo.game.BingoGame;
 import com.shyNkindguy.bingo.ui.Texts;
 import org.bukkit.entity.Player;
@@ -9,8 +8,8 @@ import org.bukkit.entity.Player;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-// Modo caos (config.yml `caos`): cada N minutos de juego, un ítem especial al azar de items.yml para cada
-// jugador de la partida. Va en BingoGame.onTick.
+// Modo caos (config.yml `caos`): cada N minutos de juego, para cada jugador de la partida, un ítem especial
+// de items.yml o una pieza de un conjunto de sets.yml, al azar. Va en BingoGame.onTick.
 public class ChaosDealer {
     private final BingoGame game;
     private final SpecialItems items;
@@ -28,12 +27,12 @@ public class ChaosDealer {
         if (!rules.due(now, lastDealt)) return;
         lastDealt = now;
 
-        List<SpecialItem> all = items.all();
-        if (all.isEmpty()) return;
+        List<SpecialItems.Drop> pool = items.chaosPool();
+        if (pool.isEmpty()) return;
         for (Player player : game.playersInGame()) {
-            SpecialItem item = all.get(ThreadLocalRandom.current().nextInt(all.size()));
-            items.give(player, item);
-            player.sendMessage(Texts.get("especiales.recibido", "item", SpecialItems.displayName(item)));
+            SpecialItems.Drop drop = pool.get(ThreadLocalRandom.current().nextInt(pool.size()));
+            items.give(player, drop.stack().clone());
+            player.sendMessage(Texts.get("especiales.recibido", "item", drop.name()));
         }
     }
 

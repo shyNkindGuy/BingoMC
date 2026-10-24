@@ -50,6 +50,11 @@ limpiar_al_terminar: false
 # cambia una casilla, brújula al bioma, escudo anti-PvP). 0 = apagado; como mucho 60.
 caos: 0
 
+# Estados para todos desde el "¡YA!" hasta el final: velocidad, vision_nocturna, sin_hambre, prisa, salto,
+# resistencia_al_fuego, respirar_bajo_el_agua, gracia_del_delfin, fuerza, resistencia, regeneracion; con nivel,
+# "velocidad 2" (de 1 a 5). Ejemplo: estados: [vision_nocturna, sin_hambre]
+estados: []
+
 # Semilla fija: con la misma salen siempre las mismas tareas. Si falta, una al azar en cada partida
 # (se anuncia al empezar). /bingo start <cartilla> <semilla> la cambia para una partida.
 # semilla: 12345
