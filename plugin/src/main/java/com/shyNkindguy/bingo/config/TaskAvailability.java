@@ -13,17 +13,23 @@ import org.bukkit.entity.EntityType;
 import java.util.function.Predicate;
 
 // Si una tarea se puede hacer en esta versión de Minecraft y, si no, por qué. Las que no se pueden no salen
-// en ninguna cartilla. Los logros se buscan con `advancementExists` (en el juego, Bukkit.getAdvancement),
-// así los tests no necesitan un servidor.
+// en ninguna cartilla. Lo que solo se sabe con el servidor andando (si un logro existe, si un Material es
+// bloque o ítem: Material.isBlock() lee el registro del servidor) se pasa de afuera, así los tests no
+// necesitan uno.
 public class TaskAvailability {
     private final Predicate<String> advancementExists;
+    private final Predicate<Material> isBlock;
+    private final Predicate<Material> isItem;
 
-    public TaskAvailability(Predicate<String> advancementExists) {
+    public TaskAvailability(Predicate<String> advancementExists, Predicate<Material> isBlock,
+                            Predicate<Material> isItem) {
         this.advancementExists = advancementExists;
+        this.isBlock = isBlock;
+        this.isItem = isItem;
     }
 
     public static TaskAvailability ofServer() {
-        return new TaskAvailability(key -> Keys.toAdvancement(key) != null);
+        return new TaskAvailability(key -> Keys.toAdvancement(key) != null, Material::isBlock, Material::isItem);
     }
 
     public boolean isAvailable(Task task) {
@@ -48,7 +54,7 @@ public class TaskAvailability {
         return type.isAlive() ? null : "no es un mob";
     }
 
-    private static String statisticProblem(StatisticTask task) {
+    private String statisticProblem(StatisticTask task) {
         Statistic statistic = Keys.toStatistic(task.statistic());
         if (statistic == null) return "la estadística no existe";
 
@@ -61,11 +67,11 @@ public class TaskAvailability {
         boolean valid = switch (statistic.getType()) {
             case BLOCK -> {
                 Material material = Keys.toMaterial(subject);
-                yield material != null && material.isBlock();
+                yield material != null && isBlock.test(material);
             }
             case ITEM -> {
                 Material material = Keys.toMaterial(subject);
-                yield material != null && material.isItem();
+                yield material != null && isItem.test(material);
             }
             case ENTITY -> Keys.toEntityType(subject) != null;
             default -> false;

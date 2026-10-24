@@ -17,11 +17,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 // Corre contra el paper-api real del CI: atrapa ítems, mobs y estadísticas mal escritos en los YAML por
-// defecto. Los logros no se pueden revisar sin servidor: ahí solo se mira que tengan forma de logro.
+// defecto. Lo que pide un servidor no se puede revisar: de los logros solo se mira que tengan forma de
+// logro, y cualquier Material vale como bloque o ítem.
 class CatalogServiceTest {
 
-    private static final TaskAvailability SIN_SERVIDOR =
-            new TaskAvailability(key -> key.matches("minecraft:(story|nether|end|adventure|husbandry)/[a-z_]+"));
+    private static final TaskAvailability SIN_SERVIDOR = new TaskAvailability(
+            key -> key.matches("minecraft:(story|nether|end|adventure|husbandry)/[a-z_]+"),
+            material -> true, material -> true);
 
     @Test
     void cadaTareaPorDefectoSePuedeHacer() {

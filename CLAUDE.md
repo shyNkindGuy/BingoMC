@@ -93,6 +93,11 @@ contra stubs mínimos de Bukkit en el scratchpad + el `.jar` de `core` + `snakey
 `junit-platform-console-standalone`. La validación real del plugin es `.github/workflows/build.yml` en
 cada PR. Lógica nueva: ponerla en `core` siempre que no necesite Bukkit.
 
+En los tests del plugin no hay servidor: `Material.isBlock()`, `isItem()`, `isEdible()`, `Registry.*`,
+`Bukkit.*` y los logros revientan ("No RegistryAccess implementation found"). Sí andan los enums
+(`Material.matchMaterial`, `EntityType`, `Statistic` y sus `getKey()`). Lo que necesite el servidor se
+inyecta (como en `TaskAvailability`).
+
 ## Reglas de trabajo para Claude (modo autónomo)
 1. Una tarea de `docs/PLAN.md` = un PR desde `claude/compassionate-davinci-y5x96q` contra `master`
    (en borrador mientras se trabaja). Después de cada merge, la rama se reinicia desde `origin/master`.

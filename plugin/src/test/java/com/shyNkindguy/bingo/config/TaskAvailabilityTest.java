@@ -4,6 +4,7 @@ import com.shyNkindguy.bingo.core.task.AdvancementTask;
 import com.shyNkindguy.bingo.core.task.ItemTask;
 import com.shyNkindguy.bingo.core.task.KillTask;
 import com.shyNkindguy.bingo.core.task.StatisticTask;
+import org.bukkit.Material;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
@@ -12,11 +13,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-// Corre contra el paper-api real del CI (los logros con una lista fija: sin servidor no hay logros).
+// Corre contra el paper-api real del CI. Lo que pide un servidor (logros, si un Material es bloque) va con
+// listas fijas.
 class TaskAvailabilityTest {
 
-    private final TaskAvailability availability =
-            new TaskAvailability(Set.of("minecraft:story/enter_the_nether")::contains);
+    private final TaskAvailability availability = new TaskAvailability(
+            Set.of("minecraft:story/enter_the_nether")::contains,
+            Set.of(Material.STONE, Material.DIORITE)::contains,
+            material -> true);
 
     private static StatisticTask estadistica(String statistic, String subject) {
         return new StatisticTask("s", "S", statistic, subject, 1);

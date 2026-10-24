@@ -82,6 +82,8 @@ personal, con idea de llegar a servidor. Todo en español (commits, mensajes, do
   módulo `plugin` se valida con `javac` + JUnit console + stubs de Bukkit en el scratchpad y la verdad
   es el CI. Por eso la lógica nueva va en `core`.
 - Maven Central puede responder 429: reintentar con espera.
+- En los tests del plugin (CI) no hay servidor: `Material.isBlock()/isItem()/isEdible()`, `Registry`,
+  `Bukkit.*` y logros fallan; los enums y sus `getKey()` sí andan. Inyectar lo que pida servidor.
 - `_` no es identificador válido (Java 9+). Los presets de íconos usan `o` como transparente.
 - La cartilla se reconoce por la marca PDC, no por el id del mapa: todo ítem de cartilla nuevo debe
   pasar por `BingoMapManager.giveMap`. Todavía se puede guardar en un cofre o un marco (no es trampa:
