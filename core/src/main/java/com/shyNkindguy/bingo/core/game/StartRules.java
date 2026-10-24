@@ -1,16 +1,19 @@
 package com.shyNkindguy.bingo.core.game;
 
+import com.shyNkindguy.bingo.core.status.PlayerStatus;
+
 import java.util.List;
 
 // Cómo empieza la partida (config.yml): a qué distancia del spawn se reparte a los equipos (0 = no se
-// teletransporta), el diámetro del borde del mundo (0 = sin borde), si se vacía el inventario y el kit que
-// recibe cada jugador al "¡YA!".
-public record StartRules(int scatterRadius, int borderSize, boolean clearInventory, List<KitItem> kit) {
+// teletransporta), el diámetro del borde del mundo (0 = sin borde), si se vacía el inventario, el kit que
+// recibe cada jugador al "¡YA!" y los estados que tienen todos desde ahí hasta el final (desde la 3.4).
+public record StartRules(int scatterRadius, int borderSize, boolean clearInventory, List<KitItem> kit,
+                         List<PlayerStatus> statuses) {
 
     public static final int MAX_SCATTER = 100_000;
     public static final int MIN_BORDER = 16;
     public static final int MAX_BORDER = 60_000_000;
-    public static final StartRules DEFAULT = new StartRules(0, 0, false, List.of());
+    public static final StartRules DEFAULT = new StartRules(0, 0, false, List.of(), List.of());
 
     public record KitItem(String item, int amount) {
         public KitItem {
@@ -20,6 +23,7 @@ public record StartRules(int scatterRadius, int borderSize, boolean clearInvento
 
     public StartRules {
         kit = List.copyOf(kit);
+        statuses = List.copyOf(statuses);
         if (scatterRadius < 0 || scatterRadius > MAX_SCATTER) {
             throw new IllegalArgumentException("Dispersión fuera de rango: " + scatterRadius);
         }

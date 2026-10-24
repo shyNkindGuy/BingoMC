@@ -9,6 +9,7 @@ import com.shyNkindguy.bingo.adapter.Keys;
 import com.shyNkindguy.bingo.core.game.GameSettings;
 import com.shyNkindguy.bingo.core.game.StartRules;
 import com.shyNkindguy.bingo.core.item.SpecialItem;
+import com.shyNkindguy.bingo.core.status.ItemSet;
 import com.shyNkindguy.bingo.core.task.Task;
 import com.shyNkindguy.bingo.core.text.Messages;
 import com.shyNkindguy.bingo.ui.Texts;
@@ -21,8 +22,9 @@ import java.util.List;
 import java.util.logging.Logger;
 
 // El catálogo de tareas y cartillas (cards.yml y tasks/*.yml), la configuración de las partidas
-// (config.yml), los logros (achievements.yml), los ítems especiales (items.yml) y los textos (messages.yml, que
-// van a Texts), leídos de plugins/AdaptiveBingo/. La primera vez copia ahí los que vienen en el .jar.
+// (config.yml), los logros (achievements.yml), los ítems especiales (items.yml), los conjuntos (sets.yml) y los
+// textos (messages.yml, que van a Texts), leídos de plugins/AdaptiveBingo/. La primera vez copia ahí los que
+// vienen en el .jar.
 public class CatalogService {
     private final JavaPlugin plugin;
     private final TaskAvailability availability;
@@ -30,6 +32,7 @@ public class CatalogService {
     private GameSettings settings;
     private List<Achievement> achievements = List.of();
     private List<SpecialItem> items = List.of();
+    private List<ItemSet> sets = List.of();
 
     public CatalogService(JavaPlugin plugin, TaskAvailability availability) {
         this.plugin = plugin;
@@ -80,6 +83,14 @@ public class CatalogService {
             items = CatalogLoader.defaultItems();
         }
         try {
+            sets = CatalogLoader.setsFromDirectory(folder);
+            log.info(sets.size() + " conjuntos");
+        } catch (CatalogException e) {
+            log.severe(e.getMessage());
+            log.severe("Se usan los conjuntos por defecto hasta que /bingo reload lea bien sets.yml.");
+            sets = CatalogLoader.defaultSets();
+        }
+        try {
             Texts.use(CatalogLoader.messagesFromDirectory(folder));
         } catch (CatalogException e) {
             log.severe(e.getMessage());
@@ -87,6 +98,7 @@ public class CatalogService {
             Texts.use(CatalogLoader.defaultMessages());
         }
         itemProblems(items).forEach(log::warning);
+        pieceProblems(sets).forEach(log::warning);
     }
 
     // /bingo reload. Si algún archivo tiene un error lanza CatalogException y quedan todos los de antes (van
@@ -97,16 +109,20 @@ public class CatalogService {
         GameSettings loadedSettings = CatalogLoader.settingsFromDirectory(folder, loadedCatalog);
         List<Achievement> loadedAchievements = CatalogLoader.achievementsFromDirectory(folder, loadedCatalog);
         List<SpecialItem> loadedItems = CatalogLoader.itemsFromDirectory(folder);
+        List<ItemSet> loadedSets = CatalogLoader.setsFromDirectory(folder);
         Messages loadedMessages = CatalogLoader.messagesFromDirectory(folder);
         catalog = loadedCatalog;
         settings = loadedSettings;
         achievements = loadedAchievements;
         items = loadedItems;
+        sets = loadedSets;
         Texts.use(loadedMessages);
         List<String> lines = new ArrayList<>(summary(loadedCatalog, availability));
-        lines.add(loadedAchievements.size() + " logros, " + loadedItems.size() + " ítems especiales");
+        lines.add(loadedAchievements.size() + " logros, " + loadedItems.size() + " ítems especiales, "
+                + loadedSets.size() + " conjuntos");
         lines.addAll(kitProblems(loadedSettings));
         lines.addAll(itemProblems(loadedItems));
+        lines.addAll(pieceProblems(loadedSets));
         return lines;
     }
 
@@ -124,6 +140,23 @@ public class CatalogService {
 
     public List<SpecialItem> items() {
         return items;
+    }
+
+    public List<ItemSet> sets() {
+        return sets;
+    }
+
+    // Las piezas de conjuntos cuyo ítem de Minecraft no existe en esta versión (salen como papel).
+    static List<String> pieceProblems(List<ItemSet> sets) {
+        List<String> problems = new ArrayList<>();
+        for (ItemSet set : sets) {
+            for (ItemSet.Piece piece : set.pieces()) {
+                if (Keys.toMaterial(piece.material()) == null) {
+                    problems.add(Texts.get("recarga.pieza", "conjunto", set.id(), "item", piece.material()));
+                }
+            }
+        }
+        return problems;
     }
 
     // Los ítems especiales cuyo ítem de Minecraft no existe en esta versión (salen como papel).

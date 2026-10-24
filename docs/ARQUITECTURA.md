@@ -72,7 +72,7 @@ BingoMC/
 │       ├── stats/               PlayerStats, StatsBook, StatsRepository (3.1 ✔)
 │       ├── achievement/         Achievement, GameRule/CellRule, AchievementTracker (3.2 ✔)
 │       ├── item/                SpecialItem, ItemEffect, Reroll, BiomeTargets (3.3 ✔)
-│       └── meta/                (Fase 3) ItemSet, PlayerStatus
+│       └── status/              PlayerStatus, ItemSet, StatusResolver (3.4 ✔)
 └── plugin/                      Paper 1.21.11 · depende de core
     └── com.shyNkindguy.bingo
         ├── AdaptiveBingo        arranque: carga config, crea servicios, registra listeners/comandos

@@ -12,6 +12,7 @@ import com.shyNkindguy.bingo.core.game.ChaosRules;
 import com.shyNkindguy.bingo.core.game.EndRules;
 import com.shyNkindguy.bingo.core.game.GameSettings;
 import com.shyNkindguy.bingo.core.game.StartRules;
+import com.shyNkindguy.bingo.core.status.PlayerStatus;
 import com.shyNkindguy.bingo.core.win.WinMode;
 import com.shyNkindguy.bingo.core.task.AdvancementTask;
 import com.shyNkindguy.bingo.core.task.ConditionalTask;
@@ -70,7 +71,7 @@ public final class CatalogParser {
     private static final Set<String> QUOTA_KEYS = Set.of("min", "max");
     private static final Set<String> SETTINGS_KEYS = Set.of("cartilla", "cuenta_regresiva", "duracion", "pvp",
             "semilla", "modo", "dispersion", "borde", "limpiar_inventario", "kit",
-            "espera_final", "volver_al_terminar", "limpiar_al_terminar", "caos");
+            "espera_final", "volver_al_terminar", "limpiar_al_terminar", "caos", "estados");
     private static final Set<String> KIT_KEYS = Set.of("item", "cantidad");
 
     private CatalogParser() {
@@ -424,6 +425,22 @@ public final class CatalogParser {
         return new EndRules(back, clear, wait);
     }
 
+    // `estados: [vision_nocturna, "velocidad 2"]` (una lista vacía o nada: ninguno).
+    static List<PlayerStatus> statuses(Object raw, String where) {
+        if (raw == null) return List.of();
+        if (!(raw instanceof List<?> entries)) throw error(where, "tiene que ser una lista ([velocidad, vision_nocturna])");
+        List<PlayerStatus> statuses = new ArrayList<>();
+        for (int i = 0; i < entries.size(); i++) {
+            String entryWhere = where + " " + (i + 1);
+            try {
+                statuses.add(PlayerStatus.parse(text(entries.get(i), entryWhere)));
+            } catch (IllegalArgumentException e) {
+                throw error(entryWhere, e.getMessage());
+            }
+        }
+        return statuses;
+    }
+
     // caos: cada cuántos minutos se reparte un ítem especial (0 = apagado).
     private static ChaosRules chaosRules(String file, Map<String, Object> map) {
         if (!map.containsKey("caos")) return ChaosRules.DEFAULT;
@@ -468,7 +485,8 @@ public final class CatalogParser {
         } else if (rawKit != null) {
             throw error(file + ": kit", "tiene que ser una lista (líneas con -)");
         }
-        return new StartRules(scatter, border, clear, kit);
+        List<PlayerStatus> statuses = map.containsKey("estados") ? statuses(map.get("estados"), file + ": estados") : List.of();
+        return new StartRules(scatter, border, clear, kit, statuses);
     }
 
     static boolean yesNo(Object raw, String where) {
