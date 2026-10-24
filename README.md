@@ -28,7 +28,9 @@ La primera vez que arranca, el plugin crea en `plugins/AdaptiveBingo/`:
   dimensión, de día o de noche, bioma, debajo de cierta Y o sin haber muerto (en el mapa, un punto morado).
 - `cards.yml`: las cartillas (`normal` 5×5 y `rapida` 3×3) con cuántas tareas salen de cada lista.
 - `config.yml`: cómo se juega: cartilla por defecto, segundos de cuenta regresiva (10; durante la cuenta
-  nadie se mueve), minutos de partida (20; 0 = sin límite), PvP y una semilla fija opcional.
+  nadie se mueve), minutos de partida (20; 0 = sin límite), PvP, una semilla fija opcional y el modo:
+  `linea` (o `2 lineas`…), `carta llena`, `10 casillas`, `lockout` (la casilla es del primer equipo que la
+  completa) o `tiempo` (gana quien tenga más al final; si empatan, quien llegó primero).
 
 Quien entra al servidor con la partida empezada recibe su cartilla con las mismas tareas.
 

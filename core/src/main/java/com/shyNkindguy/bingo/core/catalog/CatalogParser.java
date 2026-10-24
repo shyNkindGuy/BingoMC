@@ -9,6 +9,7 @@ import com.shyNkindguy.bingo.core.condition.InDimension;
 import com.shyNkindguy.bingo.core.condition.NoDeath;
 import com.shyNkindguy.bingo.core.condition.TimeOfDay;
 import com.shyNkindguy.bingo.core.game.GameSettings;
+import com.shyNkindguy.bingo.core.win.WinMode;
 import com.shyNkindguy.bingo.core.task.AdvancementTask;
 import com.shyNkindguy.bingo.core.task.ConditionalTask;
 import com.shyNkindguy.bingo.core.task.ItemTask;
@@ -64,7 +65,8 @@ public final class CatalogParser {
     private static final Set<String> CARDS_KEYS = Set.of("por_defecto", "cartillas");
     private static final Set<String> CARD_KEYS = Set.of("tamaño", "tamano", "listas");
     private static final Set<String> QUOTA_KEYS = Set.of("min", "max");
-    private static final Set<String> SETTINGS_KEYS = Set.of("cartilla", "cuenta_regresiva", "duracion", "pvp", "semilla");
+    private static final Set<String> SETTINGS_KEYS =
+            Set.of("cartilla", "cuenta_regresiva", "duracion", "pvp", "semilla", "modo");
 
     private CatalogParser() {
     }
@@ -383,7 +385,22 @@ public final class CatalogParser {
         }
         boolean pvp = map.containsKey("pvp") ? yesNo(map.get("pvp"), file + ": pvp") : defaults.pvp();
         Long seed = map.containsKey("semilla") ? seed(map.get("semilla"), file + ": semilla") : defaults.seed();
-        return new GameSettings(card, countdown, duration, pvp, seed);
+        WinMode mode = defaults.mode();
+        if (map.containsKey("modo")) {
+            try {
+                mode = WinMode.parse(text(map.get("modo"), file + ": modo"));
+            } catch (IllegalArgumentException e) {
+                throw error(file + ": modo", e.getMessage());
+            }
+        }
+        if (mode instanceof WinMode.TimeOnly && duration == 0) {
+            throw error(file + ": modo", "por tiempo hace falta una duracion (minutos) mayor que 0");
+        }
+        if (card != null) {
+            String problem = mode.problemWith(catalog.cards().get(card).size());
+            if (problem != null) throw error(file + ": modo", mode.description() + " no se puede: " + problem);
+        }
+        return new GameSettings(card, countdown, duration, pvp, seed, mode);
     }
 
     private static boolean yesNo(Object raw, String where) {

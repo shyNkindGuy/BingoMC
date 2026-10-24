@@ -1,6 +1,7 @@
 package com.shyNkindguy.bingo.core.catalog;
 
 import com.shyNkindguy.bingo.core.game.GameSettings;
+import com.shyNkindguy.bingo.core.win.WinMode;
 import org.junit.jupiter.api.Test;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -25,8 +26,8 @@ class SettingsParserTest {
 
     @Test
     void leeTodasLasClaves() {
-        assertEquals(new GameSettings("rapida", 5, 30, false, 123L),
-                config("cartilla: rapida\ncuenta_regresiva: 5\nduracion: 30\npvp: false\nsemilla: 123"));
+        assertEquals(new GameSettings("rapida", 5, 30, false, 123L, new WinMode.Lines(2)),
+                config("cartilla: rapida\ncuenta_regresiva: 5\nduracion: 30\npvp: false\nsemilla: 123\nmodo: 2 lineas"));
     }
 
     @Test
@@ -36,6 +37,8 @@ class SettingsParserTest {
         assertEquals(GameSettings.DEFAULT.withSeed(9_000_000_000L), config("semilla: 9000000000"));
         assertEquals(0, config("duracion: 0").durationMinutes());
         assertEquals(false, config("pvp: no").pvp());
+        assertEquals(new WinMode.Lockout(), config("modo: Lockout").mode());
+        assertEquals(new WinMode.Blackout(), config("modo: carta_llena").mode());
     }
 
     @Test
@@ -46,6 +49,10 @@ class SettingsParserTest {
         assertTrue(error("pvp: quizas").contains("true o false"));
         assertTrue(error("semilla: abc").contains("número entero"));
         assertTrue(error("duración: 20").contains("no conozco \"duración\""));
+        assertTrue(error("modo: volar").contains("no es un modo"));
+        assertTrue(error("modo: tiempo\nduracion: 0").contains("hace falta una duracion"));
+        assertTrue(error("cartilla: rapida\nmodo: 9 lineas").contains("una cartilla de 3×3 tiene 8 líneas"));
+        assertTrue(error("cartilla: rapida\nmodo: 10 casillas").contains("tiene 9 casillas"));
     }
 
     @Test

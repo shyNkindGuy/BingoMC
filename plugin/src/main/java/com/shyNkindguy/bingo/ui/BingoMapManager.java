@@ -33,6 +33,16 @@ public class BingoMapManager {
         });
     }
 
+    public void invalidateAll() {
+        for (MapView map : maps.values()) {
+            map.getRenderers().forEach(renderer -> {
+                if (renderer instanceof BingoMapRenderer br) {
+                    br.invalidate();
+                }
+            });
+        }
+    }
+
     public void giveMap(Player player) {
 
         MapView map = maps.computeIfAbsent(

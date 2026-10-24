@@ -63,8 +63,8 @@ public class BingoMapRenderer extends MapRenderer {
                 int y = startY + r * cellSize;
                 BingoCell cell = grid[r][c];
 
-                byte bg = cell.isCompleted()
-                        ? MapPalette.LIGHT_GREEN
+                byte bg = cell.isCompleted() ? MapPalette.LIGHT_GREEN
+                        : cell.isLocked() ? MapPalette.GRAY_2
                         : MapPalette.LIGHT_GRAY;
                 byte border = MapPalette.GRAY_1;
 
@@ -103,6 +103,15 @@ public class BingoMapRenderer extends MapRenderer {
                             canvas.setPixel(x + 2 + dx, y + cellSize - 7 + dy, BingoPalette.CONDITION_MARK);
                         }
                     }
+                }
+
+                if (cell.isLocked()) {
+                    // lockout: la tarea es de otro equipo, cruz roja encima
+                    for (int i = 2; i < cellSize - 2; i++) {
+                        canvas.setPixel(x + i, y + i, MapPalette.RED);
+                        canvas.setPixel(x + cellSize - 1 - i, y + i, MapPalette.RED);
+                    }
+                    continue;
                 }
 
                 TaskProgress progress = cell.getProgress();

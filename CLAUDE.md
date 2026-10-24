@@ -29,16 +29,19 @@ viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
   - `progress/`: `TaskProgress(current, target)` inmutable que solo sube, `ProgressTracker.apply(cartilla,
     evento)` → `ProgressResult` (casillas que avanzaron y tareas completadas) y `StatisticBaseline`
     (valor al empezar por jugador).
-  - `card/`: `BingoCard` N×N de `BingoCell` (tarea + progreso).
+  - `card/`: `BingoCard` N×N de `BingoCell` (tarea + progreso + `completedAt` para desempatar + `lockedBy`
+    en lockout; `ProgressTracker` saltea las bloqueadas).
   - `catalog/` (desde la 1.3): `CatalogLoader` lee `cards.yml` + `tasks/*.yml` de una carpeta o los por
     defecto del `.jar` (`core/src/main/resources/adaptivebingo/defaults/`, 67 tareas de todos los tipos en
     `basicos` D, `medios` C y `dificiles` A; cartillas `normal` 5×5 y `rapida` 3×3) y los copia la primera vez;
     `CatalogParser` valida todo con mensajes "archivo, tarea N: problema"; `Catalog` (listas `TaskList` +
     `Tier`, cartillas `CardSpec` con mín/máx por lista) y `CardGenerator` (semilla, sin repetidos).
-  - `win/`: `WinConditionChecker` y `TimeLimitWinners`.
+  - `win/`: `WinMode` sellado (desde la 2.3: `Lines(n)`, `Blackout`, `CompleteX(n)`, `Lockout`, `TimeOnly`;
+    `parse("2 lineas")`, `problemWith(tamaño)`), `WinConditionChecker` (`countLines`) y `TimeLimitWinners`
+    (`winners`: más casillas y, si empatan, quien llegó antes).
   - `game/` (desde la 2.1): `Phase` (`LOBBY → COUNTDOWN → RUNNING → ENDED`), `GameSession` (máquina de
     estados con `begin`/`tick` por segundo/`finish`, devuelve señales `COUNTDOWN`, `STARTED`, `TIME_UP`) y
-    `GameSettings` (de `config.yml`: cartilla, cuenta regresiva, duración, PvP, semilla).
+    `GameSettings` (de `config.yml`: cartilla, cuenta regresiva, duración, PvP, semilla, modo).
   - `team/` (desde la 2.2): `TeamColor` (10 colores, en español o inglés), `Team` (de color o `solo`) y
     `TeamRegistry` (unir/salir, `soloIfAlone` al empezar, `removeSolos` al terminar, `randomize`).
 - `plugin`: `adapter/Keys` traduce `Material`/`EntityType`/`Statistic`/`Advancement` ↔ clave;
@@ -85,7 +88,11 @@ cambiar de mundo pide un escaneo. En el mapa, las tareas de matar, logro y estad
 que tienen condiciones un punto morado abajo a la izquierda.
 En el mapa, las tareas de varias unidades muestran la cantidad pedida y una barra de avance. La cartilla es un mapa marcado con PDC `adaptivebingo:cartilla` (`BingoMapManager.isBingoMap`):
 no pisa la mano izquierda (lo que había pasa al inventario o se suelta), no se duplica, no cae al morir y
-no se puede tirar. Gana la primera línea (`WinConditionChecker`); al terminar la `duracion` de `config.yml` (20 min; 0 = sin límite), el que tenga más casillas o empate
+no se puede tirar. Gana según el `modo` de `config.yml` (por defecto, la primera línea; también N líneas,
+carta llena, N casillas, lockout —la tarea es del primer equipo que la completa y a los demás se les
+bloquea con una cruz roja; gana más de la mitad o, sin casillas libres, el que más tenga— y por tiempo); al
+terminar la `duracion` de `config.yml` (20 min; 0 = sin límite), el que tenga más casillas (desempata
+quien llegó antes) o empate
 entre los que más tengan (`TimeLimitWinners`). `/bingo stop` la detiene. Toda partida termina por
 `BingoGame.finish()`: cancela el timer, corre los `onEnd` (scoreboard principal de vuelta y mapas
 quitados del inventario) y borra las cartillas. `/bingo map` vuelve a dar el mapa. Bugs conocidos:

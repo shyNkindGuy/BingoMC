@@ -8,6 +8,8 @@ import com.shyNkindguy.bingo.game.BingoGame;
 import com.shyNkindguy.bingo.game.PlayerContexts;
 import com.shyNkindguy.bingo.ui.BingoMapManager;
 import com.shyNkindguy.bingo.ui.BingoScoreBoard;
+import com.shyNkindguy.bingo.ui.TeamColors;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.List;
@@ -28,11 +30,24 @@ public class CardUpdater {
         this.contexts = contexts;
     }
 
+    // Lockout: a los demás se les avisa qué casilla perdieron.
+    private void announceClaim(Player player, Task task) {
+        game.teamInGame(player).ifPresent(owner -> {
+            List<Player> mates = game.teammates(player);
+            for (Player other : Bukkit.getOnlinePlayers()) {
+                if (mates.contains(other) || game.getCard(other) == null) continue;
+                other.sendMessage("§7[Lockout] " + TeamColors.chat(owner.color()) + owner.label()
+                        + " §7se quedó con §f" + task.displayName());
+            }
+        });
+    }
+
     public void apply(Player player, List<? extends TaskEvent> events) {
         if (!game.isRunning() || game.getCard(player) == null) return;
 
         EventContext context = contexts.of(player);
         List<Player> team = game.teammates(player);
+        boolean lockout = game.getSettings().mode().lockout();
         boolean changed = false;
         for (TaskEvent event : events) {
             ProgressResult result = game.applyEvent(player, event, context);
@@ -40,14 +55,21 @@ public class CardUpdater {
             for (Task task : result.completed()) {
                 String by = team.size() > 1 ? " §7(" + player.getName() + ")" : "";
                 team.forEach(mate -> mate.sendMessage("§a✔ Objetivo completado: §f" + task.displayName() + by));
+                if (lockout) announceClaim(player, task);
             }
         }
         if (!changed) return;
 
         scoreboard.updateAll();
-        team.forEach(mapManager::invalidate);
+        if (lockout) {
+            mapManager.invalidateAll(); // las casillas bloqueadas cambian en las cartillas de todos
+        } else {
+            team.forEach(mapManager::invalidate);
+        }
         if (game.checkWin(player)) {
             game.end(player);
+        } else if (game.allClaimed()) {
+            game.endByPoints("§eNo quedan casillas libres");
         }
     }
 }

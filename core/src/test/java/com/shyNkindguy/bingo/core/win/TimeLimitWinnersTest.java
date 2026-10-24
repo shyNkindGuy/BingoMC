@@ -31,6 +31,24 @@ class TimeLimitWinnersTest {
     }
 
     @Test
+    void elEmpateLoGanaQuienLlegoPrimero() {
+        List<TimeLimitWinners.Score> puntajes = List.of(
+                new TimeLimitWinners.Score("Rojo", 6, 900),
+                new TimeLimitWinners.Score("Azul", 6, 640),
+                new TimeLimitWinners.Score("Verde", 4, 100));
+        assertEquals(List.of("Azul"), TimeLimitWinners.winners(puntajes));
+    }
+
+    @Test
+    void siLlegaronEnElMismoSegundoEmpatan() {
+        List<TimeLimitWinners.Score> puntajes = List.of(
+                new TimeLimitWinners.Score("Rojo", 3, 50),
+                new TimeLimitWinners.Score("Azul", 3, 50));
+        assertEquals(List.of("Rojo", "Azul"), TimeLimitWinners.winners(puntajes));
+        assertTrue(TimeLimitWinners.winners(List.of(new TimeLimitWinners.Score("Rojo", 0, -1))).isEmpty());
+    }
+
+    @Test
     void sinCasillasNoHayGanador() {
         assertTrue(TimeLimitWinners.leaders(puntos("Ana", 0, "Beto", 0)).isEmpty());
     }

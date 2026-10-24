@@ -125,10 +125,16 @@ public class BingoCommand implements CommandExecutor, TabCompleter {
         }
         GameSettings used = settings.withCard(cardName).withSeed(usedSeed);
         int size = catalog.cards().get(cardName).size();
+        String problem = used.mode().problemWith(size);
+        if (problem != null) {
+            sender.sendMessage("§cEl modo " + used.mode().description() + " no se puede con la cartilla " + cardName
+                    + ": " + problem + ". Cámbialo en config.yml.");
+            return;
+        }
         String duration = used.durationMinutes() == 0 ? "sin límite" : used.durationMinutes() + " min";
         Bukkit.broadcastMessage("§a§lBINGO INICIADO!");
         Bukkit.broadcastMessage("§7Cartilla §f" + cardName + " §7(" + size + "×" + size + ") · semilla §f" + usedSeed
-                + " §7· " + duration + (used.pvp() ? "" : " · sin PvP"));
+                + " §7· gana: §f" + used.mode().description() + " §7· " + duration + (used.pvp() ? "" : " · sin PvP"));
         if (!game.start(Bukkit.getOnlinePlayers(), tasks, used)) {
             sender.sendMessage("§cNo se pudo empezar la partida.");
             return;

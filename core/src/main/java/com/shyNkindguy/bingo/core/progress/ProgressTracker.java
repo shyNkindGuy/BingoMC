@@ -9,7 +9,7 @@ import com.shyNkindguy.bingo.core.task.Task;
 import java.util.ArrayList;
 import java.util.List;
 
-// Aplica un evento a todas las casillas pendientes de una cartilla (más adelante, la de un equipo).
+// Aplica un evento a todas las casillas pendientes (ni completas ni bloqueadas) de la cartilla de un equipo.
 public final class ProgressTracker {
 
     private ProgressTracker() {
@@ -26,7 +26,7 @@ public final class ProgressTracker {
 
         for (BingoCell[] row : card.getGrid()) {
             for (BingoCell cell : row) {
-                if (cell.isCompleted()) continue;
+                if (cell.isCompleted() || cell.isLocked()) continue;
 
                 TaskProgress before = cell.getProgress();
                 TaskProgress after = cell.getTask().apply(event, context, before);

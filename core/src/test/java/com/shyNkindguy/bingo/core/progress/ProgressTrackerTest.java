@@ -72,4 +72,13 @@ class ProgressTrackerTest {
         assertEquals(1, r.completed().size());
         assertTrue(celda(cartilla, "PICKUP_OAK_LOG").isCompleted());
     }
+
+    @Test
+    void unaCasillaBloqueadaNoAvanza() {
+        BingoCard cartilla = cartilla();
+        celda(cartilla, "PICKUP_DIAMOND").lock("azul");
+
+        assertSame(ProgressResult.NONE, ProgressTracker.apply(cartilla, new ItemObtained("minecraft:diamond", 1)));
+        assertFalse(celda(cartilla, "PICKUP_DIAMOND").isCompleted());
+    }
 }
