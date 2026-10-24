@@ -1,9 +1,11 @@
 package com.shyNkindguy.bingo.events;
 
 import com.shyNkindguy.bingo.core.card.BingoCard;
+import com.shyNkindguy.bingo.core.team.Team;
 import com.shyNkindguy.bingo.game.BingoGame;
 import com.shyNkindguy.bingo.ui.BingoMapManager;
 import com.shyNkindguy.bingo.ui.BingoScoreBoard;
+import com.shyNkindguy.bingo.ui.TeamColors;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
@@ -16,13 +18,19 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.Plugin;
 
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+
 // Las reglas de la partida que no son de las tareas: durante la cuenta regresiva nadie se mueve, rompe,
-// pone, agarra ni recibe daño; sin PvP los jugadores no se pegan; y quien entra con la partida empezada
-// recibe su cartilla.
+// pone, agarra ni recibe daño; sin PvP los jugadores no se pegan (y nunca a su equipo); quien entra con la
+// partida empezada recibe su cartilla; y `#mensaje` en el chat va solo al equipo.
 public class SessionListener implements Listener {
     private final Plugin plugin;
     private final BingoGame game;
@@ -71,12 +79,16 @@ public class SessionListener implements Listener {
         if (event.getEntity() instanceof Player player && frozen(player)) event.setCancelled(true);
     }
 
+    // Sin PvP nadie le pega a otro jugador; con PvP, igual nadie le pega a su propio equipo.
     @EventHandler
     public void onPlayerHit(EntityDamageByEntityEvent event) {
-        if (!game.isRunning() || game.getSettings().pvp()) return;
-        if (event.getEntity() instanceof Player && attacker(event.getDamager()) != null) {
-            event.setCancelled(true);
-        }
+        if (!game.isRunning() || !(event.getEntity() instanceof Player victim)) return;
+        Player attacker = attacker(event.getDamager());
+        if (attacker == null || attacker.equals(victim)) return;
+
+        boolean sameTeam = game.teamInGame(attacker).isPresent()
+                && game.teamInGame(attacker).equals(game.teamInGame(victim));
+        if (!game.getSettings().pvp() || sameTeam) event.setCancelled(true);
     }
 
     // El jugador que pegó: directo o con un proyectil (flecha, tridente…).
@@ -86,12 +98,30 @@ public class SessionListener implements Listener {
         return null;
     }
 
+    // "#vamos al norte" → solo lo lee su equipo. El chat corre en otro hilo: solo se leen los equipos.
+    @EventHandler
+    public void onChat(AsyncPlayerChatEvent event) {
+        String message = event.getMessage();
+        if (!message.startsWith("#") || message.length() < 2) return;
+
+        Player player = event.getPlayer();
+        Optional<Team> team = game.getTeams().teamOf(player.getUniqueId());
+        if (team.isEmpty()) {
+            player.sendMessage("§7No tienes equipo: el mensaje va a todos.");
+            return;
+        }
+        Set<UUID> mates = new HashSet<>(game.getTeams().members(team.get()));
+        event.getRecipients().removeIf(recipient -> !mates.contains(recipient.getUniqueId()));
+        event.setMessage(message.substring(1).trim());
+        event.setFormat(TeamColors.chat(team.get().color()) + "[" + team.get().name() + "] §r%1$s§7: §f%2$s");
+    }
+
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         if (!game.inGame()) return;
 
-        boolean isNew = game.getCard(player) == null;
+        boolean isNew = !game.isParticipant(player);
         BingoCard card = game.join(player);
         if (card == null) return;
 

@@ -37,7 +37,7 @@ public final class AdaptiveBingo extends JavaPlugin {
             contexts.reset(Bukkit.getOnlinePlayers());
             AdvancementReset.forGame(game);
             statistics.start();
-            Bukkit.getOnlinePlayers().forEach(scoreboard::update);
+            scoreboard.updateAll();
         });
         game.onEnd(() -> {
             statistics.stop();

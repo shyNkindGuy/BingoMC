@@ -20,16 +20,19 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class BingoCommand implements CommandExecutor, TabCompleter {
     private static final String ADMIN_PERMISSION = "bingo.admin";
-    private static final String USAGE = "§eUso: /bingo <start [cartilla] [semilla]|stop|map|reload>";
-    private static final List<String> ADMIN_SUBCOMMANDS = List.of("start", "stop", "map", "reload");
+    private static final String USAGE = "§eUso: /bingo <start [cartilla] [semilla]|stop|map|reload|team>";
+    private static final List<String> ADMIN_SUBCOMMANDS = List.of("start", "stop", "map", "reload", "team");
+    private static final List<String> PLAYER_SUBCOMMANDS = List.of("map", "team");
 
     private final BingoGame game;
     private final BingoScoreBoard scoreboard;
     private final BingoMapManager mapManager;
     private final CatalogService catalogs;
+    private final TeamCommand teams;
 
     public BingoCommand(BingoGame game, BingoScoreBoard scoreboard, BingoMapManager mapManager, CatalogService catalogs){
         this.game = game; this.scoreboard = scoreboard; this.mapManager = mapManager; this.catalogs = catalogs;
+        this.teams = new TeamCommand(game, ADMIN_PERMISSION);
     }
 
 
@@ -42,6 +45,10 @@ public class BingoCommand implements CommandExecutor, TabCompleter {
             return true;
         }
         String subcommand = args[0].toLowerCase(Locale.ROOT);
+        if (subcommand.equals("team")) {
+            teams.run(sender, args);
+            return true;
+        }
         if (!subcommand.equals("start") && args.length != 1) {
             sender.sendMessage(USAGE);
             return true;
@@ -60,7 +67,10 @@ public class BingoCommand implements CommandExecutor, TabCompleter {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         boolean admin = sender.hasPermission(ADMIN_PERMISSION);
         if (args.length == 1) {
-            return matching(admin ? ADMIN_SUBCOMMANDS : List.of("map"), args[0]);
+            return matching(admin ? ADMIN_SUBCOMMANDS : PLAYER_SUBCOMMANDS, args[0]);
+        }
+        if (args[0].equalsIgnoreCase("team")) {
+            return teams.complete(args);
         }
         if (args.length == 2 && admin && args[0].equalsIgnoreCase("start")) {
             return matching(new ArrayList<>(catalogs.get().cards().keySet()), args[1]);
@@ -68,7 +78,7 @@ public class BingoCommand implements CommandExecutor, TabCompleter {
         return List.of();
     }
 
-    private static List<String> matching(List<String> options, String typed) {
+    static List<String> matching(List<String> options, String typed) {
         String prefix = typed.toLowerCase(Locale.ROOT);
         return options.stream().filter(option -> option.toLowerCase(Locale.ROOT).startsWith(prefix)).toList();
     }
