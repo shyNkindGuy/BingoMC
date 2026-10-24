@@ -1,7 +1,7 @@
 # AdaptiveBingo (BingoMC)
 
-Plugin de **bingo para Minecraft (Paper)**, proyecto personal de shyNkindguy. Cada jugador (más
-adelante, cada equipo) recibe una cartilla N×N de tareas dibujada en un mapa en la mano izquierda; gana
+Plugin de **bingo para Minecraft (Paper)**, proyecto personal de shyNkindguy. Cada equipo (quien no
+tiene equipo juega solo) recibe una cartilla N×N de tareas dibujada en un mapa en la mano izquierda; gana
 quien complete una línea (y más adelante, otros modos). A futuro: capa de servidor con logros,
 estadísticas, ítems especiales, conjuntos y estados. Diseño en `docs/ARQUITECTURA.md`, diagnóstico y
 viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
@@ -39,11 +39,14 @@ viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
   - `game/` (desde la 2.1): `Phase` (`LOBBY → COUNTDOWN → RUNNING → ENDED`), `GameSession` (máquina de
     estados con `begin`/`tick` por segundo/`finish`, devuelve señales `COUNTDOWN`, `STARTED`, `TIME_UP`) y
     `GameSettings` (de `config.yml`: cartilla, cuenta regresiva, duración, PvP, semilla).
+  - `team/` (desde la 2.2): `TeamColor` (10 colores, en español o inglés), `Team` (de color o `solo`) y
+    `TeamRegistry` (unir/salir, `soloIfAlone` al empezar, `removeSolos` al terminar, `randomize`).
 - `plugin`: `adapter/Keys` traduce `Material`/`EntityType`/`Statistic`/`Advancement` ↔ clave;
   `config/CatalogService` tiene el catálogo (carga al arrancar, `/bingo reload`) y `config/TaskAvailability`
   dice si una tarea se puede hacer en esta versión y por qué no (las que no, no salen); el resto como abajo.
 - `plugin.yml` clásico de Bukkit (no `paper-plugin.yml`). Main: `com.shyNkindguy.bingo.AdaptiveBingo`.
-- Paquete `com.shyNkindguy.bingo` del plugin: `commands/` (`/bingo start|stop|map|reload`), `config/`,
+- Paquete `com.shyNkindguy.bingo` del plugin: `commands/` (`/bingo start|stop|map|reload|team`;
+  `TeamCommand`), `config/`,
   `events/` (`ObjectiveListener`, `ScanQueue`, `CardUpdater`, `StatisticPoller`, `AdvancementReset`),
   `events/SessionListener` (congelar en la cuenta regresiva, PvP, entrar a mitad), `game/` (`BingoGame`
   sobre `GameSession`, con `onStart` al terminar la cuenta y `onEnd`; `PlayerContexts`: el `EventContext`
@@ -60,8 +63,12 @@ cantidad, p. ej. "16 × Tronco de roble"; id `item:<ítem>`), las mismas para to
 la semilla (la misma semilla repite las tareas) y da el mapa y el scoreboard. Después viene la cuenta
 regresiva (`cuenta_regresiva` de `config.yml`, 10 s; título con el número, nadie se mueve, rompe, pone,
 agarra ni recibe daño) y recién al "¡YA!" las tareas cuentan (`onStart`: contextos, logros, estadísticas).
-Quien entra con la partida empezada recibe una cartilla con las mismas tareas (o la suya si volvió).
-`pvp: false` evita que los jugadores se peguen. `/bingo reload` relee los YAML (también `config.yml`): con
+Quien entra con la partida empezada juega con la cartilla de su equipo (o solo, con una nueva de las mismas
+tareas; si volvió, con la suya). `pvp: false` evita que los jugadores se peguen; nadie le pega a su equipo.
+**Equipos** (2.2): `/bingo team unir <color>|salir|random [n]|lista`, solo en el lobby; la cartilla, el
+progreso, los avisos y el mapa son del equipo (cualquiera completa por todos; las kills se suman, las
+estadísticas cuentan por jugador); el scoreboard muestra la tabla de equipos y pinta los nombres;
+`#mensaje` en el chat va solo al equipo. `/bingo reload` relee los YAML (también `config.yml`): con
 un error lo dice y sigue con lo anterior (al arrancar con error, usa los del `.jar`). El mapa usa un renderer contextual (cada jugador ve su cartilla) que solo
 redibuja tras `invalidate()`. Una casilla se completa cuando el ítem está **en el inventario del jugador**: recoger, clic,
 arrastrar, cerrar el inventario, craftear, horno o balde piden revisar el inventario un tick después

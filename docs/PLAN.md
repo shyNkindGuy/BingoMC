@@ -49,7 +49,7 @@ Leyenda: `[ ]` pendiente · `[x]` hecha (se marca dentro del PR que la resuelve)
 - [x] **2.1 Sesión con fases.** `LOBBY → COUNTDOWN → RUNNING → ENDED`, `GameSettings` (tamaño 3/4/5,
   duración, modo, PvP, semilla) desde `config.yml`; quien entra a mitad recibe su cartilla. Tests de
   transiciones.
-- [ ] **2.2 Equipos.** `/bingo team crear|unir|salir|random`, colores, cartilla por equipo (solo =
+- [x] **2.2 Equipos.** `/bingo team crear|unir|salir|random`, colores, cartilla por equipo (solo =
   equipo de 1), scoreboard con colores, chat de equipo.
 - [ ] **2.3 Modos de victoria.** Línea (N líneas), Carta llena, Lockout, Complete-X, Por tiempo con
   desempate. Tests de cada modo.

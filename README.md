@@ -1,6 +1,6 @@
 # AdaptiveBingo (BingoMC)
 
-Plugin de bingo para servidores **Paper 1.21.11** de Minecraft (Java 21). Cada jugador recibe una cartilla
+Plugin de bingo para servidores **Paper 1.21.11** de Minecraft (Java 21). Cada jugador o equipo recibe una cartilla
 (5×5 por defecto) de objetivos dibujada en un mapa en la mano izquierda; gana el primero en completar una
 línea (fila, columna o diagonal). Antes de empezar hay una cuenta regresiva; si se acaba el tiempo (20
 minutos por defecto), gana quien tenga más casillas (o empatan los que tengan más).
@@ -11,6 +11,11 @@ minutos por defecto), gana quien tenga más casillas (o empatan los que tengan m
 | `/bingo stop` | Detiene la partida en curso (permiso `bingo.admin`) |
 | `/bingo reload` | Vuelve a leer `cards.yml` y `tasks/*.yml`; si tienen un error, dice dónde y sigue con los de antes (permiso `bingo.admin`) |
 | `/bingo map` | Vuelve a dar el mapa con la cartilla |
+| `/bingo team unir <color>` · `salir` · `lista` | Armar equipos antes de la partida (rojo, azul, verde, amarillo, celeste, morado, naranja, rosa, blanco, gris). Quien no tiene equipo juega solo |
+| `/bingo team random [n]` | Reparte a todos al azar en `n` equipos (2 por defecto; permiso `bingo.admin`) |
+
+En equipo, la cartilla es compartida: lo que completa uno cuenta para todos. En el chat, `#mensaje` lo lee
+solo tu equipo.
 
 ## Tareas y cartillas
 La primera vez que arranca, el plugin crea en `plugins/AdaptiveBingo/`:

@@ -67,7 +67,7 @@ BingoMC/
 │       ├── progress/            ProgressTracker (por equipo), TaskProgress (n/m)
 │       ├── win/                 WinCondition: Line, Blackout, Lockout, CompleteX, TimeLimit
 │       ├── game/                GameSession, Phase (LOBBY, COUNTDOWN, RUNNING, ENDED), GameSettings (2.1 ✔)
-│       ├── team/                Team, TeamId, TeamRegistry
+│       ├── team/                Team, TeamColor, TeamRegistry (2.2 ✔)
 │       ├── bus/                 DomainEvents (CellCompleted, GameEnded, TeamEliminated)
 │       └── meta/                (Fase 3) PlayerProfile, Achievement, ItemSet, PlayerStatus
 └── plugin/                      Paper 1.21.11 · depende de core

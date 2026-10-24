@@ -65,7 +65,12 @@ personal, con idea de llegar a servidor. Todo en español (commits, mensajes, do
   y `config.yml` (cartilla, `cuenta_regresiva`, `duracion`, `pvp`, `semilla`; se recarga con `/bingo
   reload`). `BingoGame` sobre `GameSession`: cuenta regresiva con títulos y jugadores congelados
   (`SessionListener`), `onStart` al "¡YA!", duración configurable, PvP apagable y cartilla para quien entra
-  a mitad. Adiós `GameState`. **Siguiente: 2.2** (equipos). Ver `docs/PLAN.md` para el estado al día.
+  a mitad. Adiós `GameState` (PR #20).
+- 2026-10-24 · tarea **2.2**: equipos. `core/team` (`TeamColor`, `Team` de color o solo, `TeamRegistry`);
+  `BingoGame` con cartilla por equipo (`teamCards`, `teammates`, `teamInGame`; solos al empezar, se deshacen
+  al terminar); `/bingo team unir|salir|random|lista` (`TeamCommand`, solo fuera de partida); avisos y
+  mapas para todo el equipo; scoreboard con tabla de equipos y nombres coloreados (`TeamColors`); chat
+  `#mensaje`; sin fuego amigo. **Siguiente: 2.3** (modos de victoria). Ver `docs/PLAN.md` para el estado al día.
 
 ## Decisiones (no volver a preguntar)
 | Tema | Decisión |
