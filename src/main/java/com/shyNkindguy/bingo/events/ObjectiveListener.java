@@ -1,6 +1,7 @@
 package com.shyNkindguy.bingo.events;
 
 import com.shyNkindguy.bingo.game.BingoGame;
+import com.shyNkindguy.bingo.game.BingoObjective;
 import com.shyNkindguy.bingo.ui.BingoMapManager;
 import com.shyNkindguy.bingo.ui.BingoScoreBoard;
 import org.bukkit.Bukkit;
@@ -43,11 +44,11 @@ public class ObjectiveListener implements Listener {
         this.mapManager = mapManager;
     }
     private void handleProgress(Player player, Material mat) {
-        boolean completed = game.completePickup(player, mat);
+        BingoObjective completed = game.completePickup(player, mat);
 
-        if (!completed) return;
+        if (completed == null) return;
 
-        player.sendMessage("§a✔ Objetivo completado: §f" + mat.name());
+        player.sendMessage("§a✔ Objetivo completado: §f" + completed.getDisplayName());
         scoreboard.update(player);
         mapManager.invalidate(player);
 

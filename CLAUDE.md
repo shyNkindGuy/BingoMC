@@ -13,13 +13,16 @@ viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
 - `plugin.yml` clásico de Bukkit (no `paper-plugin.yml`). Main: `com.shyNkindguy.bingo.AdaptiveBingo`.
 - Paquete `com.shyNkindguy.bingo`: `commands/` (`/bingo start|stop|map`), `events/` (`ObjectiveListener`),
   `game/` (partida, cartilla, objetivos, victoria), `icon/` (registro de íconos nuevo), `ui/` (mapa,
-  scoreboard, paleta). Dos sistemas de íconos conviven hasta la tarea 0.5: el viejo
-  `game/MapIconRegistry` + `IconPresets` (el que usa el mapa) y el nuevo `icon/IconRegistry`.
+  scoreboard, paleta). Íconos: un solo sistema, `icon/IconRegistry` (por `Material`, con fallback por
+  categoría) + `icon/IconRenderer` (escala entera que entra en la casilla, centrado; dibuja sobre un
+  `PixelSink` para poder testearlo).
 
 ## Cómo se juega hoy
 `/bingo start` (permiso `bingo.admin`, ops por defecto; también desde la consola) crea una cartilla 5×5
-por jugador conectado (los 25 objetivos de `ObjectiveFactory` en distinto orden), da el mapa y el
-scoreboard. Una casilla se completa cuando el ítem está **en el inventario del jugador**: recoger, clic,
+por jugador conectado con 25 objetivos sorteados **una vez por partida** de los 43 de `ObjectivePool`
+(nombre del ítem + nombre en español; el id se deriva del ítem), los mismos para todos en distinto orden;
+da el mapa y el scoreboard. El mapa usa un renderer contextual (cada jugador ve su cartilla) que solo
+redibuja tras `invalidate()`. Una casilla se completa cuando el ítem está **en el inventario del jugador**: recoger, clic,
 arrastrar, cerrar el inventario, craftear, horno o balde piden revisar el inventario un tick después
 (`ObjectiveListener.requestScan`; `ScanQueue` junta los pedidos del mismo tick), nunca se mira el ítem
 del evento. La cartilla es un mapa marcado con PDC `adaptivebingo:cartilla` (`BingoMapManager.isBingoMap`):

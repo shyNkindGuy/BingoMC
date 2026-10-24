@@ -24,7 +24,7 @@ Leyenda: `[ ]` pendiente · `[x]` hecha (se marca dentro del PR que la resuelve)
   inventario o se suelta); el mapa no se cae al morir y no se puede tirar; detectar por el inventario
   real del jugador un tick después del evento, no por el ítem clicado (hoy basta con hacer clic en un
   cofre).
-- [ ] **0.5 Objetivos corregidos e íconos unificados.** Los 25 objetivos con id, nombre y `Material`
+- [x] **0.5 Objetivos corregidos e íconos unificados.** Los 25 objetivos con id, nombre y `Material`
   que coincidan (hoy "Diamante" pide `POLISHED_DIORITE_SLAB`); pool de más de 25 y elegir 25 al azar;
   un solo sistema de íconos (`icon/IconRegistry`) usado por `BingoMapRenderer`, borrar
   `game/IconPresets` y `game/MapIconRegistry`; renderer contextual que solo redibuja si cambió;

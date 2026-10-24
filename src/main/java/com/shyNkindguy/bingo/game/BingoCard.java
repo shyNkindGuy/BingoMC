@@ -19,7 +19,8 @@ public class BingoCard {
             }
         }
     }
-    public boolean completeByMaterial(Material material) {
+    // Devuelve el objetivo que se completó, o null si el material no estaba pendiente en la cartilla.
+    public BingoObjective completeByMaterial(Material material) {
         for (BingoCell[] row : grid) {
             for (BingoCell cell : row) {
 
@@ -27,11 +28,11 @@ public class BingoCard {
                         && cell.getObjective().getMaterial() == material) {
 
                     cell.setCompleted(true);
-                    return true;
+                    return cell.getObjective();
                 }
             }
         }
-        return false;
+        return null;
     }
 
     public BingoCell[][] getGrid(){

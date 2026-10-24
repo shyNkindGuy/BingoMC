@@ -11,6 +11,7 @@ public class BlockIcons {
     private static final byte H = BingoPalette.IRON;
     private static final byte V = BingoPalette.COMPLETED_BG;
     private static final byte T = BingoPalette.DIRT;
+    private static final byte M = BingoPalette.WOOD;
 
     public static final byte[][] GENERIC_BLOCK = {
             {B, B, B, B, B, B, B, B},
@@ -43,6 +44,17 @@ public class BlockIcons {
             {o, o, o, D, D, o, o, o},
             {o, o, o, o, o, o, o, o},
             {o, o, o, o, o, o, o, o},
+    };
+
+    public static final byte[][] LOG = {
+            {o, T, T, T, T, T, T, o},
+            {T, M, M, M, M, M, M, T},
+            {T, M, T, T, T, T, M, T},
+            {T, M, T, M, M, T, M, T},
+            {T, M, T, M, M, T, M, T},
+            {T, M, T, T, T, T, M, T},
+            {T, M, M, M, M, M, M, T},
+            {o, T, T, T, T, T, T, o},
     };
 
     public static final byte[][] INGOT = {
