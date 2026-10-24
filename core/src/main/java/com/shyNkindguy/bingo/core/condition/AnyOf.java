@@ -19,6 +19,11 @@ public record AnyOf(List<Condition> conditions) implements Condition {
     }
 
     @Override
+    public String description() {
+        return "(" + conditions.stream().map(Condition::description).collect(Collectors.joining(" o ")) + ")";
+    }
+
+    @Override
     public String key() {
         return "alguna(" + conditions.stream().map(Condition::key).collect(Collectors.joining("|")) + ")";
     }

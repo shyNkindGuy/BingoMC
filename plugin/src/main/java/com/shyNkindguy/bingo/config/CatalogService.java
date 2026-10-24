@@ -6,6 +6,8 @@ import com.shyNkindguy.bingo.core.catalog.CatalogException;
 import com.shyNkindguy.bingo.core.catalog.CatalogLoader;
 import com.shyNkindguy.bingo.core.game.GameSettings;
 import com.shyNkindguy.bingo.core.task.Task;
+import com.shyNkindguy.bingo.core.text.Messages;
+import com.shyNkindguy.bingo.ui.Texts;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
@@ -14,9 +16,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-// El catálogo de tareas y cartillas (cards.yml y tasks/*.yml) y la configuración de las partidas
-// (config.yml) que usa /bingo start, leídos de plugins/AdaptiveBingo/. La primera vez copia ahí los que
-// vienen en el .jar.
+// El catálogo de tareas y cartillas (cards.yml y tasks/*.yml), la configuración de las partidas
+// (config.yml) y los textos (messages.yml, que van a Texts), leídos de plugins/AdaptiveBingo/. La primera vez
+// copia ahí los que vienen en el .jar.
 public class CatalogService {
     private final JavaPlugin plugin;
     private final TaskAvailability availability;
@@ -54,16 +56,25 @@ public class CatalogService {
             log.severe("Se usa la configuración por defecto hasta que /bingo reload lea bien config.yml.");
             settings = GameSettings.DEFAULT;
         }
+        try {
+            Texts.use(CatalogLoader.messagesFromDirectory(folder));
+        } catch (CatalogException e) {
+            log.severe(e.getMessage());
+            log.severe("Se usan los textos por defecto hasta que /bingo reload lea bien messages.yml.");
+            Texts.use(CatalogLoader.defaultMessages());
+        }
     }
 
-    // /bingo reload. Si los archivos tienen un error lanza CatalogException y quedan los de antes (las
-    // tareas y la configuración van juntas: una cartilla de config.yml tiene que estar en cards.yml).
+    // /bingo reload. Si algún archivo tiene un error lanza CatalogException y quedan todos los de antes (van
+    // juntos: una cartilla de config.yml tiene que estar en cards.yml).
     public List<String> reload() {
         Path folder = plugin.getDataFolder().toPath();
         Catalog loadedCatalog = CatalogLoader.fromDirectory(folder);
         GameSettings loadedSettings = CatalogLoader.settingsFromDirectory(folder, loadedCatalog);
+        Messages loadedMessages = CatalogLoader.messagesFromDirectory(folder);
         catalog = loadedCatalog;
         settings = loadedSettings;
+        Texts.use(loadedMessages);
         return summary(loadedCatalog, availability);
     }
 

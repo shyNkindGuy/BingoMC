@@ -42,6 +42,8 @@ viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
   - `game/` (desde la 2.1): `Phase` (`LOBBY → COUNTDOWN → RUNNING → ENDED`), `GameSession` (máquina de
     estados con `begin`/`tick` por segundo/`finish`, devuelve señales `COUNTDOWN`, `STARTED`, `TIME_UP`) y
     `GameSettings` (de `config.yml`: cartilla, cuenta regresiva, duración, PvP, semilla, modo).
+  - `text/Messages` (desde la 2.4): textos de `messages.yml` (claves con punto, `{variables}`, `&` → `§`,
+    lo que falte sale de los por defecto; una clave desconocida es error).
   - `team/` (desde la 2.2): `TeamColor` (10 colores, en español o inglés), `Team` (de color o `solo`) y
     `TeamRegistry` (unir/salir, `soloIfAlone` al empezar, `removeSolos` al terminar, `randomize`).
 - `plugin`: `adapter/Keys` traduce `Material`/`EntityType`/`Statistic`/`Advancement` ↔ clave;
@@ -51,7 +53,8 @@ viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
 - Paquete `com.shyNkindguy.bingo` del plugin: `commands/` (`/bingo start|stop|map|reload|team`;
   `TeamCommand`), `config/`,
   `events/` (`ObjectiveListener`, `ScanQueue`, `CardUpdater`, `StatisticPoller`, `AdvancementReset`),
-  `events/SessionListener` (congelar en la cuenta regresiva, PvP, entrar a mitad), `game/` (`BingoGame`
+  `events/SessionListener` (congelar en la cuenta regresiva, PvP, entrar a mitad, chat de equipo, clics en
+  `/bingo card`), `ui/` también con `Texts`, `GameBossBar`, `CardMenu` y `TeamColors`, `game/` (`BingoGame`
   sobre `GameSession`, con `onStart` al terminar la cuenta y `onEnd`; `PlayerContexts`: el `EventContext`
   de cada jugador y sus muertes desde el inicio), `icon/` (+ `TaskIcons`: ícono y marca por tipo), `ui/` (mapa,
   scoreboard, paleta). Íconos: un solo sistema, `icon/IconRegistry` (por `Material`, con fallback por
@@ -71,7 +74,11 @@ tareas; si volvió, con la suya). `pvp: false` evita que los jugadores se peguen
 **Equipos** (2.2): `/bingo team unir <color>|salir|random [n]|lista`, solo en el lobby; la cartilla, el
 progreso, los avisos y el mapa son del equipo (cualquiera completa por todos; las kills se suman, las
 estadísticas cuentan por jugador); el scoreboard muestra la tabla de equipos y pinta los nombres;
-`#mensaje` en el chat va solo al equipo. `/bingo reload` relee los YAML (también `config.yml`): con
+`#mensaje` en el chat va solo al equipo.
+**UX** (2.4): bossbar con la cuenta regresiva o el tiempo que queda (roja en el último minuto); al completar
+una casilla, título + sonido al equipo y anuncio a los demás con el color del equipo; `/bingo card` abre la
+cartilla en un cofre de solo mirar con tipo, avance, condiciones y bloqueo en la descripción; scoreboard
+sin parpadeo (texto en prefijos de `Team` sobre entradas fijas); todos los textos en `messages.yml`. `/bingo reload` relee los YAML (también `config.yml`): con
 un error lo dice y sigue con lo anterior (al arrancar con error, usa los del `.jar`). El mapa usa un renderer contextual (cada jugador ve su cartilla) que solo
 redibuja tras `invalidate()`. Una casilla se completa cuando el ítem está **en el inventario del jugador**: recoger, clic,
 arrastrar, cerrar el inventario, craftear, horno o balde piden revisar el inventario un tick después
@@ -104,7 +111,11 @@ tabla de `docs/ANALISIS.md` §3.
   listeners solo traducen eventos de Paper. Claves de texto (`"minecraft:diamond"`) en la lógica nueva.
 - Nada de objetivos en el código: van a `tasks/*.yml` (desde la 1.3), y los por defecto a
   `core/src/main/resources/adaptivebingo/defaults/` (si se agrega un archivo, sumarlo a
-  `CatalogLoader.DEFAULT_FILES`). Los textos del juego pasan a `messages.yml` en la 2.4.
+  `CatalogLoader.DEFAULT_FILES`).
+- Nada de textos para el jugador en el código (desde la 2.4): `Texts.get("grupo.clave", "variable", valor)`
+  y la clave en `defaults/messages.yml` y en `TextsTest`. Los textos que vienen del núcleo (nombres de
+  tareas, `WinMode.description`, `Condition.description`, `Team.label`, errores de los YAML) quedan en
+  español en `core`.
 - Todo YAML nuevo se valida al leer, con mensajes en español que digan archivo y entrada, y claves
   desconocidas = error (atrapa errores de tipeo).
 - No usar `_` como identificador (es palabra reservada desde Java 9).

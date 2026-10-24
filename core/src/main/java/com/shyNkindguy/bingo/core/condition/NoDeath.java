@@ -11,6 +11,11 @@ public record NoDeath() implements Condition {
     }
 
     @Override
+    public String description() {
+        return "sin morir";
+    }
+
+    @Override
     public String key() {
         return "sin_morir";
     }

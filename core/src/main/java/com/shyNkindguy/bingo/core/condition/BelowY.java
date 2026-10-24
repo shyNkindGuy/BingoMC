@@ -11,6 +11,11 @@ public record BelowY(int y) implements Condition {
     }
 
     @Override
+    public String description() {
+        return "debajo de Y " + y;
+    }
+
+    @Override
     public String key() {
         return "y<" + y;
     }

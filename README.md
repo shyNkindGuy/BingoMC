@@ -11,6 +11,7 @@ minutos por defecto), gana quien tenga más casillas (o empatan los que tengan m
 | `/bingo stop` | Detiene la partida en curso (permiso `bingo.admin`) |
 | `/bingo reload` | Vuelve a leer `cards.yml` y `tasks/*.yml`; si tienen un error, dice dónde y sigue con los de antes (permiso `bingo.admin`) |
 | `/bingo map` | Vuelve a dar el mapa con la cartilla |
+| `/bingo card` | Abre la cartilla en un cofre, con el avance de cada casilla en su descripción |
 | `/bingo team unir <color>` · `salir` · `lista` | Armar equipos antes de la partida (rojo, azul, verde, amarillo, celeste, morado, naranja, rosa, blanco, gris). Quien no tiene equipo juega solo |
 | `/bingo team random [n]` | Reparte a todos al azar en `n` equipos (2 por defecto; permiso `bingo.admin`) |
 
@@ -31,6 +32,9 @@ La primera vez que arranca, el plugin crea en `plugins/AdaptiveBingo/`:
   nadie se mueve), minutos de partida (20; 0 = sin límite), PvP, una semilla fija opcional y el modo:
   `linea` (o `2 lineas`…), `carta llena`, `10 casillas`, `lockout` (la casilla es del primer equipo que la
   completa) o `tiempo` (gana quien tenga más al final; si empatan, quien llegó primero).
+
+- `messages.yml`: todos los textos del juego (con colores `&` y variables `{jugador}`); si borras uno, vuelve
+  el de por defecto.
 
 Quien entra al servidor con la partida empezada recibe su cartilla con las mismas tareas.
 

@@ -5,6 +5,7 @@ import com.shyNkindguy.bingo.core.card.BingoCard;
 import com.shyNkindguy.bingo.core.card.BingoCell;
 import com.shyNkindguy.bingo.core.task.AdvancementTask;
 import com.shyNkindguy.bingo.game.BingoGame;
+import com.shyNkindguy.bingo.ui.Texts;
 import org.bukkit.Bukkit;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
@@ -29,7 +30,7 @@ public final class AdvancementReset {
     public static void forPlayer(Player player, BingoCard card) {
         int revoked = revoke(player, card);
         if (revoked > 0) {
-            player.sendMessage("§7Se reiniciaron " + revoked + " logros de tu cartilla para que cuenten en esta partida.");
+            player.sendMessage(Texts.get("progreso.logros_reiniciados", "cantidad", revoked));
         }
     }
 

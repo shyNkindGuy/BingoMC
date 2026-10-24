@@ -20,6 +20,11 @@ public record TimeOfDay(boolean night) implements Condition {
     }
 
     @Override
+    public String description() {
+        return night ? "de noche" : "de día";
+    }
+
+    @Override
     public String key() {
         return night ? "hora=noche" : "hora=dia";
     }

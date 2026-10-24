@@ -5,7 +5,9 @@ import com.shyNkindguy.bingo.core.team.Team;
 import com.shyNkindguy.bingo.game.BingoGame;
 import com.shyNkindguy.bingo.ui.BingoMapManager;
 import com.shyNkindguy.bingo.ui.BingoScoreBoard;
+import com.shyNkindguy.bingo.ui.CardMenu;
 import com.shyNkindguy.bingo.ui.TeamColors;
+import com.shyNkindguy.bingo.ui.Texts;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
@@ -18,6 +20,8 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -57,6 +61,17 @@ public class SessionListener implements Listener {
         if (to != null && (from.getX() != to.getX() || from.getZ() != to.getZ() || to.getY() > from.getY())) {
             event.setCancelled(true);
         }
+    }
+
+    // La cartilla de /bingo card es para mirar: no se saca ni se mueve nada.
+    @EventHandler
+    public void onMenuClick(InventoryClickEvent event) {
+        if (event.getInventory().getHolder() instanceof CardMenu) event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onMenuDrag(InventoryDragEvent event) {
+        if (event.getInventory().getHolder() instanceof CardMenu) event.setCancelled(true);
     }
 
     @EventHandler
@@ -107,13 +122,13 @@ public class SessionListener implements Listener {
         Player player = event.getPlayer();
         Optional<Team> team = game.getTeams().teamOf(player.getUniqueId());
         if (team.isEmpty()) {
-            player.sendMessage("§7No tienes equipo: el mensaje va a todos.");
+            player.sendMessage(Texts.get("chat.sin_equipo"));
             return;
         }
         Set<UUID> mates = new HashSet<>(game.getTeams().members(team.get()));
         event.getRecipients().removeIf(recipient -> !mates.contains(recipient.getUniqueId()));
         event.setMessage(message.substring(1).trim());
-        event.setFormat(TeamColors.chat(team.get().color()) + "[" + team.get().name() + "] §r%1$s§7: §f%2$s");
+        event.setFormat(Texts.get("chat.equipo", "color", TeamColors.chat(team.get().color()), "equipo", team.get().name()));
     }
 
     @EventHandler
@@ -131,7 +146,7 @@ public class SessionListener implements Listener {
             mapManager.giveMap(player);
             scoreboard.show(player);
             if (isNew) {
-                player.sendMessage("§aEntraste a la partida de bingo en curso: tu cartilla está en la mano izquierda.");
+                player.sendMessage(Texts.get("partida.entraste"));
                 if (game.isRunning()) AdvancementReset.forPlayer(player, card);
             }
         });

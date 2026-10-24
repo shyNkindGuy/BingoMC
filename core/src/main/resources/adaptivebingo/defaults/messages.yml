@@ -1,0 +1,119 @@
+# Textos de AdaptiveBingo. Colores con & (&a verde, &c rojo, &e amarillo, &6 dorado, &7 gris, &f blanco,
+# &l negrita, &r normal…). Lo que va entre llaves ({jugador}) lo pone el plugin. Si borras una línea, vuelve
+# la de por defecto. Después de editar, /bingo reload.
+
+comando:
+  uso: "&eUso: /bingo <start [cartilla] [semilla]|stop|map|card|reload|team>"
+  sin_permiso_iniciar: "&cNo tienes permiso para iniciar el Bingo."
+  sin_permiso_detener: "&cNo tienes permiso para detener el Bingo."
+  sin_permiso_recargar: "&cNo tienes permiso para recargar el Bingo."
+  sin_permiso_equipos: "&cNo tienes permiso para armar los equipos."
+  solo_jugador: "&cEsto lo puede hacer solo un jugador."
+
+inicio:
+  ya_en_curso: "&cEl Bingo ya está en curso."
+  sin_jugadores: "&cNo hay jugadores conectados."
+  cartilla_no_existe: "&cNo existe la cartilla &f{cartilla}&c. Hay: &f{cartillas}"
+  error: "&c{error}"
+  modo_imposible: "&cEl modo {modo} no se puede con la cartilla {cartilla}: {problema}. Cámbialo en config.yml."
+  no_se_pudo: "&cNo se pudo empezar la partida."
+  anuncio: "&a&lBINGO INICIADO!"
+  detalle: "&7Cartilla &f{cartilla} &7({lado}×{lado}) · semilla &f{semilla} &7· gana: &f{modo} &7· {duracion}{pvp}"
+  minutos: "{minutos} min"
+  sin_limite: "sin límite"
+  sin_pvp: " · sin PvP"
+
+cuenta:
+  titulo: "&e{segundos}"
+  subtitulo: "&7El bingo empieza en…"
+  ya_titulo: "&a¡YA!"
+  ya_subtitulo: "&7Gana: {modo}"
+  a_jugar: "&a&l¡A JUGAR!"
+
+partida:
+  bingo: "&6&lBINGO!"
+  ganador: "{ganador} &ese los papeó :v"
+  tiempo: "&7Tiempo: &f{tiempo}"
+  detenida: "&c&lBINGO DETENIDO &7por {quien}"
+  no_hay: "&cNo hay ninguna partida en curso."
+  entraste: "&aEntraste a la partida de bingo en curso: tu cartilla está en la mano izquierda."
+
+puntos:
+  tiempo_agotado: "&c⏱ Tiempo agotado"
+  sin_libres: "&eNo quedan casillas libres"
+  nadie: "&7Nadie completó casillas."
+  ganador: "&eGanador: &a{ganador}"
+  empate: "&eEmpate entre: &a{ganadores}"
+  casillas: "&7Objetivos: &f{casillas}"
+
+progreso:
+  # a todo el equipo; {por} es " (Ana)" si el equipo tiene más de uno
+  completado: "&a✔ Objetivo completado: &f{tarea}{por}"
+  por: " &7({jugador})"
+  titulo: "&a✔"
+  subtitulo: "&f{tarea}"
+  # a todos los demás, con el color del equipo
+  anuncio: "{equipo} &7completó &f{tarea} &7({casillas}/{total})"
+  lockout: "&7[Lockout] {equipo} &7se quedó con &f{tarea}"
+  logros_reiniciados: "&7Se reiniciaron {cantidad} logros de tu cartilla para que cuenten en esta partida."
+
+recarga:
+  ok: "&aTareas recargadas."
+  linea: "&7{linea}"
+  partida_en_curso: "&7La partida en curso sigue con sus tareas; los cambios salen en la próxima."
+  error: "&cNo se recargó: &f{error}"
+  sigue: "&7Siguen las tareas de antes."
+
+mapa:
+  nombre: "&aBINGO HUMILDE"
+  dado: "&aCartilla de Bingo invocada"
+
+chat:
+  sin_equipo: "&7No tienes equipo: el mensaje va a todos."
+  # %1$s es el jugador y %2$s el mensaje
+  equipo: "{color}[{equipo}] &r%1$s&7: &f%2$s"
+
+equipos:
+  uso: "&eUso: /bingo team <unir <color>|salir|random [equipos]|lista>"
+  bloqueados: "&cLos equipos no se pueden cambiar con la partida en curso."
+  uso_unir: "&eUso: /bingo team unir <color> &7({colores})"
+  color_no_existe: "&cNo existe el color &f{color}&c. Hay: &f{colores}"
+  unido: "&aAhora estás en el {equipo}&a."
+  salio: "&7Saliste del {equipo}&7: vas a jugar solo."
+  sin_equipo: "&7No estabas en ningún equipo."
+  uso_random: "&eUso: /bingo team random [equipos] &7(de 2 a {max})"
+  al_azar: "&a&lEquipos armados al azar:"
+  ninguno: "&7Nadie armó equipos todavía: &f/bingo team unir <color> &7({colores})"
+  linea: "{equipo}: &f{miembros}"
+  desconectado: "&8(desconectado)&f"
+
+marcador:
+  titulo: "&a&lBINGO - shyNkindev"
+  equipo: "&fEquipo: {equipo}"
+  solo: "solo"
+  sin_equipo: "&7—"
+  casillas: "&fCasillas: &a{casillas}"
+  gana: "&fGana: &e{modo}"
+  fila_equipo: "{equipo}&7: &f{casillas}"
+  estado_cuenta: "&fEstado: &eEMPIEZA YA"
+  estado_juego: "&fEstado: &aEN CURSO"
+
+barra:
+  cuenta: "&eEmpieza en &f{segundos}"
+  restante: "&fQuedan &e{tiempo} &7· gana: {modo}"
+  sin_limite: "&fJugando hace &e{tiempo} &7· gana: {modo}"
+
+cartilla:
+  titulo: "Cartilla · {equipo}"
+  no_jugando: "&cNo estás jugando una partida."
+  progreso: "&7Avance: &f{actual}/{objetivo}"
+  completada: "&a✔ Completada"
+  bloqueada: "&c✘ Es de {equipo}"
+  condiciones: "&dSolo cuenta {condiciones}"
+  tipo_item: "&7Tenerlo en el inventario"
+  tipo_matar: "&7Matar (cuentan las de todo el equipo)"
+  tipo_logro: "&7Logro de Minecraft"
+  tipo_estadistica: "&7Estadística, desde que empezó la partida"
+  tipo_alguno: "&7{necesita} distintos a la vez de:"
+  tipo_todos: "&7Todos a la vez:"
+  item_de: "&8 · &f{item}"
