@@ -2,7 +2,10 @@ package com.shyNkindguy.bingo.game;
 
 
 import com.shyNkindguy.bingo.core.card.BingoCard;
-import com.shyNkindguy.bingo.core.card.BingoObjective;
+import com.shyNkindguy.bingo.core.event.TaskEvent;
+import com.shyNkindguy.bingo.core.progress.ProgressResult;
+import com.shyNkindguy.bingo.core.progress.ProgressTracker;
+import com.shyNkindguy.bingo.core.task.Task;
 import com.shyNkindguy.bingo.core.win.TimeLimitWinners;
 import com.shyNkindguy.bingo.core.win.WinConditionChecker;
 import org.bukkit.Bukkit;
@@ -40,11 +43,11 @@ public class BingoGame {
         cards.clear();
 
         // los mismos objetivos para todos; cada cartilla los baraja en su propia copia
-        List<BingoObjective> objectives = ObjectiveFactory.createObjectives();
+        List<Task> tasks = ObjectiveFactory.createObjectives();
         for (Player p : players) {
             cards.put(
                     p.getUniqueId(),
-                    new BingoCard(objectives)
+                    new BingoCard(tasks)
             );
         }
 
@@ -119,12 +122,12 @@ public class BingoGame {
         endListeners.forEach(Runnable::run);
         cards.clear();
     }
-    // Devuelve el objetivo completado, o null si no había ninguno pendiente con ese ítem ("minecraft:...").
-    public BingoObjective completePickup(Player player, String item) {
+    // Aplica un evento a la cartilla del jugador: qué casillas avanzaron y cuáles se completaron.
+    public ProgressResult applyEvent(Player player, TaskEvent event) {
         BingoCard card = cards.get(player.getUniqueId());
-        if (card == null) return null;
+        if (card == null) return ProgressResult.NONE;
 
-        return card.completeByItem(item);
+        return ProgressTracker.apply(card, event);
     }
 
     public BingoCard getCard(Player player){

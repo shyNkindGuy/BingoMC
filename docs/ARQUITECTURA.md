@@ -125,7 +125,8 @@ classDiagram
     GameSession o-- Card
 ```
 
-- **`Task.apply`** recibe un evento y devuelve el progreso nuevo (inmutable). Un `ItemTask` de
+- **`Task.apply`** recibe un evento y devuelve el progreso nuevo (inmutable). Desde la tarea 1.2 existe
+  como `apply(TaskEvent, TaskProgress)` en `core/task`; el `EventContext` se suma con las condiciones (1.5). Un `ItemTask` de
   "16 troncos de roble" avanza con `ItemObtained("minecraft:oak_log", total=…)`; un `KillTask` con
   `EntityKilled`; un `SetTask any_of 3` recuerda qué miembros ya cumplió.
 - **`ConditionalTask`** = tarea + condiciones: "cocina carne **en el Nether**", "mata un zombi **de

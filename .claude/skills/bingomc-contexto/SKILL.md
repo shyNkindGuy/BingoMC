@@ -38,7 +38,11 @@ personal, con idea de llegar a servidor. Todo en español (commits, mensajes, do
 - 2026-10-24 · tarea **1.1**: Maven multi-módulo. `core/` (sin Bukkit: `card/` con `BingoCard` N×N,
   `BingoObjective` por clave `"minecraft:…"`, `ObjectivePool.draw`; `win/`) y `plugin/` (Paper +
   `adapter/Keys`; shade mete `core` en el `.jar`, que sale en `plugin/target/`). `mvn -pl core verify`
-  corre en el contenedor. **Siguiente: 1.2** (modelo de tareas). Ver `docs/PLAN.md` para el estado al día.
+  corre en el contenedor (PR #15).
+- 2026-10-24 · tarea **1.2**: modelo de tareas en `core`: `Task`/`ItemTask` (con cantidad), `TaskEvent`
+  sellado (`ItemObtained`), `TaskProgress` (solo sube) y `ProgressTracker`; `BingoCell` guarda tarea +
+  progreso (adiós `BingoObjective` y `ObjectiveType`). El escaneo suma totales por ítem; el mapa muestra
+  cantidad y barra. **Siguiente: 1.3** (tareas en YAML). Ver `docs/PLAN.md` para el estado al día.
 
 ## Decisiones (no volver a preguntar)
 | Tema | Decisión |

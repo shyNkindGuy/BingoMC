@@ -1,5 +1,7 @@
 package com.shyNkindguy.bingo.core.card;
 
+import com.shyNkindguy.bingo.core.task.ItemTask;
+import com.shyNkindguy.bingo.core.task.Task;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -8,76 +10,76 @@ import java.util.List;
 import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BingoCardTest {
 
-    private static List<BingoObjective> objetivos(int cantidad) {
-        List<BingoObjective> objetivos = new ArrayList<>();
+    private static List<Task> tareas(int cantidad) {
+        List<Task> tareas = new ArrayList<>();
         for (int i = 0; i < cantidad; i++) {
-            objetivos.add(new BingoObjective("T" + i, "Tarea " + i, "minecraft:item_" + i));
+            tareas.add(new ItemTask("T" + i, "Tarea " + i, "minecraft:item_" + i, 1));
         }
-        return objetivos;
+        return tareas;
     }
 
     @Test
-    void elTamanoSaleDeLaCantidadDeObjetivos() {
-        assertEquals(5, new BingoCard(objetivos(25)).getSize());
-        assertEquals(3, new BingoCard(objetivos(9)).getSize());
+    void elTamanoSaleDeLaCantidadDeTareas() {
+        assertEquals(5, new BingoCard(tareas(25)).getSize());
+        assertEquals(3, new BingoCard(tareas(9)).getSize());
     }
 
     @Test
     void unaCantidadQueNoEsCuadradoEsError() {
-        assertThrows(IllegalArgumentException.class, () -> new BingoCard(objetivos(10)));
-        assertThrows(IllegalArgumentException.class, () -> new BingoCard(objetivos(0)));
+        assertThrows(IllegalArgumentException.class, () -> new BingoCard(tareas(10)));
+        assertThrows(IllegalArgumentException.class, () -> new BingoCard(tareas(0)));
     }
 
     @Test
     void noModificaLaListaQueRecibe() {
-        List<BingoObjective> lista = objetivos(9);
-        List<BingoObjective> copia = new ArrayList<>(lista);
+        List<Task> lista = tareas(9);
+        List<Task> copia = new ArrayList<>(lista);
         new BingoCard(lista, new Random(3));
         assertEquals(copia, lista);
     }
 
     @Test
     void laMismaSemillaDaElMismoOrden() {
-        List<BingoObjective> lista = objetivos(9);
+        List<Task> lista = tareas(9);
         BingoCard a = new BingoCard(lista, new Random(5));
         BingoCard b = new BingoCard(lista, new Random(5));
         for (int r = 0; r < 3; r++) {
             for (int c = 0; c < 3; c++) {
-                assertSame(a.getGrid()[r][c].getObjective(), b.getGrid()[r][c].getObjective());
+                assertSame(a.getGrid()[r][c].getTask(), b.getGrid()[r][c].getTask());
             }
         }
     }
 
     @Test
-    void completarPorItemDevuelveElObjetivoUnaSolaVez() {
-        BingoCard cartilla = new BingoCard(objetivos(9));
-
-        BingoObjective completado = cartilla.completeByItem("minecraft:item_4");
-
-        assertEquals("T4", completado.getId());
-        assertNull(cartilla.completeByItem("minecraft:item_4"));
-        assertEquals(1, cartilla.countCompleted());
-    }
-
-    @Test
-    void unItemQueNoEstaEnLaCartillaNoCompletaNada() {
-        BingoCard cartilla = new BingoCard(objetivos(9));
-        assertNull(cartilla.completeByItem("minecraft:diamond"));
+    void lasCasillasEmpiezanSinAvance() {
+        BingoCard cartilla = new BingoCard(tareas(9));
+        Arrays.stream(cartilla.getGrid()).flatMap(Arrays::stream).forEach(celda -> {
+            assertFalse(celda.isCompleted());
+            assertEquals(0, celda.getProgress().current());
+        });
         assertEquals(0, cartilla.countCompleted());
     }
 
     @Test
-    void cadaObjetivoApareceUnaVez() {
-        BingoCard cartilla = new BingoCard(objetivos(25));
+    void completarUnaCasillaCuenta() {
+        BingoCard cartilla = new BingoCard(tareas(9));
+        cartilla.getGrid()[1][2].complete();
+        assertTrue(cartilla.getGrid()[1][2].isCompleted());
+        assertEquals(1, cartilla.countCompleted());
+    }
+
+    @Test
+    void cadaTareaApareceUnaVez() {
+        BingoCard cartilla = new BingoCard(tareas(25));
         List<String> ids = new ArrayList<>();
-        Arrays.stream(cartilla.getGrid()).flatMap(Arrays::stream).forEach(c -> ids.add(c.getObjective().getId()));
+        Arrays.stream(cartilla.getGrid()).flatMap(Arrays::stream).forEach(c -> ids.add(c.getTask().id()));
         assertEquals(25, ids.stream().distinct().count());
         assertTrue(ids.contains("T0") && ids.contains("T24"));
     }

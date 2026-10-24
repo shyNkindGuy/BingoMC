@@ -1,5 +1,7 @@
 package com.shyNkindguy.bingo.core.card;
 
+import com.shyNkindguy.bingo.core.task.ItemTask;
+import com.shyNkindguy.bingo.core.task.Task;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
@@ -46,19 +48,33 @@ class ObjectivePoolTest {
     }
 
     @Test
-    void elIdDelObjetivoSaleDelItem() {
-        BingoObjective diamante = new ObjectivePool.Entry("minecraft:diamond", "Diamante").toObjective();
-        assertEquals("PICKUP_DIAMOND", diamante.getId());
-        assertEquals("Diamante", diamante.getDisplayName());
-        assertEquals("minecraft:diamond", diamante.getItem());
+    void elIdDeLaTareaSaleDelItem() {
+        ItemTask diamante = new ObjectivePool.Entry("minecraft:diamond", "Diamante").toTask();
+        assertEquals("PICKUP_DIAMOND", diamante.id());
+        assertEquals("Diamante", diamante.displayName());
+        assertEquals("minecraft:diamond", diamante.item());
+        assertEquals(1, diamante.amount());
+    }
+
+    @Test
+    void laCantidadPasaALaTarea() {
+        ItemTask troncos = new ObjectivePool.Entry("minecraft:oak_log", "Tronco de roble", 16).toTask();
+        assertEquals(16, troncos.target());
+        assertEquals("16 × Tronco de roble", troncos.displayName());
+    }
+
+    @Test
+    void todasLasCantidadesSonPositivasYAlgunasPidenMasDeUno() {
+        assertTrue(ObjectivePool.DEFAULT.stream().allMatch(entry -> entry.amount() >= 1));
+        assertTrue(ObjectivePool.DEFAULT.stream().anyMatch(entry -> entry.amount() > 1));
     }
 
     @Test
     void elSorteoDaUnaCartillaDeObjetivosDistintos() {
-        List<BingoObjective> cartilla = ObjectivePool.draw(ObjectivePool.DEFAULT, CASILLAS, new Random(7), item -> true);
+        List<Task> cartilla = ObjectivePool.draw(ObjectivePool.DEFAULT, CASILLAS, new Random(7), item -> true);
         assertEquals(CASILLAS, cartilla.size());
         Set<String> items = new HashSet<>();
-        for (BingoObjective objetivo : cartilla) items.add(objetivo.getItem());
+        for (Task tarea : cartilla) items.add(tarea.icon());
         assertEquals(CASILLAS, items.size());
     }
 
@@ -69,10 +85,10 @@ class ObjectivePoolTest {
                 new ObjectivePool.Entry("minecraft:no_existe", "Fantasma"),
                 new ObjectivePool.Entry("minecraft:bread", "Pan"));
 
-        List<BingoObjective> cartilla = ObjectivePool.draw(pool, 2, new Random(1), item -> !item.endsWith("no_existe"));
+        List<Task> cartilla = ObjectivePool.draw(pool, 2, new Random(1), item -> !item.endsWith("no_existe"));
 
         assertEquals(2, cartilla.size());
-        for (BingoObjective objetivo : cartilla) assertFalse(objetivo.getItem().endsWith("no_existe"));
+        for (Task tarea : cartilla) assertFalse(tarea.icon().endsWith("no_existe"));
     }
 
     @Test
