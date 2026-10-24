@@ -1,11 +1,9 @@
 package com.shyNkindguy.bingo.config;
 
-import com.shyNkindguy.bingo.adapter.Keys;
 import com.shyNkindguy.bingo.core.catalog.CardSpec;
 import com.shyNkindguy.bingo.core.catalog.Catalog;
 import com.shyNkindguy.bingo.core.catalog.CatalogException;
 import com.shyNkindguy.bingo.core.catalog.CatalogLoader;
-import com.shyNkindguy.bingo.core.task.ItemTask;
 import com.shyNkindguy.bingo.core.task.Task;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -19,10 +17,12 @@ import java.util.logging.Logger;
 // tasks/*.yml). La primera vez copia ahí los que vienen en el .jar.
 public class CatalogService {
     private final JavaPlugin plugin;
+    private final TaskAvailability availability;
     private Catalog catalog;
 
-    public CatalogService(JavaPlugin plugin) {
+    public CatalogService(JavaPlugin plugin, TaskAvailability availability) {
         this.plugin = plugin;
+        this.availability = availability;
     }
 
     // Al arrancar. Si los archivos tienen un error, lo dice en la consola y juega con los que vienen en el
@@ -38,7 +38,7 @@ public class CatalogService {
 
         try {
             catalog = CatalogLoader.fromDirectory(folder);
-            summary(catalog).forEach(log::info);
+            summary(catalog, availability).forEach(log::info);
         } catch (CatalogException e) {
             log.severe(e.getMessage());
             log.severe("Se usan las tareas que vienen en el plugin hasta que /bingo reload lea bien los archivos.");
@@ -50,21 +50,20 @@ public class CatalogService {
     public List<String> reload() {
         Catalog loaded = CatalogLoader.fromDirectory(plugin.getDataFolder().toPath());
         catalog = loaded;
-        return summary(loaded);
+        return summary(loaded, availability);
     }
 
     public Catalog get() {
         return catalog;
     }
 
-    // Si la tarea se puede hacer en esta versión de Minecraft: hoy, que su ítem exista.
-    public static boolean isAvailable(Task task) {
-        return !(task instanceof ItemTask item) || Keys.toMaterial(item.item()) != null;
+    public boolean isAvailable(Task task) {
+        return availability.isAvailable(task);
     }
 
-    // "3 listas, 43 tareas; cartillas: normal 5×5 (por defecto), rapida 3×3" y, si hay, las tareas que no
-    // van a salir porque su ítem no existe en esta versión.
-    static List<String> summary(Catalog catalog) {
+    // "3 listas, 59 tareas; cartillas: normal 5×5 (por defecto), rapida 3×3" y, si hay, las tareas que no
+    // van a salir porque no se pueden hacer en esta versión, con el motivo.
+    static List<String> summary(Catalog catalog, TaskAvailability availability) {
         List<String> cards = new ArrayList<>();
         for (CardSpec card : catalog.cards().values()) {
             String isDefault = card.name().equals(catalog.defaultCard()) ? " (por defecto)" : "";
@@ -77,10 +76,11 @@ public class CatalogService {
 
         List<String> missing = new ArrayList<>();
         for (Task task : catalog.tasks()) {
-            if (!isAvailable(task)) missing.add(task.id());
+            String problem = availability.problem(task);
+            if (problem != null) missing.add(task.id() + " (" + problem + ")");
         }
         if (!missing.isEmpty()) {
-            lines.add("No existen en esta versión y no van a salir: " + String.join(", ", missing));
+            lines.add("No se pueden hacer en esta versión y no van a salir: " + String.join(", ", missing));
         }
         return lines;
     }

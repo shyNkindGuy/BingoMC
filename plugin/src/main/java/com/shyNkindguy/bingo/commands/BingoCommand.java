@@ -102,7 +102,7 @@ public class BingoCommand implements CommandExecutor, TabCompleter {
 
         List<Task> tasks;
         try {
-            tasks = catalog.generate(cardName, new Random(usedSeed), CatalogService::isAvailable);
+            tasks = catalog.generate(cardName, new Random(usedSeed), catalogs::isAvailable);
         } catch (CatalogException e) {
             sender.sendMessage("§c" + e.getMessage());
             return;

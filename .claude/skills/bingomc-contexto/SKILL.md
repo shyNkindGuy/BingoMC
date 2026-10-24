@@ -10,8 +10,8 @@ personal, con idea de llegar a servidor. Todo en español (commits, mensajes, do
 
 ## Qué está hecho
 - `/bingo start [cartilla] [semilla]`: cartilla por jugador (`normal` 5×5 o `rapida` 3×3 de
-  `cards.yml`) con tareas sorteadas por partida de `tasks/*.yml` (43 por defecto, los mismos para todos,
-  en distinto orden), `/bingo reload` para releer los YAML, mapa en la mano izquierda
+  `cards.yml`) con tareas sorteadas por partida de `tasks/*.yml` (59 por defecto: ítems, mobs, logros y
+  estadísticas; las mismas para todos, en distinto orden), `/bingo reload` para releer los YAML, mapa en la mano izquierda
   (`BingoMapManager` + `BingoMapRenderer` contextual, íconos 8×8 de `icon/IconRegistry` al doble), scoreboard
   lateral (`BingoScoreBoard`). `/bingo map` vuelve a dar el mapa; `/bingo stop` la detiene (start/stop
   piden `bingo.admin`).
@@ -49,8 +49,13 @@ personal, con idea de llegar a servidor. Todo en español (commits, mensajes, do
   `CardSpec` con mín/máx, `CardGenerator` con semilla); por defecto `tasks/{basicos,medios,dificiles}.yml`
   y `cards.yml` (`normal` 5×5, `rapida` 3×3) que se copian a `plugins/AdaptiveBingo/` la primera vez;
   plugin `config/CatalogService`, `/bingo reload`, `/bingo start [cartilla] [semilla]` y autocompletado.
-  Adiós `ObjectivePool` y `ObjectiveFactory`. **Siguiente: 1.4** (kill, advancement, statistic). Ver
-  `docs/PLAN.md` para el estado al día.
+  Adiós `ObjectivePool` y `ObjectiveFactory` (PR #17).
+- 2026-10-24 · tarea **1.4**: tipos `matar`/`kill` (`KillTask`, `EntityKilled`), `logro`/`advancement`
+  (`AdvancementTask`, `AdvancementDone`; al empezar `AdvancementReset` quita los logros de la cartilla) y
+  `estadistica`/`statistic` (`StatisticTask` + `de`, `StatisticReached`, `StatisticPoller` cada segundo con
+  `StatisticBaseline`); `icono` opcional en todas; `TaskAvailability` filtra lo que no existe con motivo;
+  `CardUpdater` centraliza mensaje/scoreboard/mapa/victoria; marcas 5×5 por tipo en el mapa (`TaskIcons`).
+  59 tareas por defecto. **Siguiente: 1.5** (conjuntos y condiciones). Ver `docs/PLAN.md` para el estado al día.
 
 ## Decisiones (no volver a preguntar)
 | Tema | Decisión |

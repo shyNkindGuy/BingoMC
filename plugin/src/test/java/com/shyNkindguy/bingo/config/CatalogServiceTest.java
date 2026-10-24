@@ -14,28 +14,26 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-// Corre contra el paper-api real del CI: atrapa nombres de ítem mal escritos en los YAML por defecto.
+// Corre contra el paper-api real del CI: atrapa ítems, mobs y estadísticas mal escritos en los YAML por
+// defecto. Los logros no se pueden revisar sin servidor: ahí solo se mira que tengan forma de logro.
 class CatalogServiceTest {
 
+    private static final TaskAvailability SIN_SERVIDOR =
+            new TaskAvailability(key -> key.matches("minecraft:(story|nether|end|adventure|husbandry)/[a-z_]+"));
+
     @Test
-    void cadaTareaPorDefectoEsUnItemDeMinecraft() {
+    void cadaTareaPorDefectoSePuedeHacer() {
         for (Task task : CatalogLoader.defaults().tasks()) {
-            assertTrue(CatalogService.isAvailable(task), "No existe en Minecraft: " + task.icon());
+            assertNull(SIN_SERVIDOR.problem(task), "No se puede hacer: " + task.id());
         }
     }
 
     @Test
-    void unItemQueNoExisteNoEstaDisponible() {
-        assertFalse(CatalogService.isAvailable(new ItemTask("item:no_existe", "Fantasma", "minecraft:no_existe", 1)));
-    }
-
-    @Test
     void elResumenCuentaListasTareasYCartillas() {
-        assertEquals(List.of("3 listas, 43 tareas; cartillas: normal 5×5 (por defecto), rapida 3×3"),
-                CatalogService.summary(CatalogLoader.defaults()));
+        assertEquals(List.of("3 listas, 59 tareas; cartillas: normal 5×5 (por defecto), rapida 3×3"),
+                CatalogService.summary(CatalogLoader.defaults(), SIN_SERVIDOR));
     }
 
     @Test
@@ -47,8 +45,9 @@ class CatalogServiceTest {
                 Map.of("cartillas", Map.of("chica", Map.of("tamaño", 3, "listas", Map.of("pan", 9)))),
                 List.of(new TaskList("pan", Tier.D, tasks)));
 
-        List<String> summary = CatalogService.summary(catalog);
+        List<String> summary = CatalogService.summary(catalog, SIN_SERVIDOR);
         assertEquals(2, summary.size());
-        assertEquals("No existen en esta versión y no van a salir: item:no_existe", summary.get(1));
+        assertEquals("No se pueden hacer en esta versión y no van a salir: item:no_existe (el ítem no existe)",
+                summary.get(1));
     }
 }

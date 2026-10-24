@@ -1,13 +1,14 @@
 package com.shyNkindguy.bingo.ui;
 
-import com.shyNkindguy.bingo.adapter.Keys;
 import com.shyNkindguy.bingo.core.card.BingoCard;
 import com.shyNkindguy.bingo.core.card.BingoCell;
 import com.shyNkindguy.bingo.core.progress.TaskProgress;
+import com.shyNkindguy.bingo.core.task.Task;
 import com.shyNkindguy.bingo.game.BingoGame;
 import com.shyNkindguy.bingo.icon.IconDefinition;
 import com.shyNkindguy.bingo.icon.IconRegistry;
 import com.shyNkindguy.bingo.icon.IconRenderer;
+import com.shyNkindguy.bingo.icon.TaskIcons;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.map.*;
@@ -79,13 +80,22 @@ public class BingoMapRenderer extends MapRenderer {
                     canvas.setPixel(x + cellSize - 1, y + i, border);
                 }
 
-                Material material = Keys.toMaterial(cell.getTask().icon());
+                Task task = cell.getTask();
+                Material material = TaskIcons.material(task);
+                IconDefinition badge = TaskIcons.badge(task);
                 if (material != null) {
                     IconDefinition icon = IconRegistry.get(material);
                     if (icon == null) {
                         icon = IconRegistry.getFallback(material);
                     }
                     IconRenderer.drawInCell(canvas, x, y, cellSize, icon, cell.isCompleted());
+                } else if (badge != null) {
+                    // sin ícono propio: la marca del tipo en grande
+                    IconRenderer.drawInCell(canvas, x, y, cellSize, badge, cell.isCompleted());
+                    badge = null;
+                }
+                if (badge != null && !cell.isCompleted()) {
+                    IconRenderer.drawScaled(canvas::setPixel, x + 2, y + 2, badge, 1, false);
                 }
 
                 TaskProgress progress = cell.getProgress();

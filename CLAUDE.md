@@ -14,24 +14,30 @@ viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
   `pom` padre (el `plugin.yml` usa `${project.version}` con resource filtering; el CI revisa que quede
   reemplazada y que el `.jar` traiga `core`).
 - `core` (nada de `org.bukkit` ahí):
-  - `task/`: `Task` (`id`, `displayName`, `icon` = clave del ítem a dibujar, `target`, `apply(evento,
-    progreso)`) e `ItemTask(id, nombre, ítem, cantidad)`, que cuenta el máximo que el jugador llegó a tener
-    a la vez.
-  - `event/`: `TaskEvent` sellado; por ahora solo `ItemObtained(ítem, total)`.
-  - `progress/`: `TaskProgress(current, target)` inmutable que solo sube, y `ProgressTracker.apply(cartilla,
-    evento)` → `ProgressResult` (casillas que avanzaron y tareas completadas).
+  - `task/`: `Task` (`id`, `displayName`, `icon` = clave del ítem a dibujar o null, `target`,
+    `apply(evento, progreso)`): `ItemTask(id, nombre, ítem, cantidad[, ícono])` (el máximo que tuvo a la
+    vez), `KillTask` (mob + cantidad; ícono por defecto, su huevo), `AdvancementTask` (logro; sin ícono, el
+    plugin usa el del logro) y `StatisticTask` (estadística [+ `subject` bloque/ítem/mob] ≥ cantidad desde
+    que empezó la partida; ícono por defecto, el `subject`).
+  - `event/`: `TaskEvent` sellado: `ItemObtained(ítem, total)`, `EntityKilled(mob)`,
+    `AdvancementDone(logro)`, `StatisticReached(estadística, subject, valor desde el inicio)`.
+  - `progress/`: `TaskProgress(current, target)` inmutable que solo sube, `ProgressTracker.apply(cartilla,
+    evento)` → `ProgressResult` (casillas que avanzaron y tareas completadas) y `StatisticBaseline`
+    (valor al empezar por jugador).
   - `card/`: `BingoCard` N×N de `BingoCell` (tarea + progreso).
   - `catalog/` (desde la 1.3): `CatalogLoader` lee `cards.yml` + `tasks/*.yml` de una carpeta o los por
-    defecto del `.jar` (`core/src/main/resources/adaptivebingo/defaults/`, 43 tareas en `basicos` D,
-    `medios` C y `dificiles` A; cartillas `normal` 5×5 y `rapida` 3×3) y los copia la primera vez;
+    defecto del `.jar` (`core/src/main/resources/adaptivebingo/defaults/`, 59 tareas de los cuatro tipos en
+    `basicos` D, `medios` C y `dificiles` A; cartillas `normal` 5×5 y `rapida` 3×3) y los copia la primera vez;
     `CatalogParser` valida todo con mensajes "archivo, tarea N: problema"; `Catalog` (listas `TaskList` +
     `Tier`, cartillas `CardSpec` con mín/máx por lista) y `CardGenerator` (semilla, sin repetidos).
   - `win/`: `WinConditionChecker` y `TimeLimitWinners`.
-- `plugin`: `adapter/Keys` traduce `Material` ↔ clave; `config/CatalogService` tiene el catálogo
-  (carga al arrancar, `/bingo reload`, "disponible" = el ítem existe en esta versión); el resto como abajo.
+- `plugin`: `adapter/Keys` traduce `Material`/`EntityType`/`Statistic`/`Advancement` ↔ clave;
+  `config/CatalogService` tiene el catálogo (carga al arrancar, `/bingo reload`) y `config/TaskAvailability`
+  dice si una tarea se puede hacer en esta versión y por qué no (las que no, no salen); el resto como abajo.
 - `plugin.yml` clásico de Bukkit (no `paper-plugin.yml`). Main: `com.shyNkindguy.bingo.AdaptiveBingo`.
 - Paquete `com.shyNkindguy.bingo` del plugin: `commands/` (`/bingo start|stop|map|reload`), `config/`,
-  `events/` (`ObjectiveListener`, `ScanQueue`), `game/` (`BingoGame`), `icon/`, `ui/` (mapa,
+  `events/` (`ObjectiveListener`, `ScanQueue`, `CardUpdater`, `StatisticPoller`, `AdvancementReset`),
+  `game/` (`BingoGame` con `onStart`/`onEnd`), `icon/` (+ `TaskIcons`: ícono y marca por tipo), `ui/` (mapa,
   scoreboard, paleta). Íconos: un solo sistema, `icon/IconRegistry` (por `Material`, con fallback por
   categoría) + `icon/IconRenderer` (escala entera que entra en la casilla, centrado; dibuja sobre un
   `PixelSink` para poder testearlo).
@@ -47,6 +53,12 @@ redibuja tras `invalidate()`. Una casilla se completa cuando el ítem está **en
 arrastrar, cerrar el inventario, craftear, horno o balde piden revisar el inventario un tick después
 (`ObjectiveListener.requestScan`; `ScanQueue` junta los pedidos del mismo tick), nunca se mira el ítem
 del evento; el escaneo suma cuántos tiene de cada ítem y manda `ItemObtained(ítem, total)` a la cartilla.
+Matar un mob (`EntityDeathEvent` con `getKiller`) manda `EntityKilled` y un logro
+(`PlayerAdvancementDoneEvent`) `AdvancementDone`; las estadísticas se leen cada segundo
+(`StatisticPoller`) y cuentan desde el inicio. Al empezar, a cada jugador se le quitan los logros de su
+cartilla (`AdvancementReset`), si no nunca podría volver a conseguirlos. Todo pasa por
+`CardUpdater.apply` (mensaje, scoreboard, mapa, victoria). En el mapa, las tareas que no son de ítem
+llevan una marca 5×5 arriba a la izquierda: espada (matar), estrella (logro), barras (estadística).
 En el mapa, las tareas de varias unidades muestran la cantidad pedida y una barra de avance. La cartilla es un mapa marcado con PDC `adaptivebingo:cartilla` (`BingoMapManager.isBingoMap`):
 no pisa la mano izquierda (lo que había pasa al inventario o se suelta), no se duplica, no cae al morir y
 no se puede tirar. Gana la primera línea (`WinConditionChecker`); a los 20 min (`MAX_TIME`), el que tenga más casillas o empate

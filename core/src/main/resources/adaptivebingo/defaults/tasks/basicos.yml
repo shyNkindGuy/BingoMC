@@ -3,13 +3,19 @@
 #
 #   lista:  nombre de la lista (si falta, el del archivo)
 #   tier:   dificultad, de S (la más difícil) a D (la más fácil)
-#   tareas: una por línea, con
-#     item:     el ítem de Minecraft: oak_log o minecraft:oak_log
-#               (nombres en https://minecraft.wiki/w/Java_Edition_data_values)
-#     nombre:   lo que se lee en el juego
-#     cantidad: cuántos tiene que tener a la vez en el inventario (si falta, 1)
-#     id:       opcional, por defecto item:<ítem>; solo hace falta si el mismo ítem va dos veces
-#     tipo:     opcional; por ahora solo item
+#   tareas: una por línea. Todas llevan `nombre` (lo que se lee en el juego) y pueden llevar
+#     icono: el ítem que se dibuja en la casilla en vez del de por defecto
+#     id:    por defecto <tipo>:<qué>; solo hace falta si la misma cosa va dos veces
+#   y según el `tipo` (si falta, item):
+#     item (tener en el inventario)    item: oak_log, cantidad: cuántos a la vez (si falta, 1)
+#     matar (o kill)                   mob: zombie, cantidad (si falta, 1); ícono: el huevo del mob
+#     logro (o advancement)            logro: story/mine_diamond; ícono: el del logro. Al empezar la
+#                                      partida se le quitan a cada jugador los logros de su cartilla
+#     estadistica (o statistic)        estadistica: jump, cantidad: cuánto desde que empezó la partida;
+#                                      las de bloque, ítem o mob llevan `de` (mine_block, de: stone)
+#   Nombres de ítems, mobs, logros y estadísticas: https://minecraft.wiki/w/Java_Edition_data_values
+#   (oak_log y minecraft:oak_log son lo mismo). Las estadísticas usan los nombres de Bukkit:
+#   https://jd.papermc.io/paper/1.21.11/org/bukkit/Statistic.html (en minúsculas).
 lista: basicos
 tier: D
 tareas:
@@ -29,3 +35,8 @@ tareas:
   - { item: sugar_cane, nombre: Caña de azúcar, cantidad: 6 }
   - { item: torch, nombre: Antorcha, cantidad: 16 }
   - { item: glass, nombre: Vidrio, cantidad: 8 }
+  - { tipo: matar, mob: zombie, nombre: Zombi, cantidad: 3, icono: zombie_head }
+  - { tipo: matar, mob: cow, nombre: Vaca, cantidad: 2, icono: leather }
+  - { tipo: logro, logro: adventure/sleep_in_bed, nombre: Dormir en una cama }
+  - { tipo: estadistica, estadistica: jump, nombre: Saltos, cantidad: 100, icono: rabbit_foot }
+  - { tipo: estadistica, estadistica: animals_bred, nombre: Animales criados, cantidad: 2, icono: wheat }

@@ -24,3 +24,10 @@ tareas:
   - { item: string, nombre: Hilo, cantidad: 4 }
   - { item: bone, nombre: Hueso, cantidad: 4 }
   - { item: gunpowder, nombre: Pólvora }
+  - { tipo: matar, mob: skeleton, nombre: Esqueleto, cantidad: 2, icono: skeleton_skull }
+  - { tipo: matar, mob: creeper, nombre: Creeper, icono: creeper_head }
+  - { tipo: matar, mob: spider, nombre: Araña, cantidad: 2, icono: spider_eye }
+  - { tipo: logro, logro: husbandry/tame_an_animal, nombre: Domesticar un animal }
+  - { tipo: logro, logro: story/deflect_arrow, nombre: Parar una flecha con el escudo }
+  - { tipo: logro, logro: husbandry/fishy_business, nombre: Pescar un pez }
+  - { tipo: estadistica, estadistica: mine_block, de: stone, nombre: Piedra picada, cantidad: 64 }
