@@ -11,7 +11,8 @@ public interface Task {
     // Texto para el jugador ("16 × Tronco de roble").
     String displayName();
 
-    // Clave del ítem que se dibuja en la casilla ("minecraft:oak_log").
+    // Clave del ítem que se dibuja en la casilla ("minecraft:oak_log"), o null si la tarea no trae uno: el
+    // plugin dibuja el del logro o el símbolo del tipo.
     String icon();
 
     // Cuánto hay que juntar para completarla (1 si es "conseguirlo una vez").

@@ -1,6 +1,9 @@
 package com.shyNkindguy.bingo.core.catalog;
 
+import com.shyNkindguy.bingo.core.task.AdvancementTask;
 import com.shyNkindguy.bingo.core.task.ItemTask;
+import com.shyNkindguy.bingo.core.task.KillTask;
+import com.shyNkindguy.bingo.core.task.StatisticTask;
 import com.shyNkindguy.bingo.core.task.Task;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -136,7 +139,7 @@ class CatalogLoaderTest {
         List<Task> tareas = catalogo.tasks();
 
         assertEquals(List.of("basicos", "medios", "dificiles"), List.copyOf(catalogo.lists().keySet()));
-        assertEquals(43, tareas.size());
+        assertEquals(59, tareas.size());
         assertEquals("normal", catalogo.defaultCard());
         assertEquals(5, catalogo.card("normal").orElseThrow().size());
         assertEquals(3, catalogo.card("rapida").orElseThrow().size());
@@ -144,12 +147,17 @@ class CatalogLoaderTest {
         Set<String> items = new HashSet<>();
         Set<String> nombres = new HashSet<>();
         for (Task tarea : tareas) {
-            ItemTask item = (ItemTask) tarea;
-            assertTrue(items.add(item.item()), "Ítem repetido: " + item.item());
-            assertTrue(nombres.add(item.name()), "Nombre repetido: " + item.name());
-            assertTrue(item.item().matches("minecraft:[a-z0-9_]+"), "No es una clave de ítem: " + item.item());
+            assertTrue(nombres.add(tarea.displayName()), "Nombre repetido: " + tarea.displayName());
+            if (tarea instanceof ItemTask item) {
+                assertTrue(items.add(item.item()), "Ítem repetido: " + item.item());
+                assertTrue(item.item().matches("minecraft:[a-z0-9_]+"), "No es una clave de ítem: " + item.item());
+            }
         }
         assertTrue(tareas.stream().anyMatch(tarea -> tarea.target() > 1));
+        // hay de cada tipo
+        for (Class<?> tipo : List.of(ItemTask.class, KillTask.class, AdvancementTask.class, StatisticTask.class)) {
+            assertTrue(tareas.stream().anyMatch(tipo::isInstance), "Falta una tarea de tipo " + tipo.getSimpleName());
+        }
     }
 
     @Test

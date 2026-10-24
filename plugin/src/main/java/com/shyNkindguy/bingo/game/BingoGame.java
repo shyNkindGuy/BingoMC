@@ -22,11 +22,17 @@ public class BingoGame {
     private static final long MAX_TIME = 20 * 60 * 1000;
     private static final long MILLIS_PER_TICK = 50;
     private final Map<UUID, BingoCard> cards = new HashMap<>();
+    private final List<Runnable> startListeners = new ArrayList<>();
     private final List<Runnable> endListeners = new ArrayList<>();
     private BukkitTask timeLimitTask;
 
     public BingoGame(Plugin plugin){
         this.plugin = plugin;
+    }
+
+    // Se ejecuta al empezar cada partida, con las cartillas ya repartidas.
+    public void onStart(Runnable listener) {
+        startListeners.add(listener);
     }
 
     // Se ejecuta cada vez que termina una partida (bingo, tiempo agotado o /bingo stop).
@@ -57,6 +63,7 @@ public class BingoGame {
             }
         }, MAX_TIME / MILLIS_PER_TICK);
 
+        startListeners.forEach(Runnable::run);
         return true;
     }
     private void endByPoints() {

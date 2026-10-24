@@ -1,6 +1,10 @@
 package com.shyNkindguy.bingo.core.catalog;
 
+import com.shyNkindguy.bingo.core.task.AdvancementTask;
 import com.shyNkindguy.bingo.core.task.ItemTask;
+import com.shyNkindguy.bingo.core.task.KillTask;
+import com.shyNkindguy.bingo.core.task.StatisticTask;
+import com.shyNkindguy.bingo.core.task.Task;
 import org.junit.jupiter.api.Test;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -23,7 +27,11 @@ class CatalogParserTest {
     }
 
     private static ItemTask tarea(String linea) {
-        return (ItemTask) CatalogParser.parseTask(yaml(linea), "prueba");
+        return (ItemTask) cualquiera(linea);
+    }
+
+    private static Task cualquiera(String linea) {
+        return CatalogParser.parseTask(yaml(linea), "prueba");
     }
 
     private static String error(Runnable accion) {
@@ -100,7 +108,38 @@ class CatalogParserTest {
         assertTrue(error(() -> tarea("{ item: bread, nombre: Pan, cantidad: diez }")).contains("número entero"));
         assertTrue(error(() -> tarea("{ item: bread, nombre: Pan, cantidad: 1.5 }")).contains("número entero"));
         assertTrue(error(() -> tarea("{ item: pan de molde, nombre: Pan }")).contains("no es una clave de Minecraft"));
-        assertTrue(error(() -> tarea("{ tipo: mob, item: zombie, nombre: Zombi }")).contains("el tipo \"mob\" no existe"));
+        assertTrue(error(() -> tarea("{ tipo: volar, item: zombie, nombre: Zombi }")).contains("el tipo \"volar\" no existe"));
+    }
+
+    @Test
+    void unaTareaDeMatar() {
+        assertEquals(new KillTask("kill:zombie", "Zombi", "minecraft:zombie", 3),
+                cualquiera("{ tipo: matar, mob: zombie, nombre: Zombi, cantidad: 3 }"));
+        assertEquals(new KillTask("kill:creeper", "Creeper", "minecraft:creeper", 1, "minecraft:creeper_head"),
+                cualquiera("{ tipo: kill, mob: creeper, nombre: Creeper, icono: creeper_head }"));
+        assertTrue(error(() -> cualquiera("{ tipo: matar, nombre: Zombi }")).contains("falta mob"));
+        assertTrue(error(() -> cualquiera("{ tipo: matar, mob: zombie, item: bread, nombre: Zombi }"))
+                .contains("no conozco \"item\""));
+    }
+
+    @Test
+    void unaTareaDeLogro() {
+        assertEquals(new AdvancementTask("advancement:story/enter_the_nether", "Al Nether", "minecraft:story/enter_the_nether"),
+                cualquiera("{ tipo: logro, logro: story/enter_the_nether, nombre: Al Nether }"));
+        assertEquals("minecraft:diamond", ((AdvancementTask) cualquiera(
+                "{ tipo: advancement, logro: minecraft:story/mine_diamond, nombre: Diamantes, icono: diamond }")).icon());
+        assertTrue(error(() -> cualquiera("{ tipo: logro, logro: story/x, nombre: X, cantidad: 2 }"))
+                .contains("no conozco \"cantidad\""));
+    }
+
+    @Test
+    void unaTareaDeEstadistica() {
+        assertEquals(new StatisticTask("statistic:jump", "Saltos", "minecraft:jump", null, 100),
+                cualquiera("{ tipo: estadistica, estadistica: jump, nombre: Saltos, cantidad: 100 }"));
+        assertEquals(new StatisticTask("statistic:mine_block/stone", "Piedra", "minecraft:mine_block", "minecraft:stone", 64),
+                cualquiera("{ tipo: statistic, estadistica: mine_block, de: stone, nombre: Piedra, cantidad: 64 }"));
+        assertTrue(error(() -> cualquiera("{ tipo: estadistica, estadistica: jump, nombre: Saltos }"))
+                .contains("falta cantidad"));
     }
 
     @Test

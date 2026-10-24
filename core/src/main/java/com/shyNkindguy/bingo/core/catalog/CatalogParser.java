@@ -1,6 +1,9 @@
 package com.shyNkindguy.bingo.core.catalog;
 
+import com.shyNkindguy.bingo.core.task.AdvancementTask;
 import com.shyNkindguy.bingo.core.task.ItemTask;
+import com.shyNkindguy.bingo.core.task.KillTask;
+import com.shyNkindguy.bingo.core.task.StatisticTask;
 import com.shyNkindguy.bingo.core.task.Task;
 
 import java.util.ArrayList;
@@ -22,7 +25,19 @@ public final class CatalogParser {
     private static final String MINECRAFT = "minecraft:";
 
     private static final Set<String> LIST_KEYS = Set.of("lista", "tier", "tareas");
-    private static final Set<String> ITEM_KEYS = Set.of("tipo", "id", "nombre", "item", "cantidad");
+    // tipo de tarea en el YAML (en inglés o en español) → tipo
+    private static final Map<String, String> TYPES = Map.of(
+            "item", "item",
+            "kill", "kill", "matar", "kill",
+            "advancement", "advancement", "logro", "advancement",
+            "statistic", "statistic", "estadistica", "statistic");
+    private static final String TYPE_NAMES = "item, kill (o matar), advancement (o logro), statistic (o estadistica)";
+
+    private static final Set<String> ITEM_KEYS = Set.of("tipo", "id", "nombre", "item", "cantidad", "icono");
+    private static final Set<String> KILL_KEYS = Set.of("tipo", "id", "nombre", "mob", "cantidad", "icono");
+    private static final Set<String> ADVANCEMENT_KEYS = Set.of("tipo", "id", "nombre", "logro", "icono");
+    private static final Set<String> STATISTIC_KEYS =
+            Set.of("tipo", "id", "nombre", "estadistica", "de", "cantidad", "icono");
     private static final Set<String> CARDS_KEYS = Set.of("por_defecto", "cartillas");
     private static final Set<String> CARD_KEYS = Set.of("tamaño", "tamano", "listas");
     private static final Set<String> QUOTA_KEYS = Set.of("min", "max");
@@ -51,12 +66,16 @@ public final class CatalogParser {
 
     public static Task parseTask(Object raw, String where) {
         Map<String, Object> map = map(raw, where);
-        String type = map.containsKey("tipo")
+        String written = map.containsKey("tipo")
                 ? text(map.get("tipo"), where + ": tipo").toLowerCase(Locale.ROOT)
                 : "item";
+        String type = TYPES.get(written);
+        if (type == null) throw error(where, "el tipo \"" + written + "\" no existe (se puede usar: " + TYPE_NAMES + ")");
         return switch (type) {
             case "item" -> parseItem(map, where);
-            default -> throw error(where, "el tipo \"" + type + "\" no existe (por ahora solo: item)");
+            case "kill" -> parseKill(map, where);
+            case "advancement" -> parseAdvancement(map, where);
+            default -> parseStatistic(map, where);
         };
     }
 
@@ -66,7 +85,40 @@ public final class CatalogParser {
         String name = text(required(map, "nombre", where), where + ": nombre");
         int amount = map.containsKey("cantidad") ? positive(map.get("cantidad"), where + ": cantidad") : 1;
         String id = map.containsKey("id") ? text(map.get("id"), where + ": id") : defaultId("item", item);
-        return new ItemTask(id, name, item, amount);
+        return new ItemTask(id, name, item, amount, icon(map, where));
+    }
+
+    private static KillTask parseKill(Map<String, Object> map, String where) {
+        checkKeys(map, KILL_KEYS, where);
+        String entity = key(required(map, "mob", where), where + ": mob");
+        String name = text(required(map, "nombre", where), where + ": nombre");
+        int amount = map.containsKey("cantidad") ? positive(map.get("cantidad"), where + ": cantidad") : 1;
+        String id = map.containsKey("id") ? text(map.get("id"), where + ": id") : defaultId("kill", entity);
+        return new KillTask(id, name, entity, amount, icon(map, where));
+    }
+
+    private static AdvancementTask parseAdvancement(Map<String, Object> map, String where) {
+        checkKeys(map, ADVANCEMENT_KEYS, where);
+        String advancement = key(required(map, "logro", where), where + ": logro");
+        String name = text(required(map, "nombre", where), where + ": nombre");
+        String id = map.containsKey("id") ? text(map.get("id"), where + ": id") : defaultId("advancement", advancement);
+        return new AdvancementTask(id, name, advancement, icon(map, where));
+    }
+
+    private static StatisticTask parseStatistic(Map<String, Object> map, String where) {
+        checkKeys(map, STATISTIC_KEYS, where);
+        String statistic = key(required(map, "estadistica", where), where + ": estadistica");
+        String subject = map.containsKey("de") ? key(map.get("de"), where + ": de") : null;
+        String name = text(required(map, "nombre", where), where + ": nombre");
+        int amount = positive(required(map, "cantidad", where), where + ": cantidad");
+        String id = map.containsKey("id") ? text(map.get("id"), where + ": id")
+                : defaultId("statistic", statistic) + (subject == null ? "" : "/" + shortKey(subject));
+        return new StatisticTask(id, name, statistic, subject, amount, icon(map, where));
+    }
+
+    // `icono: rotten_flesh`: el ítem que se dibuja en la casilla en vez del de por defecto del tipo.
+    private static String icon(Map<String, Object> map, String where) {
+        return map.containsKey("icono") ? key(map.get("icono"), where + ": icono") : null;
     }
 
     // cards.yml + las listas ya leídas. Revisa que no haya listas ni ids repetidos y que cada cartilla
@@ -173,7 +225,11 @@ public final class CatalogParser {
 
     // "item" + "minecraft:oak_log" → "item:oak_log"; con otro namespace queda entero.
     static String defaultId(String type, String key) {
-        return type + ":" + (key.startsWith(MINECRAFT) ? key.substring(MINECRAFT.length()) : key);
+        return type + ":" + shortKey(key);
+    }
+
+    private static String shortKey(String key) {
+        return key.startsWith(MINECRAFT) ? key.substring(MINECRAFT.length()) : key;
     }
 
     // `oak_log` → `minecraft:oak_log`; en minúsculas y con la forma de una clave de Minecraft.

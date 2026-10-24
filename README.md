@@ -14,8 +14,11 @@ tengan más).
 
 ## Tareas y cartillas
 La primera vez que arranca, el plugin crea en `plugins/AdaptiveBingo/`:
-- `tasks/basicos.yml`, `tasks/medios.yml`, `tasks/dificiles.yml`: listas de tareas (`item`, `nombre`,
-  `cantidad`), cada una con su dificultad (`tier` S–D). Cualquier otro `.yml` en `tasks/` es otra lista.
+- `tasks/basicos.yml`, `tasks/medios.yml`, `tasks/dificiles.yml`: listas de tareas, cada una con su
+  dificultad (`tier` S–D). Cualquier otro `.yml` en `tasks/` es otra lista. Tipos de tarea: tener un ítem
+  (`item`, con cantidad), matar mobs (`matar`), conseguir un logro de Minecraft (`logro`; al empezar se le
+  quitan a cada jugador los logros de su cartilla para que cuenten) y llegar a una estadística desde que
+  empezó la partida (`estadistica`: saltos, bloques picados…).
 - `cards.yml`: las cartillas (`normal` 5×5 y `rapida` 3×3) con cuántas tareas salen de cada lista.
 
 El formato está explicado en los comentarios de los propios archivos. Después de editar: `/bingo reload`.

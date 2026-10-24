@@ -178,8 +178,9 @@ horno, balde o clic, y emite `ItemObtained` con el total real.
 
 ## 6. Configuración por datos (YAML)
 
-Desde la tarea 1.3 las tareas de ítem ya se leen así (`tipo` por defecto `item`, `cantidad` por defecto
-1, `id` por defecto `item:<ítem>`); los otros tipos llegan en las tareas 1.4 y 1.5:
+Así se leen desde las tareas 1.3 y 1.4 (`tipo` por defecto `item`, también en español: `matar`, `logro`,
+`estadistica`; `cantidad` por defecto 1; `id` por defecto `<tipo>:<qué>`; `icono` opcional); los conjuntos y
+las condiciones llegan en la 1.5:
 
 ```yaml
 # plugins/AdaptiveBingo/tasks/basicos.yml
@@ -188,18 +189,19 @@ tier: D
 tareas:
   - { item: oak_log, nombre: Tronco de roble, cantidad: 16 }
   - { item: bread, nombre: Pan }
-  - { tipo: kill, mob: zombie, nombre: Zombi, cantidad: 3 }                  # 1.4
+  - { tipo: matar, mob: zombie, nombre: Zombi, cantidad: 3, icono: zombie_head }
 
 # plugins/AdaptiveBingo/tasks/dificiles.yml
 lista: dificiles
 tier: S
 tareas:
   - { item: diamond, nombre: Diamante, cantidad: 3 }
-  - { tipo: advancement, logro: "minecraft:story/enter_the_nether", nombre: Al Nether }  # 1.4
+  - { tipo: logro, logro: story/enter_the_nether, nombre: Entrar al Nether }
   - { tipo: any_of, nombre: "3 lanas distintas", necesita: 3,                # 1.5
       de: [white_wool, red_wool, blue_wool, yellow_wool, black_wool] }
   - { item: cooked_beef, nombre: Filete en el Nether, condiciones: [ { dimension: the_nether } ] }  # 1.5
-  - { tipo: statistic, estadistica: jump, valor: 500, nombre: 500 saltos }   # 1.4
+  - { tipo: estadistica, estadistica: jump, nombre: Saltos, cantidad: 500 }
+  - { tipo: estadistica, estadistica: mine_block, de: stone, nombre: Piedra picada, cantidad: 64 }
 ```
 
 ```yaml

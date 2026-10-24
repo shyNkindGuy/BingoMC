@@ -2,7 +2,11 @@ package com.shyNkindguy.bingo;
 
 import com.shyNkindguy.bingo.commands.BingoCommand;
 import com.shyNkindguy.bingo.config.CatalogService;
+import com.shyNkindguy.bingo.config.TaskAvailability;
+import com.shyNkindguy.bingo.events.AdvancementReset;
+import com.shyNkindguy.bingo.events.CardUpdater;
 import com.shyNkindguy.bingo.events.ObjectiveListener;
+import com.shyNkindguy.bingo.events.StatisticPoller;
 import com.shyNkindguy.bingo.game.BingoGame;
 import com.shyNkindguy.bingo.ui.BingoMapManager;
 import com.shyNkindguy.bingo.ui.BingoScoreBoard;
@@ -19,18 +23,25 @@ public final class AdaptiveBingo extends JavaPlugin {
     public void onEnable(){
 
         getLogger().info("Mi Bingo Habilitado :)))");
-        CatalogService catalogs = new CatalogService(this);
+        CatalogService catalogs = new CatalogService(this, TaskAvailability.ofServer());
         catalogs.load();
         game = new BingoGame(this);
         scoreboard = new BingoScoreBoard(game);
         mapManager = new BingoMapManager(this, game);
+        CardUpdater updater = new CardUpdater(game, scoreboard, mapManager);
+        StatisticPoller statistics = new StatisticPoller(this, game, updater);
+        game.onStart(() -> {
+            AdvancementReset.forGame(game);
+            statistics.start();
+        });
         game.onEnd(() -> {
+            statistics.stop();
             scoreboard.hideAll();
             mapManager.removeMaps();
         });
 
         Bukkit.getPluginManager().registerEvents(
-                new ObjectiveListener(this,game,scoreboard,mapManager),
+                new ObjectiveListener(this, game, mapManager, updater),
                 this
         );
         BingoCommand command = new BingoCommand(game, scoreboard, mapManager, catalogs);

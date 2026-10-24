@@ -40,7 +40,7 @@ Leyenda: `[ ]` pendiente · `[x]` hecha (se marca dentro del PR que la resuelve)
 - [x] **1.3 Tareas en YAML.** `tasks/*.yml` (listas con tier S–D) y `cards.yml` (mín/máx por lista),
   copiados por defecto en el primer arranque; `/bingo reload`; generador con semilla y sin repetidos.
   Tests del parser y del generador.
-- [ ] **1.4 Tipos nuevos.** `kill` (mob con cantidad), `advancement` (logro de Minecraft),
+- [x] **1.4 Tipos nuevos.** `kill` (mob con cantidad), `advancement` (logro de Minecraft),
   `statistic` (estadística ≥ N, revisión periódica). Ícono por tipo en el mapa.
 - [ ] **1.5 Conjuntos y condiciones.** `any_of` ("3 de estas 5 lanas"), `all_of`; condiciones
   `dimension`, `time` (día/noche), `biome`, `below_y`, `no_death` combinables en YAML. Tests de cada una.

@@ -7,3 +7,7 @@ tareas:
   - { item: diamond_pickaxe, nombre: Pico de diamante }
   - { item: golden_apple, nombre: Manzana dorada }
   - { item: obsidian, nombre: Obsidiana }
+  - { tipo: logro, logro: story/enter_the_nether, nombre: Entrar al Nether }
+  - { tipo: logro, logro: story/enchant_item, nombre: Encantar un objeto }
+  - { tipo: matar, mob: enderman, nombre: Enderman, icono: ender_pearl }
+  - { tipo: matar, mob: witch, nombre: Bruja }

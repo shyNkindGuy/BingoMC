@@ -24,6 +24,9 @@ public class BingoPalette {
 
     // UI
     public static final byte BORDER = MapPalette.DARK_GRAY;
+    // marcas del tipo de tarea: color base del mapa × 4 + 2 (el tono más claro) de oro (30) y lapislázuli (32)
+    public static final byte BADGE_GOLD = (byte) 122;
+    public static final byte BADGE_BLUE = (byte) 130;
     public static final byte OUTLINE = (byte) 119; // Negro
     public static final byte TRANSPARENT = 0;
 
