@@ -1,6 +1,7 @@
 package com.shyNkindguy.bingo.core.catalog;
 
 import com.shyNkindguy.bingo.core.game.GameSettings;
+import com.shyNkindguy.bingo.core.game.StartRules;
 import com.shyNkindguy.bingo.core.win.WinMode;
 import org.junit.jupiter.api.Test;
 import org.yaml.snakeyaml.LoaderOptions;
@@ -26,7 +27,7 @@ class SettingsParserTest {
 
     @Test
     void leeTodasLasClaves() {
-        assertEquals(new GameSettings("rapida", 5, 30, false, 123L, new WinMode.Lines(2)),
+        assertEquals(new GameSettings("rapida", 5, 30, false, 123L, new WinMode.Lines(2), StartRules.DEFAULT),
                 config("cartilla: rapida\ncuenta_regresiva: 5\nduracion: 30\npvp: false\nsemilla: 123\nmodo: 2 lineas"));
     }
 
@@ -53,6 +54,20 @@ class SettingsParserTest {
         assertTrue(error("modo: tiempo\nduracion: 0").contains("hace falta una duracion"));
         assertTrue(error("cartilla: rapida\nmodo: 9 lineas").contains("una cartilla de 3×3 tiene 8 líneas"));
         assertTrue(error("cartilla: rapida\nmodo: 10 casillas").contains("tiene 9 casillas"));
+    }
+
+    @Test
+    void reglasDeInicio() {
+        StartRules inicio = config("dispersion: 300\nborde: 1000\nlimpiar_inventario: true\n"
+                + "kit:\n  - { item: bread, cantidad: 8 }\n  - { item: minecraft:stone_pickaxe }").start();
+        assertEquals(new StartRules(300, 1000, true, java.util.List.of(
+                new StartRules.KitItem("minecraft:bread", 8), new StartRules.KitItem("minecraft:stone_pickaxe", 1))), inicio);
+
+        assertTrue(error("dispersion: 600\nborde: 1000").contains("menor que 500"));
+        assertTrue(error("borde: 10").contains("de 16"));
+        assertTrue(error("kit:\n  - { item: bread, cantidad: 0 }").contains("mayor que 0"));
+        assertTrue(error("kit:\n  - { cantidad: 2 }").contains("falta item"));
+        assertTrue(error("kit:\n  - { item: bread, nombre: Pan }").contains("no conozco \"nombre\""));
     }
 
     @Test

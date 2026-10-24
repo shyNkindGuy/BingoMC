@@ -95,4 +95,36 @@ class GameSessionTest {
     void tiemposNegativosSonError() {
         assertThrows(IllegalArgumentException.class, () -> new GameSession().begin(-1, 60));
     }
+
+    @Test
+    void enPausaElTiempoNoCorre() {
+        GameSession sesion = new GameSession();
+        sesion.begin(0, 3);
+        sesion.tick();
+
+        assertTrue(sesion.pause());
+        assertEquals(Phase.PAUSED, sesion.phase());
+        assertTrue(sesion.inGame());
+        for (int i = 0; i < 10; i++) assertEquals(NONE, sesion.tick());
+        assertEquals(1, sesion.elapsedSeconds());
+
+        assertFalse(sesion.pause());
+        assertTrue(sesion.resume());
+        assertEquals(NONE, sesion.tick());
+        assertEquals(TIME_UP, sesion.tick());
+    }
+
+    @Test
+    void soloSePausaEnCursoYSePuedeTerminarEnPausa() {
+        GameSession sesion = new GameSession();
+        sesion.begin(5, 60);
+        assertFalse(sesion.pause());
+        assertFalse(sesion.resume());
+
+        GameSession otra = new GameSession();
+        otra.begin(0, 60);
+        otra.pause();
+        assertTrue(otra.finish());
+        assertEquals(Phase.ENDED, otra.phase());
+    }
 }

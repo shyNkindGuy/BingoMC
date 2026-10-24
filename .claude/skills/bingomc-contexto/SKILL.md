@@ -78,8 +78,12 @@ personal, con idea de llegar a servidor. Todo en español (commits, mensajes, do
 - 2026-10-24 · tarea **2.4**: UX. `messages.yml` (`core/text/Messages` + `ui/Texts`; ya no hay textos en el
   código del plugin), bossbar (`GameBossBar`, `BingoGame.onTick`), título + sonido al completar y anuncio
   con color de equipo, `/bingo card` (`CardMenu`, lore con tipo/avance/condiciones/bloqueo;
-  `Condition.description`), scoreboard sin parpadeo (prefijos de `Team`). **Siguiente: 2.5** (inicio de
-  partida). Ver `docs/PLAN.md` para el estado al día.
+  `Condition.description`), scoreboard sin parpadeo (prefijos de `Team`) (PR #23).
+- 2026-10-24 · tarea **2.5**: inicio de partida. `StartRules` + `ScatterPlanner` en `core/game`; `config.yml`
+  `dispersion`, `borde`, `limpiar_inventario`, `kit`; `game/StartActions` (al repartir: inventarios,
+  teletransporte por equipo a un lugar seguro, borde; al "¡YA!": kit; restaura el borde; lo mismo para
+  quien entra tarde). `/bingo pause` (`Phase.PAUSED`: tiempo quieto, nada cuenta, jugadores congelados,
+  bossbar "En pausa"). **Siguiente: 2.6** (fin de partida). Ver `docs/PLAN.md` para el estado al día.
 
 ## Decisiones (no volver a preguntar)
 | Tema | Decisión |

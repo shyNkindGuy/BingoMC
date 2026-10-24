@@ -20,9 +20,23 @@ public final class GameSession {
         return phase;
     }
 
-    // En cuenta regresiva o en curso.
+    // En cuenta regresiva, en curso o en pausa.
     public boolean inGame() {
-        return phase == Phase.COUNTDOWN || phase == Phase.RUNNING;
+        return phase == Phase.COUNTDOWN || phase == Phase.RUNNING || phase == Phase.PAUSED;
+    }
+
+    // En curso → en pausa (el tiempo deja de correr). false si no estaba en curso.
+    public boolean pause() {
+        if (phase != Phase.RUNNING) return false;
+        phase = Phase.PAUSED;
+        return true;
+    }
+
+    // En pausa → en curso. false si no estaba en pausa.
+    public boolean resume() {
+        if (phase != Phase.PAUSED) return false;
+        phase = Phase.RUNNING;
+        return true;
     }
 
     public int countdownLeft() {
@@ -74,7 +88,7 @@ public final class GameSession {
         }
     }
 
-    // Bingo, tiempo o /bingo stop (también durante la cuenta regresiva). false si no había partida.
+    // Bingo, tiempo o /bingo stop (también durante la cuenta regresiva o en pausa). false si no había partida.
     public boolean finish() {
         if (!inGame()) return false;
         phase = Phase.ENDED;

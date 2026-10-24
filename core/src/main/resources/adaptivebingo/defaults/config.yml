@@ -23,6 +23,21 @@ modo: linea
 # Si los jugadores se pueden pegar entre ellos (a su propio equipo, nunca).
 pvp: true
 
+# Al empezar:
+# A cuántos bloques del spawn se reparte a los equipos, en círculo y a la misma distancia entre ellos
+# (todo el equipo junto). 0 = nadie se teletransporta.
+dispersion: 0
+# Diámetro del borde del mundo durante la partida (centrado en el spawn; al terminar vuelve el de antes).
+# 0 = sin borde. Con borde, la dispersión tiene que ser menor que la mitad.
+borde: 0
+# Vaciar el inventario de cada jugador antes de repartir las cartillas (para que nadie arranque con cosas).
+limpiar_inventario: false
+# Lo que recibe cada jugador al "¡YA!" (y quien entra con la partida empezada). Ej.:
+# kit:
+#   - { item: bread, cantidad: 8 }
+#   - { item: stone_pickaxe }
+kit: []
+
 # Semilla fija: con la misma salen siempre las mismas tareas. Si falta, una al azar en cada partida
 # (se anuncia al empezar). /bingo start <cartilla> <semilla> la cambia para una partida.
 # semilla: 12345

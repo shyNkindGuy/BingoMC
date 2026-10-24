@@ -3,6 +3,7 @@ package com.shyNkindguy.bingo.events;
 import com.shyNkindguy.bingo.core.card.BingoCard;
 import com.shyNkindguy.bingo.core.team.Team;
 import com.shyNkindguy.bingo.game.BingoGame;
+import com.shyNkindguy.bingo.game.StartActions;
 import com.shyNkindguy.bingo.ui.BingoMapManager;
 import com.shyNkindguy.bingo.ui.BingoScoreBoard;
 import com.shyNkindguy.bingo.ui.CardMenu;
@@ -32,7 +33,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-// Las reglas de la partida que no son de las tareas: durante la cuenta regresiva nadie se mueve, rompe,
+// Las reglas de la partida que no son de las tareas: durante la cuenta regresiva y en pausa nadie se mueve, rompe,
 // pone, agarra ni recibe daño; sin PvP los jugadores no se pegan (y nunca a su equipo); quien entra con la
 // partida empezada recibe su cartilla; y `#mensaje` en el chat va solo al equipo.
 public class SessionListener implements Listener {
@@ -40,16 +41,19 @@ public class SessionListener implements Listener {
     private final BingoGame game;
     private final BingoMapManager mapManager;
     private final BingoScoreBoard scoreboard;
+    private final StartActions startActions;
 
-    public SessionListener(Plugin plugin, BingoGame game, BingoMapManager mapManager, BingoScoreBoard scoreboard) {
+    public SessionListener(Plugin plugin, BingoGame game, BingoMapManager mapManager, BingoScoreBoard scoreboard,
+                           StartActions startActions) {
         this.plugin = plugin;
         this.game = game;
         this.mapManager = mapManager;
         this.scoreboard = scoreboard;
+        this.startActions = startActions;
     }
 
     private boolean frozen(Player player) {
-        return game.inCountdown() && game.getCard(player) != null;
+        return game.isFrozen() && game.getCard(player) != null;
     }
 
     @EventHandler
@@ -143,6 +147,7 @@ public class SessionListener implements Listener {
         // un tick después, cuando el jugador ya está en el mundo
         Bukkit.getScheduler().runTask(plugin, () -> {
             if (!player.isOnline() || game.getCard(player) != card) return;
+            if (isNew) startActions.joinLate(player);
             mapManager.giveMap(player);
             scoreboard.show(player);
             if (isNew) {

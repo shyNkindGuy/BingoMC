@@ -107,7 +107,8 @@ public class BingoScoreBoard {
                         "casillas", entry.getValue().countCompleted()));
             }
 
-            lines.add(Texts.get(game.inCountdown() ? "marcador.estado_cuenta" : "marcador.estado_juego"));
+            lines.add(Texts.get(game.inCountdown() ? "marcador.estado_cuenta"
+                    : game.isPaused() ? "marcador.estado_pausa" : "marcador.estado_juego"));
             return lines;
         }
 

@@ -4,7 +4,9 @@ import com.shyNkindguy.bingo.core.catalog.CardSpec;
 import com.shyNkindguy.bingo.core.catalog.Catalog;
 import com.shyNkindguy.bingo.core.catalog.CatalogException;
 import com.shyNkindguy.bingo.core.catalog.CatalogLoader;
+import com.shyNkindguy.bingo.adapter.Keys;
 import com.shyNkindguy.bingo.core.game.GameSettings;
+import com.shyNkindguy.bingo.core.game.StartRules;
 import com.shyNkindguy.bingo.core.task.Task;
 import com.shyNkindguy.bingo.core.text.Messages;
 import com.shyNkindguy.bingo.ui.Texts;
@@ -51,6 +53,7 @@ public class CatalogService {
         }
         try {
             settings = CatalogLoader.settingsFromDirectory(folder, catalog);
+            kitProblems(settings).forEach(log::warning);
         } catch (CatalogException e) {
             log.severe(e.getMessage());
             log.severe("Se usa la configuración por defecto hasta que /bingo reload lea bien config.yml.");
@@ -75,7 +78,9 @@ public class CatalogService {
         catalog = loadedCatalog;
         settings = loadedSettings;
         Texts.use(loadedMessages);
-        return summary(loadedCatalog, availability);
+        List<String> lines = new ArrayList<>(summary(loadedCatalog, availability));
+        lines.addAll(kitProblems(loadedSettings));
+        return lines;
     }
 
     public Catalog get() {
@@ -84,6 +89,15 @@ public class CatalogService {
 
     public GameSettings settings() {
         return settings;
+    }
+
+    // Los ítems del kit que no existen en esta versión (no se dan).
+    static List<String> kitProblems(GameSettings settings) {
+        List<String> problems = new ArrayList<>();
+        for (StartRules.KitItem item : settings.start().kit()) {
+            if (Keys.toMaterial(item.item()) == null) problems.add(Texts.get("recarga.kit", "item", item.item()));
+        }
+        return problems;
     }
 
     public boolean isAvailable(Task task) {

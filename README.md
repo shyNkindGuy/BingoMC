@@ -9,6 +9,7 @@ minutos por defecto), gana quien tenga más casillas (o empatan los que tengan m
 |---|---|
 | `/bingo start [cartilla] [semilla]` | Empieza la partida con todos los jugadores conectados (permiso `bingo.admin`, ops por defecto). Sin cartilla usa la por defecto de `cards.yml`; la semilla se anuncia y con la misma salen las mismas tareas |
 | `/bingo stop` | Detiene la partida en curso (permiso `bingo.admin`) |
+| `/bingo pause` | Pausa la partida (el tiempo no corre y nadie se mueve) o la sigue (permiso `bingo.admin`) |
 | `/bingo reload` | Vuelve a leer `cards.yml` y `tasks/*.yml`; si tienen un error, dice dónde y sigue con los de antes (permiso `bingo.admin`) |
 | `/bingo map` | Vuelve a dar el mapa con la cartilla |
 | `/bingo card` | Abre la cartilla en un cofre, con el avance de cada casilla en su descripción |
@@ -31,7 +32,9 @@ La primera vez que arranca, el plugin crea en `plugins/AdaptiveBingo/`:
 - `config.yml`: cómo se juega: cartilla por defecto, segundos de cuenta regresiva (10; durante la cuenta
   nadie se mueve), minutos de partida (20; 0 = sin límite), PvP, una semilla fija opcional y el modo:
   `linea` (o `2 lineas`…), `carta llena`, `10 casillas`, `lockout` (la casilla es del primer equipo que la
-  completa) o `tiempo` (gana quien tenga más al final; si empatan, quien llegó primero).
+  completa) o `tiempo` (gana quien tenga más al final; si empatan, quien llegó primero). Y cómo empieza:
+  `dispersion` (repartir a los equipos en círculo a N bloques del spawn), `borde` (borde del mundo durante la
+  partida), `limpiar_inventario` y un `kit` para cada jugador.
 
 - `messages.yml`: todos los textos del juego (con colores `&` y variables `{jugador}`); si borras uno, vuelve
   el de por defecto.
