@@ -10,8 +10,8 @@ personal, con idea de llegar a servidor. Todo en español (commits, mensajes, do
 
 ## Qué está hecho
 - `/bingo start [cartilla] [semilla]`: cartilla por jugador (`normal` 5×5 o `rapida` 3×3 de
-  `cards.yml`) con tareas sorteadas por partida de `tasks/*.yml` (59 por defecto: ítems, mobs, logros y
-  estadísticas; las mismas para todos, en distinto orden), `/bingo reload` para releer los YAML, mapa en la mano izquierda
+  `cards.yml`) con tareas sorteadas por partida de `tasks/*.yml` (67 por defecto: ítems, mobs, logros,
+  estadísticas y conjuntos, algunas con condiciones; las mismas para todos, en distinto orden), `/bingo reload` para releer los YAML, mapa en la mano izquierda
   (`BingoMapManager` + `BingoMapRenderer` contextual, íconos 8×8 de `icon/IconRegistry` al doble), scoreboard
   lateral (`BingoScoreBoard`). `/bingo map` vuelve a dar el mapa; `/bingo stop` la detiene (start/stop
   piden `bingo.admin`).
@@ -55,7 +55,12 @@ personal, con idea de llegar a servidor. Todo en español (commits, mensajes, do
   `estadistica`/`statistic` (`StatisticTask` + `de`, `StatisticReached`, `StatisticPoller` cada segundo con
   `StatisticBaseline`); `icono` opcional en todas; `TaskAvailability` filtra lo que no existe con motivo;
   `CardUpdater` centraliza mensaje/scoreboard/mapa/victoria; marcas 5×5 por tipo en el mapa (`TaskIcons`).
-  59 tareas por defecto. **Siguiente: 1.5** (conjuntos y condiciones). Ver `docs/PLAN.md` para el estado al día.
+  59 tareas por defecto (PR #18).
+- 2026-10-24 · tarea **1.5**: conjuntos `alguno`/`todos` (`SetTask` con `InventoryScanned`) y condiciones
+  (`core/condition`: dimensión, hora, bioma, debajo de Y, sin morir, `alguna`; `ConditionalTask`,
+  `EventContext`, `Task.base()`), contexto armado por `PlayerContexts` en `CardUpdater`; mapa: dos ítems
+  para conjuntos y punto morado si hay condiciones. 67 tareas por defecto. **Fase 1 completa.**
+  **Siguiente: 2.1** (sesión con fases). Ver `docs/PLAN.md` para el estado al día.
 
 ## Decisiones (no volver a preguntar)
 | Tema | Decisión |

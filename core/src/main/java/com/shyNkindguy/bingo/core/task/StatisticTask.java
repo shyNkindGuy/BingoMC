@@ -1,6 +1,7 @@
 package com.shyNkindguy.bingo.core.task;
 
 import com.shyNkindguy.bingo.core.event.StatisticReached;
+import com.shyNkindguy.bingo.core.event.EventContext;
 import com.shyNkindguy.bingo.core.event.TaskEvent;
 import com.shyNkindguy.bingo.core.progress.TaskProgress;
 
@@ -36,7 +37,7 @@ public record StatisticTask(String id, String name, String statistic, String sub
     }
 
     @Override
-    public TaskProgress apply(TaskEvent event, TaskProgress progress) {
+    public TaskProgress apply(TaskEvent event, EventContext context, TaskProgress progress) {
         return switch (event) {
             case StatisticReached reached when reached.statistic().equals(statistic)
                     && Objects.equals(reached.subject(), subject) -> progress.reach(reached.value());

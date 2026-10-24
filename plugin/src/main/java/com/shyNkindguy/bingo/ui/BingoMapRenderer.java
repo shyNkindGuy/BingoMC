@@ -82,13 +82,12 @@ public class BingoMapRenderer extends MapRenderer {
 
                 Task task = cell.getTask();
                 Material material = TaskIcons.material(task);
+                Material second = TaskIcons.secondMaterial(task);
                 IconDefinition badge = TaskIcons.badge(task);
-                if (material != null) {
-                    IconDefinition icon = IconRegistry.get(material);
-                    if (icon == null) {
-                        icon = IconRegistry.getFallback(material);
-                    }
-                    IconRenderer.drawInCell(canvas, x, y, cellSize, icon, cell.isCompleted());
+                if (material != null && second != null) {
+                    IconRenderer.drawComposite(canvas, x, y, cellSize, iconOf(material), iconOf(second));
+                } else if (material != null) {
+                    IconRenderer.drawInCell(canvas, x, y, cellSize, iconOf(material), cell.isCompleted());
                 } else if (badge != null) {
                     // sin ícono propio: la marca del tipo en grande
                     IconRenderer.drawInCell(canvas, x, y, cellSize, badge, cell.isCompleted());
@@ -96,6 +95,14 @@ public class BingoMapRenderer extends MapRenderer {
                 }
                 if (badge != null && !cell.isCompleted()) {
                     IconRenderer.drawScaled(canvas::setPixel, x + 2, y + 2, badge, 1, false);
+                }
+                if (TaskIcons.hasConditions(task) && !cell.isCompleted()) {
+                    // punto morado abajo a la izquierda: solo cuenta en cierto lugar, hora o sin morir
+                    for (int dx = 0; dx < 3; dx++) {
+                        for (int dy = 0; dy < 3; dy++) {
+                            canvas.setPixel(x + 2 + dx, y + cellSize - 7 + dy, BingoPalette.CONDITION_MARK);
+                        }
+                    }
                 }
 
                 TaskProgress progress = cell.getProgress();
@@ -112,6 +119,11 @@ public class BingoMapRenderer extends MapRenderer {
 
             }
         }
+    }
+
+    private static IconDefinition iconOf(Material material) {
+        IconDefinition icon = IconRegistry.get(material);
+        return icon != null ? icon : IconRegistry.getFallback(material);
     }
 
     // Tareas de varias unidades: la cantidad pedida arriba a la derecha y una barra de avance abajo.

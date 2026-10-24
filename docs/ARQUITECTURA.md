@@ -127,13 +127,16 @@ classDiagram
     GameSession o-- Card
 ```
 
-- **`Task.apply`** recibe un evento y devuelve el progreso nuevo (inmutable). Desde la tarea 1.2 existe
-  como `apply(TaskEvent, TaskProgress)` en `core/task`; el `EventContext` se suma con las condiciones (1.5). Un `ItemTask` de
-  "16 troncos de roble" avanza con `ItemObtained("minecraft:oak_log", total=…)`; un `KillTask` con
-  `EntityKilled`; un `SetTask any_of 3` recuerda qué miembros ya cumplió.
-- **`ConditionalTask`** = tarea + condiciones: "cocina carne **en el Nether**", "mata un zombi **de
-  noche**", "consigue un diamante **sin morir**". Las condiciones son las mismas piezas que después usan
-  los logros (Fase 3).
+- **`Task.apply`** recibe un evento y devuelve el progreso nuevo (inmutable). Desde la tarea 1.5 es
+  `apply(TaskEvent, EventContext, TaskProgress)` en `core/task` (con un `apply(evento, progreso)` por defecto
+  sin contexto). Un `ItemTask` de "16 troncos de roble" avanza con `ItemObtained("minecraft:oak_log",
+  total=…)`; un `KillTask` con `EntityKilled`; un `SetTask any_of 3` mira el inventario entero
+  (`InventoryScanned`) y cuenta cuántos de sus ítems tiene a la vez (el máximo, como todo progreso).
+- **`ConditionalTask`** = tarea + condición (`core/condition`: `InDimension`, `TimeOfDay`, `InBiome`,
+  `BelowY`, `NoDeath`, `AllOf`, `AnyOf`): "chuleta **en el Nether**", "mata una gallina **de noche**",
+  "oro crudo **debajo de Y 0**". Solo deja pasar el evento si la condición se cumple en el `EventContext`
+  de ese momento (lo arma el plugin: `PlayerContexts`). `Task.base()` da la tarea de adentro, para saber
+  el tipo. Las condiciones son las mismas piezas que después usan los logros (Fase 3).
 - **`CellState`**: `PENDIENTE`, `EN_PROGRESO(n/m)`, `COMPLETADA(equipo, segundo)`, `BLOQUEADA` (lockout).
 - **`WinCondition`** (estrategia): `Line(n)` (n líneas), `Blackout` (carta llena), `Lockout` (la casilla
   es del primero; gana la mayoría y se elimina a quien ya no alcanza), `CompleteX(n)`, `TimeLimit` (al
@@ -178,9 +181,9 @@ horno, balde o clic, y emite `ItemObtained` con el total real.
 
 ## 6. Configuración por datos (YAML)
 
-Así se leen desde las tareas 1.3 y 1.4 (`tipo` por defecto `item`, también en español: `matar`, `logro`,
-`estadistica`; `cantidad` por defecto 1; `id` por defecto `<tipo>:<qué>`; `icono` opcional); los conjuntos y
-las condiciones llegan en la 1.5:
+Así se leen desde las tareas 1.3–1.5 (`tipo` por defecto `item`, también en español: `matar`, `logro`,
+`estadistica`, `alguno`, `todos`; `cantidad` por defecto 1; `id` por defecto `<tipo>:<qué>`, con
+`[condiciones]` al final si las tiene; `icono` y `condiciones` opcionales en todas):
 
 ```yaml
 # plugins/AdaptiveBingo/tasks/basicos.yml
@@ -197,9 +200,13 @@ tier: S
 tareas:
   - { item: diamond, nombre: Diamante, cantidad: 3 }
   - { tipo: logro, logro: story/enter_the_nether, nombre: Entrar al Nether }
-  - { tipo: any_of, nombre: "3 lanas distintas", necesita: 3,                # 1.5
+  - { tipo: alguno, nombre: 3 lanas distintas, necesita: 3,
       de: [white_wool, red_wool, blue_wool, yellow_wool, black_wool] }
-  - { item: cooked_beef, nombre: Filete en el Nether, condiciones: [ { dimension: the_nether } ] }  # 1.5
+  - { tipo: todos, nombre: Herramientas de hierro, de: [iron_pickaxe, iron_axe, iron_shovel] }
+  - { item: cooked_porkchop, nombre: Chuleta en el Nether, condiciones: [ { dimension: nether } ] }
+  - { item: sand, nombre: Arena, cantidad: 8,
+      condiciones: [ { alguna: [ { bioma: desert }, { bioma: beach } ] } ] }
+  - { tipo: matar, mob: zombie, nombre: Zombi de noche sin morir, condiciones: [ { hora: noche, sin_morir: true } ] }
   - { tipo: estadistica, estadistica: jump, nombre: Saltos, cantidad: 500 }
   - { tipo: estadistica, estadistica: mine_block, de: stone, nombre: Piedra picada, cantidad: 64 }
 ```

@@ -58,7 +58,7 @@ public class StatisticPoller {
             List<StatisticReached> events = new ArrayList<>();
             for (BingoCell[] row : card.getGrid()) {
                 for (BingoCell cell : row) {
-                    if (cell.isCompleted() || !(cell.getTask() instanceof StatisticTask statistic)) continue;
+                    if (cell.isCompleted() || !(cell.getTask().base() instanceof StatisticTask statistic)) continue;
                     Integer value = read(player, statistic);
                     if (value == null) continue;
                     int sinceStart = baseline.sinceStart(player.getUniqueId(), statistic.key(), value);

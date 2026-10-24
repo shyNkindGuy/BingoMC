@@ -2,6 +2,7 @@ package com.shyNkindguy.bingo.adapter;
 
 import com.shyNkindguy.bingo.core.catalog.CatalogLoader;
 import com.shyNkindguy.bingo.core.task.ItemTask;
+import com.shyNkindguy.bingo.core.task.SetTask;
 import com.shyNkindguy.bingo.core.task.Task;
 import org.bukkit.Material;
 import org.bukkit.Statistic;
@@ -23,8 +24,11 @@ class KeysTest {
     @Test
     void cadaItemDeLasTareasPorDefectoVaYVuelveIgual() {
         for (Task task : CatalogLoader.defaults().tasks()) {
-            if (task instanceof ItemTask item) {
+            if (task.base() instanceof ItemTask item) {
                 assertEquals(item.item(), Keys.of(Keys.toMaterial(item.item())));
+            }
+            if (task.base() instanceof SetTask set) {
+                for (String item : set.items()) assertEquals(item, Keys.of(Keys.toMaterial(item)));
             }
         }
     }

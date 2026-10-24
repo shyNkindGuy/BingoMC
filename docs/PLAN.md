@@ -42,7 +42,7 @@ Leyenda: `[ ]` pendiente · `[x]` hecha (se marca dentro del PR que la resuelve)
   Tests del parser y del generador.
 - [x] **1.4 Tipos nuevos.** `kill` (mob con cantidad), `advancement` (logro de Minecraft),
   `statistic` (estadística ≥ N, revisión periódica). Ícono por tipo en el mapa.
-- [ ] **1.5 Conjuntos y condiciones.** `any_of` ("3 de estas 5 lanas"), `all_of`; condiciones
+- [x] **1.5 Conjuntos y condiciones.** `any_of` ("3 de estas 5 lanas"), `all_of`; condiciones
   `dimension`, `time` (día/noche), `biome`, `below_y`, `no_death` combinables en YAML. Tests de cada una.
 
 ## Fase 2 — Partida completa

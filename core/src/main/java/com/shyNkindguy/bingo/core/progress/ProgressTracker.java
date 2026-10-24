@@ -2,6 +2,7 @@ package com.shyNkindguy.bingo.core.progress;
 
 import com.shyNkindguy.bingo.core.card.BingoCard;
 import com.shyNkindguy.bingo.core.card.BingoCell;
+import com.shyNkindguy.bingo.core.event.EventContext;
 import com.shyNkindguy.bingo.core.event.TaskEvent;
 import com.shyNkindguy.bingo.core.task.Task;
 
@@ -15,6 +16,11 @@ public final class ProgressTracker {
     }
 
     public static ProgressResult apply(BingoCard card, TaskEvent event) {
+        return apply(card, event, EventContext.NONE);
+    }
+
+    // `context`: dónde estaba el jugador, para las tareas con condiciones.
+    public static ProgressResult apply(BingoCard card, TaskEvent event, EventContext context) {
         List<BingoCell> advanced = new ArrayList<>();
         List<Task> completed = new ArrayList<>();
 
@@ -23,7 +29,7 @@ public final class ProgressTracker {
                 if (cell.isCompleted()) continue;
 
                 TaskProgress before = cell.getProgress();
-                TaskProgress after = cell.getTask().apply(event, before);
+                TaskProgress after = cell.getTask().apply(event, context, before);
                 if (after.equals(before)) continue;
 
                 cell.setProgress(after);

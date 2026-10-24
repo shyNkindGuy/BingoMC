@@ -1,6 +1,7 @@
 package com.shyNkindguy.bingo.core.task;
 
 import com.shyNkindguy.bingo.core.event.EntityKilled;
+import com.shyNkindguy.bingo.core.event.EventContext;
 import com.shyNkindguy.bingo.core.event.TaskEvent;
 import com.shyNkindguy.bingo.core.progress.TaskProgress;
 
@@ -27,7 +28,7 @@ public record KillTask(String id, String name, String entity, int amount, String
     }
 
     @Override
-    public TaskProgress apply(TaskEvent event, TaskProgress progress) {
+    public TaskProgress apply(TaskEvent event, EventContext context, TaskProgress progress) {
         return switch (event) {
             case EntityKilled killed when killed.entity().equals(entity) -> progress.reach(progress.current() + 1);
             default -> progress;

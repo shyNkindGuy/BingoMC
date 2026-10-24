@@ -34,7 +34,7 @@ public final class AdvancementReset {
         int revoked = 0;
         for (BingoCell[] row : card.getGrid()) {
             for (BingoCell cell : row) {
-                if (!(cell.getTask() instanceof AdvancementTask task)) continue;
+                if (!(cell.getTask().base() instanceof AdvancementTask task)) continue;
                 Advancement advancement = Keys.toAdvancement(task.advancement());
                 if (advancement == null) continue;
 
