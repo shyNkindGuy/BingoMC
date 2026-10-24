@@ -16,7 +16,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -27,7 +26,7 @@ import java.util.Optional;
 // /bingo card: la cartilla del equipo en un cofre de solo mirar (SessionListener cancela los clics), con el
 // tipo, el avance, las condiciones y si está completa o bloqueada en la descripción de cada casilla. Hasta
 // 6×6 se ve como grilla; una 7×7 va en orden, de izquierda a derecha.
-public class CardMenu implements InventoryHolder {
+public class CardMenu implements ReadOnlyMenu {
     private static final int COLUMNS = 9;
     private static final int MAX_ROWS = 6;
 

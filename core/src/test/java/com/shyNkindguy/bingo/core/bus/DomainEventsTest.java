@@ -1,5 +1,7 @@
 package com.shyNkindguy.bingo.core.bus;
 
+import com.shyNkindguy.bingo.core.event.EventContext;
+import com.shyNkindguy.bingo.core.win.WinMode;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -11,8 +13,9 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class DomainEventsTest {
-    private static final CellCompleted CELL = new CellCompleted("rojo", "id-ana", "Ana", "item:dirt", "Tierra", 30);
-    private static final GameEnded END = new GameEnded(600, false, Set.of("rojo"), List.of());
+    private static final WinMode LINE = new WinMode.Lines(1);
+    private static final CellCompleted CELL = new CellCompleted("rojo", "id-ana", "Ana", "item:dirt", "Tierra", 30, EventContext.NONE);
+    private static final GameEnded END = new GameEnded(600, false, LINE, Set.of("rojo"), List.of());
 
     @Test
     void cadaSuscriptorRecibeSoloSuTipoEnOrden() {
@@ -58,9 +61,9 @@ class DomainEventsTest {
 
     @Test
     void ganoQuienEstaEnUnEquipoGanador() {
-        GameEnded.Participant ana = new GameEnded.Participant("id-ana", "Ana", "rojo");
-        GameEnded.Participant beto = new GameEnded.Participant("id-beto", "Beto", "azul");
-        GameEnded end = new GameEnded(100, false, Set.of("rojo"), List.of(ana, beto));
+        GameEnded.Participant ana = new GameEnded.Participant("id-ana", "Ana", "rojo", 0);
+        GameEnded.Participant beto = new GameEnded.Participant("id-beto", "Beto", "azul", 0);
+        GameEnded end = new GameEnded(100, false, LINE, Set.of("rojo"), List.of(ana, beto));
         assertEquals(true, end.won(ana));
         assertEquals(false, end.won(beto));
     }

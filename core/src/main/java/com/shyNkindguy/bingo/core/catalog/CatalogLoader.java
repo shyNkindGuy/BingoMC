@@ -1,5 +1,6 @@
 package com.shyNkindguy.bingo.core.catalog;
 
+import com.shyNkindguy.bingo.core.achievement.Achievement;
 import com.shyNkindguy.bingo.core.game.GameSettings;
 import com.shyNkindguy.bingo.core.text.Messages;
 import org.yaml.snakeyaml.LoaderOptions;
@@ -28,9 +29,11 @@ public final class CatalogLoader {
     public static final String CARDS_FILE = "cards.yml";
     public static final String CONFIG_FILE = "config.yml";
     public static final String MESSAGES_FILE = "messages.yml";
+    public static final String ACHIEVEMENTS_FILE = "achievements.yml";
     public static final String TASKS_DIR = "tasks";
     static final List<String> DEFAULT_FILES =
-            List.of(CONFIG_FILE, MESSAGES_FILE, CARDS_FILE, "tasks/basicos.yml", "tasks/medios.yml", "tasks/dificiles.yml");
+            List.of(CONFIG_FILE, MESSAGES_FILE, CARDS_FILE, ACHIEVEMENTS_FILE, "tasks/basicos.yml", "tasks/medios.yml",
+                    "tasks/dificiles.yml");
     private static final String DEFAULTS = "/adaptivebingo/defaults/";
 
     private CatalogLoader() {
@@ -89,12 +92,25 @@ public final class CatalogLoader {
         return Messages.parse(MESSAGES_FILE, read(MESSAGES_FILE, () -> openDefault(MESSAGES_FILE)), null);
     }
 
+    // achievements.yml de la carpeta; si no está (se borró a propósito), ningún logro.
+    public static List<Achievement> achievementsFromDirectory(Path dir, Catalog catalog) {
+        Path file = dir.resolve(ACHIEVEMENTS_FILE);
+        if (!Files.isRegularFile(file)) return List.of();
+        return AchievementParser.parse(ACHIEVEMENTS_FILE,
+                read(ACHIEVEMENTS_FILE, () -> Files.newBufferedReader(file, StandardCharsets.UTF_8)), catalog);
+    }
+
+    public static List<Achievement> defaultAchievements(Catalog catalog) {
+        return AchievementParser.parse(ACHIEVEMENTS_FILE, read(ACHIEVEMENTS_FILE, () -> openDefault(ACHIEVEMENTS_FILE)), catalog);
+    }
+
     public static GameSettings defaultSettings(Catalog catalog) {
         return CatalogParser.parseSettings(CONFIG_FILE, read(CONFIG_FILE, () -> openDefault(CONFIG_FILE)), catalog);
     }
 
-    // Copia los YAML por defecto que falten: config.yml, messages.yml y cards.yml si no están, y las listas solo si no existe la
-    // carpeta tasks/ (así una lista borrada a propósito no vuelve). Devuelve los archivos copiados.
+    // Copia los YAML por defecto que falten: config.yml, messages.yml, cards.yml y achievements.yml si no están,
+    // y las listas solo si no existe la carpeta tasks/ (así una lista borrada a propósito no vuelve). Devuelve
+    // los archivos copiados.
     public static List<String> copyDefaults(Path dir) throws IOException {
         boolean tasksMissing = !Files.exists(dir.resolve(TASKS_DIR));
         List<String> copied = new ArrayList<>();

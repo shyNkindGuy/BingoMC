@@ -69,7 +69,9 @@ BingoMC/
 │       ├── game/                GameSession, Phase (LOBBY, COUNTDOWN, RUNNING, ENDED), GameSettings (2.1 ✔)
 │       ├── team/                Team, TeamColor, TeamRegistry (2.2 ✔)
 │       ├── bus/                 DomainEvents (CellCompleted, GameEnded) (3.1 ✔)
-│       └── meta/                (Fase 3) PlayerProfile, Achievement, ItemSet, PlayerStatus
+│       ├── stats/               PlayerStats, StatsBook, StatsRepository (3.1 ✔)
+│       ├── achievement/         Achievement, GameRule/CellRule, AchievementTracker (3.2 ✔)
+│       └── meta/                (Fase 3) ItemSet, PlayerStatus
 └── plugin/                      Paper 1.21.11 · depende de core
     └── com.shyNkindguy.bingo
         ├── AdaptiveBingo        arranque: carga config, crea servicios, registra listeners/comandos

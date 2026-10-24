@@ -14,11 +14,13 @@ import com.shyNkindguy.bingo.game.PlayerContexts;
 import com.shyNkindguy.bingo.game.StartActions;
 import com.shyNkindguy.bingo.core.stats.YamlStatsRepository;
 import com.shyNkindguy.bingo.storage.StatsService;
+import com.shyNkindguy.bingo.ui.AchievementAnnouncer;
 import com.shyNkindguy.bingo.ui.BingoMapManager;
 import com.shyNkindguy.bingo.ui.GameBossBar;
 import com.shyNkindguy.bingo.ui.BingoScoreBoard;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class AdaptiveBingo extends JavaPlugin {
@@ -34,10 +36,15 @@ public final class AdaptiveBingo extends JavaPlugin {
         catalogs.load();
         game = new BingoGame(this);
         StatsService stats = new StatsService(getLogger(), new YamlStatsRepository(getDataFolder().toPath()));
-        stats.start(game.events());
+        stats.start(game.events(), catalogs::achievements);
+        AchievementAnnouncer.subscribeTo(game.events(), this);
         scoreboard = new BingoScoreBoard(game);
         mapManager = new BingoMapManager(this, game);
         PlayerContexts contexts = new PlayerContexts();
+        game.countDeathsWith(id -> {
+            Player player = Bukkit.getPlayer(id);
+            return player == null ? -1 : contexts.of(player).deaths();
+        });
         CardUpdater updater = new CardUpdater(game, scoreboard, mapManager, contexts);
         StatisticPoller statistics = new StatisticPoller(this, game, updater);
         StartActions startActions = new StartActions(game);

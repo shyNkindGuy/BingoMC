@@ -8,6 +8,7 @@ import com.shyNkindguy.bingo.core.stats.PlayerStats;
 import com.shyNkindguy.bingo.core.task.Task;
 import com.shyNkindguy.bingo.game.BingoGame;
 import com.shyNkindguy.bingo.storage.StatsService;
+import com.shyNkindguy.bingo.ui.AchievementMenu;
 import com.shyNkindguy.bingo.ui.BingoMapManager;
 import com.shyNkindguy.bingo.ui.BingoScoreBoard;
 import com.shyNkindguy.bingo.ui.CardMenu;
@@ -26,8 +27,8 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class BingoCommand implements CommandExecutor, TabCompleter {
     private static final String ADMIN_PERMISSION = "bingo.admin";
-    private static final List<String> ADMIN_SUBCOMMANDS = List.of("start", "stop", "pause", "map", "card", "stats", "reload", "team");
-    private static final List<String> PLAYER_SUBCOMMANDS = List.of("map", "card", "stats", "team");
+    private static final List<String> ADMIN_SUBCOMMANDS = List.of("start", "stop", "pause", "map", "card", "stats", "logros", "reload", "team");
+    private static final List<String> PLAYER_SUBCOMMANDS = List.of("map", "card", "stats", "logros", "team");
     private static final Locale SPANISH = Locale.forLanguageTag("es");
 
     private final BingoGame game;
@@ -72,6 +73,7 @@ public class BingoCommand implements CommandExecutor, TabCompleter {
             case "pause", "pausa" -> pause(sender);
             case "map" -> giveMap(sender);
             case "card", "cartilla" -> openCard(sender);
+            case "logros", "achievements" -> openAchievements(sender);
             case "reload" -> reload(sender);
             default -> sender.sendMessage(Texts.get("comando.uso"));
         }
@@ -246,6 +248,15 @@ public class BingoCommand implements CommandExecutor, TabCompleter {
                 ? Texts.get("estadisticas.mejor_tiempo", "tiempo", GameBossBar.clock(player.bestWinSeconds()))
                 : Texts.get("estadisticas.sin_victorias"));
         return lines;
+    }
+
+    private void openAchievements(CommandSender sender) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(Texts.get("comando.solo_jugador"));
+            return;
+        }
+        PlayerStats mine = stats.book().get(player.getUniqueId().toString()).orElse(PlayerStats.empty(player.getName()));
+        AchievementMenu.open(player, catalogs.achievements(), mine);
     }
 
     private void openCard(CommandSender sender) {

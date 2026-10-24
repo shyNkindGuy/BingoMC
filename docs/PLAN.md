@@ -64,7 +64,7 @@ Leyenda: `[ ]` pendiente · `[x]` hecha (se marca dentro del PR que la resuelve)
 - [x] **3.1 Eventos de dominio + estadísticas.** `DomainEvents` (`CellCompleted`, `GameEnded`) y
   perfil persistente por jugador (`StatsRepository`, YAML): partidas, victorias, casillas, mejor
   tiempo. `/bingo stats`.
-- [ ] **3.2 Logros propios.** `achievements.yml` (disparador + condiciones del motor 1.5), aviso al
+- [x] **3.2 Logros propios.** `achievements.yml` (disparador + condiciones del motor 1.5), aviso al
   desbloquear, GUI `/bingo logros`.
 - [ ] **3.3 Ítems especiales.** Ítems con `PersistentDataContainer` para un modo "Caos" (reroll de
   casilla, brújula al bioma, escudo anti-PvP), configurables en YAML.

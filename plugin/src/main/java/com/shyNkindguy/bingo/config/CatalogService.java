@@ -1,5 +1,6 @@
 package com.shyNkindguy.bingo.config;
 
+import com.shyNkindguy.bingo.core.achievement.Achievement;
 import com.shyNkindguy.bingo.core.catalog.CardSpec;
 import com.shyNkindguy.bingo.core.catalog.Catalog;
 import com.shyNkindguy.bingo.core.catalog.CatalogException;
@@ -19,13 +20,14 @@ import java.util.List;
 import java.util.logging.Logger;
 
 // El catálogo de tareas y cartillas (cards.yml y tasks/*.yml), la configuración de las partidas
-// (config.yml) y los textos (messages.yml, que van a Texts), leídos de plugins/AdaptiveBingo/. La primera vez
-// copia ahí los que vienen en el .jar.
+// (config.yml), los logros (achievements.yml) y los textos (messages.yml, que van a Texts), leídos de
+// plugins/AdaptiveBingo/. La primera vez copia ahí los que vienen en el .jar.
 public class CatalogService {
     private final JavaPlugin plugin;
     private final TaskAvailability availability;
     private Catalog catalog;
     private GameSettings settings;
+    private List<Achievement> achievements = List.of();
 
     public CatalogService(JavaPlugin plugin, TaskAvailability availability) {
         this.plugin = plugin;
@@ -60,6 +62,14 @@ public class CatalogService {
             settings = GameSettings.DEFAULT;
         }
         try {
+            achievements = CatalogLoader.achievementsFromDirectory(folder, catalog);
+            log.info(achievements.size() + " logros");
+        } catch (CatalogException e) {
+            log.severe(e.getMessage());
+            log.severe("Se usan los logros por defecto hasta que /bingo reload lea bien achievements.yml.");
+            achievements = CatalogLoader.defaultAchievements(catalog);
+        }
+        try {
             Texts.use(CatalogLoader.messagesFromDirectory(folder));
         } catch (CatalogException e) {
             log.severe(e.getMessage());
@@ -74,11 +84,14 @@ public class CatalogService {
         Path folder = plugin.getDataFolder().toPath();
         Catalog loadedCatalog = CatalogLoader.fromDirectory(folder);
         GameSettings loadedSettings = CatalogLoader.settingsFromDirectory(folder, loadedCatalog);
+        List<Achievement> loadedAchievements = CatalogLoader.achievementsFromDirectory(folder, loadedCatalog);
         Messages loadedMessages = CatalogLoader.messagesFromDirectory(folder);
         catalog = loadedCatalog;
         settings = loadedSettings;
+        achievements = loadedAchievements;
         Texts.use(loadedMessages);
         List<String> lines = new ArrayList<>(summary(loadedCatalog, availability));
+        lines.add(loadedAchievements.size() + " logros");
         lines.addAll(kitProblems(loadedSettings));
         return lines;
     }
@@ -89,6 +102,10 @@ public class CatalogService {
 
     public GameSettings settings() {
         return settings;
+    }
+
+    public List<Achievement> achievements() {
+        return achievements;
     }
 
     // Los ítems del kit que no existen en esta versión (no se dan).

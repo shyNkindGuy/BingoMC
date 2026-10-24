@@ -36,6 +36,8 @@ viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
     `basicos` D, `medios` C y `dificiles` A; cartillas `normal` 5×5 y `rapida` 3×3) y los copia la primera vez;
     `CatalogParser` valida todo con mensajes "archivo, tarea N: problema"; `Catalog` (listas `TaskList` +
     `Tier`, cartillas `CardSpec` con mín/máx por lista) y `CardGenerator` (semilla, sin repetidos).
+    `AchievementParser` (desde la 3.2) lee `achievements.yml` con los mismos ayudantes (y las mismas
+    `condiciones`) de `CatalogParser`.
   - `win/`: `WinMode` sellado (desde la 2.3: `Lines(n)`, `Blackout`, `CompleteX(n)`, `Lockout`, `TimeOnly`;
     `parse("2 lineas")`, `problemWith(tamaño)`), `WinConditionChecker` (`countLines`) y `TimeLimitWinners`
     (`winners`: más casillas y, si empatan, quien llegó antes).
@@ -50,21 +52,28 @@ viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
   - `team/` (desde la 2.2): `TeamColor` (10 colores, en español o inglés), `Team` (de color o `solo`) y
     `TeamRegistry` (unir/salir, `soloIfAlone` al empezar, `removeSolos` al terminar, `randomize`).
   - `bus/` (desde la 3.1): `DomainEvents` (bus sincrónico por tipo; si un suscriptor falla, los demás lo
-    reciben igual) y `DomainEvent` sellado: `CellCompleted(equipo, jugador, tarea, segundo)` y
-    `GameEnded(segundos, aborted, equipos ganadores, participantes)`.
-  - `stats/` (desde la 3.1): `PlayerStats` (partidas, victorias, casillas, victoria más rápida), `StatsBook`
+    reciben igual) y `DomainEvent` sellado: `CellCompleted(equipo, jugador, tarea, segundo, EventContext)`,
+    `GameEnded(segundos, aborted, modo, equipos ganadores, participantes con sus muertes)` y
+    `AchievementUnlocked`.
+  - `stats/` (desde la 3.1): `PlayerStats` (partidas, victorias, casillas, victoria más rápida y, desde la
+    3.2, los logros desbloqueados), `StatsBook`
     (al día con los eventos; las partidas detenidas no cuentan) y `StatsRepository` →
     `YamlStatsRepository` (`stats.yml` por UUID, validado al leer, se guarda con archivo temporal + move).
+  - `achievement/` (desde la 3.2): `Achievement` (id, nombre, descripción, ícono y regla), `AchievementRule`
+    sellada (`GameRule`: ganar, en menos de, modo, casillas en la partida, sin morir, totales; `CellRule`:
+    tarea, `Condition` del motor, en menos de) y `AchievementTracker` (mira los eventos, anota en el
+    `StatsBook` y publica `AchievementUnlocked` la primera vez).
 - `plugin`: `adapter/Keys` traduce `Material`/`EntityType`/`Statistic`/`Advancement` ↔ clave;
   `config/CatalogService` tiene el catálogo (carga al arrancar, `/bingo reload`) y `config/TaskAvailability`
   dice si una tarea se puede hacer en esta versión y por qué no (las que no, no salen); el resto como abajo.
 - `plugin.yml` clásico de Bukkit (no `paper-plugin.yml`). Main: `com.shyNkindguy.bingo.AdaptiveBingo`.
-- Paquete `com.shyNkindguy.bingo` del plugin: `commands/` (`/bingo start|stop|pause|map|card|stats|reload|team`;
+- Paquete `com.shyNkindguy.bingo` del plugin: `commands/` (`/bingo start|stop|pause|map|card|stats|logros|reload|team`;
   `TeamCommand`), `config/`, `storage/StatsService` (carga `stats.yml`, suscribe el `StatsBook` a
   `BingoGame.events()` y guarda al terminar cada partida; con un error no pisa el archivo),
   `events/` (`ObjectiveListener`, `ScanQueue`, `CardUpdater`, `StatisticPoller`, `AdvancementReset`),
   `events/SessionListener` (congelar en la cuenta regresiva, PvP, entrar a mitad, chat de equipo, clics en
-  `/bingo card`), `ui/` también con `Texts`, `GameBossBar`, `CardMenu` y `TeamColors`, `game/` (`StartActions`,
+  `/bingo card`), `ui/` también con `Texts`, `GameBossBar`, `CardMenu` y `AchievementMenu` (los dos `ReadOnlyMenu`),
+  `AchievementAnnouncer` y `TeamColors`, `game/` (`StartActions`,
   `EndActions`, `BingoGame` sobre `GameSession`, con `onStart` al terminar la cuenta y `onEnd`; `PlayerContexts`: el `EventContext`
   de cada jugador y sus muertes desde el inicio), `icon/` (+ `TaskIcons`: ícono y marca por tipo), `ui/` (mapa,
   scoreboard, paleta). Íconos: un solo sistema, `icon/IconRegistry` (por `Material`, con fallback por
@@ -127,7 +136,14 @@ jugaron. Repartir una partida nueva cancela lo pendiente.
 **Estadísticas** (3.1): `BingoGame` publica `CellCompleted` al completar una casilla y `GameEnded` en
 `finish` (con `/bingo stop`, `aborted`); `StatsService` las suma en `plugins/AdaptiveBingo/stats.yml` y
 `/bingo stats [jugador]` (para todos) muestra partidas, victorias y %, casillas y promedio, y la victoria
-más rápida. `/bingo map` vuelve a dar el mapa. Bugs conocidos:
+más rápida.
+**Logros** (3.2): `achievements.yml` (14 por defecto) con `al: partida` (se revisa al terminar, no las
+detenidas, con las estadísticas ya sumadas) o `al: casilla` (al completar una, con el `EventContext` de ese
+momento: cuentan aunque después se detenga la partida). Se leen con `CatalogService` (y `/bingo reload`);
+`StatsService` arma el `AchievementTracker` y guarda `stats.yml` también al desbloquear;
+`AchievementAnnouncer` avisa en el chat y con título + sonido 2 s después; `/bingo logros` abre la GUI.
+Las muertes de cada uno salen de `PlayerContexts` (`BingoGame.countDeathsWith`; desconectado = -1, no
+cuenta para `sin_morir`). `/bingo map` vuelve a dar el mapa. Bugs conocidos:
 tabla de `docs/ANALISIS.md` §3.
 
 ## Convenciones

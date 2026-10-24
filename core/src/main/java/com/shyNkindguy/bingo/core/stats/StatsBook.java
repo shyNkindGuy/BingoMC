@@ -43,6 +43,14 @@ public final class StatsBook {
         pendingCells.clear();
     }
 
+    // Anota el logro; false si ya lo tenía. Quien todavía no terminó ninguna partida queda con 0 partidas.
+    public boolean unlock(String playerId, String playerName, String achievementId) {
+        PlayerStats before = byId.getOrDefault(playerId, PlayerStats.empty(playerName));
+        if (before.hasAchievement(achievementId)) return false;
+        byId.put(playerId, before.withAchievement(playerName, achievementId));
+        return true;
+    }
+
     public Optional<PlayerStats> get(String id) {
         return Optional.ofNullable(byId.get(id));
     }

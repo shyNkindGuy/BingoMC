@@ -92,7 +92,13 @@ personal, con idea de llegar a servidor. Todo en español (commits, mensajes, do
 - 2026-10-24 · tarea **3.1**: `core/bus` (`DomainEvents`, `CellCompleted`, `GameEnded`) publicados por
   `BingoGame`; `core/stats` (`PlayerStats`, `StatsBook`, `YamlStatsRepository` → `stats.yml` validado);
   plugin `storage/StatsService` (no pisa un `stats.yml` roto) y `/bingo stats [jugador]`. Las partidas
-  detenidas no cuentan. **Siguiente: 3.2** (logros propios). Ver `docs/PLAN.md` para el estado al día.
+  detenidas no cuentan (PR #26).
+- 2026-10-24 · tarea **3.2**: logros propios. `achievements.yml` (14 por defecto; `al: partida` o `al:
+  casilla` con las condiciones del motor) leído por `AchievementParser`; `core/achievement` (`GameRule`,
+  `CellRule`, `AchievementTracker` → `AchievementUnlocked`); los desbloqueados van en `stats.yml`
+  (`logros:`); aviso en el chat + título (`AchievementAnnouncer`) y GUI `/bingo logros` (`AchievementMenu`,
+  `ReadOnlyMenu`). `GameEnded` lleva modo y muertes; `CellCompleted`, el `EventContext`. **Siguiente: 3.3**
+  (ítems especiales). Ver `docs/PLAN.md` para el estado al día.
 
 ## Decisiones (no volver a preguntar)
 | Tema | Decisión |

@@ -15,6 +15,8 @@ class TextsTest {
             "barra.pausa", "marcador.estado_pausa", "recarga.kit",
             "estadisticas.titulo", "estadisticas.partidas", "estadisticas.casillas", "estadisticas.mejor_tiempo",
             "estadisticas.sin_victorias", "estadisticas.sin_datos", "estadisticas.uso_consola",
+            "logros.anuncio", "logros.titulo", "logros.subtitulo", "logros.menu_titulo", "logros.desbloqueado",
+            "logros.bloqueado", "logros.ninguno",
             "resumen.titulo", "resumen.equipo", "resumen.casilla", "resumen.mvp", "fin.aviso_volver", "fin.aviso_limpiar",
             "inicio.ya_en_curso", "inicio.sin_jugadores", "inicio.cartilla_no_existe", "inicio.error",
             "inicio.modo_imposible", "inicio.no_se_pudo", "inicio.anuncio", "inicio.detalle", "inicio.minutos",

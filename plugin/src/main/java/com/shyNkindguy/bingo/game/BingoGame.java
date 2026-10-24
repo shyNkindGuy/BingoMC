@@ -27,6 +27,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
+import java.util.function.ToIntFunction;
 import java.util.logging.Level;
 
 // La partida en el servidor: una cartilla por equipo (quien no tiene equipo juega solo, en un equipo de 1)
@@ -42,6 +43,7 @@ public class BingoGame {
     private final Map<String, BingoCard> cards = new HashMap<>(); // id del equipo → cartilla
     private final Map<UUID, String> participants = new LinkedHashMap<>(); // quién jugó → su nombre
     private final DomainEvents events;
+    private ToIntFunction<UUID> deaths = id -> -1;
     private List<Team> lastWinners = List.of();
     private Set<UUID> lastParticipants = Set.of();
     private final List<Runnable> startListeners = new ArrayList<>();
@@ -60,6 +62,11 @@ public class BingoGame {
 
     public DomainEvents events() {
         return events;
+    }
+
+    // Cuántas veces murió cada uno desde que empezó la partida (-1 si no se sabe), para GameEnded.
+    public void countDeathsWith(ToIntFunction<UUID> deaths) {
+        this.deaths = deaths;
     }
 
     // Se ejecuta cuando termina la cuenta regresiva y la partida queda en curso.
@@ -419,10 +426,10 @@ public class BingoGame {
         for (Team team : winners) winnerIds.add(team.id());
         List<GameEnded.Participant> players = new ArrayList<>();
         for (Map.Entry<UUID, String> entry : participants.entrySet()) {
-            teams.teamOf(entry.getKey()).ifPresent(team -> players.add(
-                    new GameEnded.Participant(entry.getKey().toString(), entry.getValue(), team.id())));
+            teams.teamOf(entry.getKey()).ifPresent(team -> players.add(new GameEnded.Participant(
+                    entry.getKey().toString(), entry.getValue(), team.id(), deaths.applyAsInt(entry.getKey()))));
         }
-        return new GameEnded(session.elapsedSeconds(), aborted, winnerIds, players);
+        return new GameEnded(session.elapsedSeconds(), aborted, settings.mode(), winnerIds, players);
     }
 
     // Aplica un evento a la cartilla del jugador, que estaba en `context`: qué casillas avanzaron y cuáles
@@ -438,7 +445,7 @@ public class BingoGame {
             if (!cell.isCompleted()) continue;
             cell.markCompleted(session.elapsedSeconds(), player.getName());
             events.publish(new CellCompleted(team.get().id(), player.getUniqueId().toString(), player.getName(),
-                    cell.getTask().id(), cell.getTask().displayName(), session.elapsedSeconds()));
+                    cell.getTask().id(), cell.getTask().displayName(), session.elapsedSeconds(), context));
             if (!settings.mode().lockout()) continue;
             for (Map.Entry<String, BingoCard> other : cards.entrySet()) {
                 if (!other.getKey().equals(team.get().id())) lock(other.getValue(), cell.getTask().id(), team.get().id());

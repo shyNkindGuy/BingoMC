@@ -1,11 +1,15 @@
 package com.shyNkindguy.bingo.storage;
 
+import com.shyNkindguy.bingo.core.achievement.Achievement;
+import com.shyNkindguy.bingo.core.achievement.GameRule;
 import com.shyNkindguy.bingo.core.bus.CellCompleted;
 import com.shyNkindguy.bingo.core.bus.DomainEvents;
 import com.shyNkindguy.bingo.core.bus.GameEnded;
+import com.shyNkindguy.bingo.core.event.EventContext;
 import com.shyNkindguy.bingo.core.stats.PlayerStats;
 import com.shyNkindguy.bingo.core.stats.StatsException;
 import com.shyNkindguy.bingo.core.stats.StatsRepository;
+import com.shyNkindguy.bingo.core.win.WinMode;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -20,7 +24,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StatsServiceTest {
-    private static final GameEnded.Participant ANA = new GameEnded.Participant("id-ana", "Ana", "rojo");
+    private static final WinMode LINE = new WinMode.Lines(1);
+    private static final GameEnded.Participant ANA = new GameEnded.Participant("id-ana", "Ana", "rojo", 0);
 
     private static final class MemoryRepository implements StatsRepository {
         Map<String, PlayerStats> stored;
@@ -62,10 +67,10 @@ class StatsServiceTest {
         MemoryRepository repository = new MemoryRepository(Map.of("id-ana", new PlayerStats("Ana", 1, 0, 2, -1)));
         DomainEvents events = new DomainEvents();
         StatsService service = new StatsService(logger(), repository);
-        service.start(events);
+        service.start(events, List::of);
 
-        events.publish(new CellCompleted("rojo", "id-ana", "Ana", "item:dirt", "Tierra", 5));
-        events.publish(new GameEnded(400, false, Set.of("rojo"), List.of(ANA)));
+        events.publish(new CellCompleted("rojo", "id-ana", "Ana", "item:dirt", "Tierra", 5, EventContext.NONE));
+        events.publish(new GameEnded(400, false, LINE, Set.of("rojo"), List.of(ANA)));
 
         assertEquals(1, repository.saves);
         assertEquals(new PlayerStats("Ana", 2, 1, 3, 400), repository.stored.get("id-ana"));
@@ -73,12 +78,26 @@ class StatsServiceTest {
     }
 
     @Test
+    void losLogrosQuedanGuardados() {
+        MemoryRepository repository = new MemoryRepository(Map.of());
+        DomainEvents events = new DomainEvents();
+        Achievement primera = new Achievement("primera", "Primera", "Termina una partida", null,
+                new GameRule(null, 0, null, 0, false, 0, 0, 0));
+        new StatsService(logger(), repository).start(events, () -> List.of(primera));
+
+        events.publish(new GameEnded(400, false, LINE, Set.of(), List.of(ANA)));
+
+        assertTrue(repository.stored.get("id-ana").hasAchievement("primera"));
+        assertEquals(1, repository.stored.get("id-ana").games());
+    }
+
+    @Test
     void unaPartidaDetenidaNoSeGuarda() {
         MemoryRepository repository = new MemoryRepository(Map.of());
         DomainEvents events = new DomainEvents();
-        new StatsService(logger(), repository).start(events);
+        new StatsService(logger(), repository).start(events, List::of);
 
-        events.publish(new GameEnded(400, true, Set.of(), List.of(ANA)));
+        events.publish(new GameEnded(400, true, LINE, Set.of(), List.of(ANA)));
 
         assertEquals(0, repository.saves);
     }
@@ -89,9 +108,9 @@ class StatsServiceTest {
         repository.broken = true;
         DomainEvents events = new DomainEvents();
         StatsService service = new StatsService(logger(), repository);
-        service.start(events);
+        service.start(events, List::of);
 
-        events.publish(new GameEnded(400, false, Set.of("rojo"), List.of(ANA)));
+        events.publish(new GameEnded(400, false, LINE, Set.of("rojo"), List.of(ANA)));
 
         assertEquals(0, repository.saves);
         assertEquals(1, service.book().get("id-ana").orElseThrow().games());

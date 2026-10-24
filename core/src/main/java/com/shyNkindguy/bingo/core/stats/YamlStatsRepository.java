@@ -14,7 +14,9 @@ import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -27,11 +29,11 @@ public final class YamlStatsRepository implements StatsRepository {
     public static final String FILE = "stats.yml";
     private static final int VERSION = 1;
     private static final Set<String> TOP_KEYS = Set.of("version", "jugadores");
-    private static final Set<String> PLAYER_KEYS = Set.of("nombre", "partidas", "victorias", "casillas", "mejor_tiempo");
+    private static final Set<String> PLAYER_KEYS = Set.of("nombre", "partidas", "victorias", "casillas", "mejor_tiempo", "logros");
     private static final String HEADER = """
             # Estadísticas de AdaptiveBingo por jugador (UUID). Las escribe el plugin cada vez que termina una
             # partida (las detenidas con /bingo stop no cuentan). Si las editas, que sea con el servidor apagado.
-            # mejor_tiempo: segundos de juego de su victoria más rápida.
+            # mejor_tiempo: segundos de juego de su victoria más rápida. logros: los ids de achievements.yml.
             """;
 
     private final Path file;
@@ -82,7 +84,7 @@ public final class YamlStatsRepository implements StatsRepository {
                 best = nonNegative(fields.get("mejor_tiempo"), where + ": mejor_tiempo");
                 if (wins == 0) throw error(where, "tiene mejor_tiempo pero ninguna victoria");
             }
-            result.put(entry.getKey(), new PlayerStats(name, games, wins, cells, best));
+            result.put(entry.getKey(), new PlayerStats(name, games, wins, cells, best, achievements(fields, where)));
         }
         return result;
     }
@@ -98,6 +100,7 @@ public final class YamlStatsRepository implements StatsRepository {
             fields.put("victorias", player.wins());
             fields.put("casillas", player.cells());
             if (player.hasWon()) fields.put("mejor_tiempo", player.bestWinSeconds());
+            if (!player.achievements().isEmpty()) fields.put("logros", new ArrayList<>(player.achievements()));
             players.put(entry.getKey(), fields);
         }
         Map<String, Object> root = new LinkedHashMap<>();
@@ -121,6 +124,18 @@ public final class YamlStatsRepository implements StatsRepository {
         } catch (IOException e) {
             throw new StatsException(FILE + ": no se pudo guardar: " + e.getMessage(), e);
         }
+    }
+
+    private static Set<String> achievements(Map<String, Object> fields, String where) {
+        Object raw = fields.get("logros");
+        if (raw == null) return Set.of();
+        if (!(raw instanceof List<?> list)) throw error(where + ": logros", "tiene que ser una lista de ids");
+        Set<String> ids = new TreeSet<>();
+        for (Object id : list) {
+            if (!(id instanceof String text) || text.isBlank()) throw error(where + ": logros", "tiene un id vacío o que no es texto (" + id + ")");
+            ids.add(text);
+        }
+        return ids;
     }
 
     private static int count(Map<String, Object> fields, String key, String where) {
