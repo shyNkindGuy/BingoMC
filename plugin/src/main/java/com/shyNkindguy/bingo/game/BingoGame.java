@@ -3,6 +3,9 @@ package com.shyNkindguy.bingo.game;
 
 import com.shyNkindguy.bingo.core.card.BingoCard;
 import com.shyNkindguy.bingo.core.card.BingoCell;
+import com.shyNkindguy.bingo.core.bus.CellCompleted;
+import com.shyNkindguy.bingo.core.bus.DomainEvents;
+import com.shyNkindguy.bingo.core.bus.GameEnded;
 import com.shyNkindguy.bingo.core.event.EventContext;
 import com.shyNkindguy.bingo.core.event.TaskEvent;
 import com.shyNkindguy.bingo.core.game.GameSession;
@@ -24,10 +27,12 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
+import java.util.logging.Level;
 
 // La partida en el servidor: una cartilla por equipo (quien no tiene equipo juega solo, en un equipo de 1)
 // y un reloj de un segundo que hace avanzar la GameSession del núcleo (cuenta regresiva → en curso →
-// tiempo agotado).
+// tiempo agotado). Lo que pasa en la partida se publica en `events()` (casillas completadas, fin) para las
+// estadísticas y lo que venga.
 public class BingoGame {
     private static final long TICKS_PER_SECOND = 20;
 
@@ -35,7 +40,8 @@ public class BingoGame {
     private final GameSession session = new GameSession();
     private final TeamRegistry<UUID> teams = new TeamRegistry<>();
     private final Map<String, BingoCard> cards = new HashMap<>(); // id del equipo → cartilla
-    private final Set<UUID> participants = new HashSet<>();
+    private final Map<UUID, String> participants = new LinkedHashMap<>(); // quién jugó → su nombre
+    private final DomainEvents events;
     private List<Team> lastWinners = List.of();
     private Set<UUID> lastParticipants = Set.of();
     private final List<Runnable> startListeners = new ArrayList<>();
@@ -48,6 +54,12 @@ public class BingoGame {
 
     public BingoGame(Plugin plugin){
         this.plugin = plugin;
+        this.events = new DomainEvents((event, e) -> plugin.getLogger().log(Level.SEVERE,
+                "Falló algo que escucha " + event.getClass().getSimpleName(), e));
+    }
+
+    public DomainEvents events() {
+        return events;
     }
 
     // Se ejecuta cuando termina la cuenta regresiva y la partida queda en curso.
@@ -81,7 +93,7 @@ public class BingoGame {
         cards.clear();
         participants.clear();
         for (Player p : players) {
-            participants.add(p.getUniqueId());
+            participants.put(p.getUniqueId(), p.getName());
             Team team = teams.soloIfAlone(p.getUniqueId(), p.getName());
             cards.computeIfAbsent(team.id(), this::newCard);
         }
@@ -99,7 +111,7 @@ public class BingoGame {
     // null si no hay partida.
     public BingoCard join(Player player) {
         if (!session.inGame()) return null;
-        participants.add(player.getUniqueId());
+        participants.put(player.getUniqueId(), player.getName());
         Team team = teams.soloIfAlone(player.getUniqueId(), player.getName());
         return cards.computeIfAbsent(team.id(), this::newCard);
     }
@@ -140,7 +152,7 @@ public class BingoGame {
 
     // Si ya jugó esta partida (aunque se haya desconectado).
     public boolean isParticipant(Player player) {
-        return participants.contains(player.getUniqueId());
+        return participants.containsKey(player.getUniqueId());
     }
 
     public TeamRegistry<UUID> getTeams() {
@@ -264,7 +276,7 @@ public class BingoGame {
             }
             Bukkit.broadcastMessage(Texts.get("puntos.casillas", "casillas", completedByTeam.get(leaders.get(0))));
         }
-        finish(winners);
+        finish(winners, false);
     }
 
     // Los que ganaron la última partida (vacío si se detuvo o nadie completó nada) y quiénes jugaron: para el
@@ -373,7 +385,7 @@ public class BingoGame {
         Bukkit.broadcastMessage(Texts.get("partida.ganador", "ganador", who));
         Bukkit.broadcastMessage(Texts.get("partida.tiempo", "tiempo", getElapsedTime()));
 
-        finish(teams.teamOf(winner.getUniqueId()).map(List::of).orElse(List.of()));
+        finish(teams.teamOf(winner.getUniqueId()).map(List::of).orElse(List.of()), false);
     }
 
     // También durante la cuenta regresiva.
@@ -381,11 +393,12 @@ public class BingoGame {
         if (!session.inGame()) return false;
 
         Bukkit.broadcastMessage(Texts.get("partida.detenida", "quien", stoppedBy));
-        finish(List.of());
+        finish(List.of(), true);
         return true;
     }
 
-    private void finish(List<Team> winners) {
+    // `aborted`: con /bingo stop (no cuenta para las estadísticas).
+    private void finish(List<Team> winners, boolean aborted) {
         if (clock != null) {
             clock.cancel();
             clock = null;
@@ -393,12 +406,25 @@ public class BingoGame {
         session.finish();
         broadcastSummary(winners);
         lastWinners = List.copyOf(winners);
-        lastParticipants = Set.copyOf(participants);
+        lastParticipants = Set.copyOf(participants.keySet());
+        events.publish(gameEnded(winners, aborted));
         endListeners.forEach(Runnable::run);
         cards.clear();
         participants.clear();
         teams.removeSolos();
     }
+
+    private GameEnded gameEnded(List<Team> winners, boolean aborted) {
+        Set<String> winnerIds = new HashSet<>();
+        for (Team team : winners) winnerIds.add(team.id());
+        List<GameEnded.Participant> players = new ArrayList<>();
+        for (Map.Entry<UUID, String> entry : participants.entrySet()) {
+            teams.teamOf(entry.getKey()).ifPresent(team -> players.add(
+                    new GameEnded.Participant(entry.getKey().toString(), entry.getValue(), team.id())));
+        }
+        return new GameEnded(session.elapsedSeconds(), aborted, winnerIds, players);
+    }
+
     // Aplica un evento a la cartilla del jugador, que estaba en `context`: qué casillas avanzaron y cuáles
     // se completaron.
     // Las casillas que se completan anotan el segundo (para desempatar) y, en lockout, se bloquean en las
@@ -411,6 +437,8 @@ public class BingoGame {
         for (BingoCell cell : result.advanced()) {
             if (!cell.isCompleted()) continue;
             cell.markCompleted(session.elapsedSeconds(), player.getName());
+            events.publish(new CellCompleted(team.get().id(), player.getUniqueId().toString(), player.getName(),
+                    cell.getTask().id(), cell.getTask().displayName(), session.elapsedSeconds()));
             if (!settings.mode().lockout()) continue;
             for (Map.Entry<String, BingoCard> other : cards.entrySet()) {
                 if (!other.getKey().equals(team.get().id())) lock(other.getValue(), cell.getTask().id(), team.get().id());

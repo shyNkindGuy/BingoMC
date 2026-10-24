@@ -61,7 +61,7 @@ Leyenda: `[ ]` pendiente · `[x]` hecha (se marca dentro del PR que la resuelve)
   limpieza de inventarios.
 
 ## Fase 3 — Capa de servidor (encima del bingo)
-- [ ] **3.1 Eventos de dominio + estadísticas.** `DomainEvents` (`CellCompleted`, `GameEnded`) y
+- [x] **3.1 Eventos de dominio + estadísticas.** `DomainEvents` (`CellCompleted`, `GameEnded`) y
   perfil persistente por jugador (`StatsRepository`, YAML): partidas, victorias, casillas, mejor
   tiempo. `/bingo stats`.
 - [ ] **3.2 Logros propios.** `achievements.yml` (disparador + condiciones del motor 1.5), aviso al

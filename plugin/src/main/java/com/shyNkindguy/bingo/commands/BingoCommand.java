@@ -4,11 +4,14 @@ import com.shyNkindguy.bingo.config.CatalogService;
 import com.shyNkindguy.bingo.core.catalog.Catalog;
 import com.shyNkindguy.bingo.core.catalog.CatalogException;
 import com.shyNkindguy.bingo.core.game.GameSettings;
+import com.shyNkindguy.bingo.core.stats.PlayerStats;
 import com.shyNkindguy.bingo.core.task.Task;
 import com.shyNkindguy.bingo.game.BingoGame;
+import com.shyNkindguy.bingo.storage.StatsService;
 import com.shyNkindguy.bingo.ui.BingoMapManager;
 import com.shyNkindguy.bingo.ui.BingoScoreBoard;
 import com.shyNkindguy.bingo.ui.CardMenu;
+import com.shyNkindguy.bingo.ui.GameBossBar;
 import com.shyNkindguy.bingo.ui.Texts;
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
@@ -17,22 +20,27 @@ import org.bukkit.entity.Player;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class BingoCommand implements CommandExecutor, TabCompleter {
     private static final String ADMIN_PERMISSION = "bingo.admin";
-    private static final List<String> ADMIN_SUBCOMMANDS = List.of("start", "stop", "pause", "map", "card", "reload", "team");
-    private static final List<String> PLAYER_SUBCOMMANDS = List.of("map", "card", "team");
+    private static final List<String> ADMIN_SUBCOMMANDS = List.of("start", "stop", "pause", "map", "card", "stats", "reload", "team");
+    private static final List<String> PLAYER_SUBCOMMANDS = List.of("map", "card", "stats", "team");
+    private static final Locale SPANISH = Locale.forLanguageTag("es");
 
     private final BingoGame game;
     private final BingoScoreBoard scoreboard;
     private final BingoMapManager mapManager;
     private final CatalogService catalogs;
+    private final StatsService stats;
     private final TeamCommand teams;
 
-    public BingoCommand(BingoGame game, BingoScoreBoard scoreboard, BingoMapManager mapManager, CatalogService catalogs){
+    public BingoCommand(BingoGame game, BingoScoreBoard scoreboard, BingoMapManager mapManager, CatalogService catalogs,
+                        StatsService stats){
         this.game = game; this.scoreboard = scoreboard; this.mapManager = mapManager; this.catalogs = catalogs;
+        this.stats = stats;
         this.teams = new TeamCommand(game, ADMIN_PERMISSION);
     }
 
@@ -48,6 +56,10 @@ public class BingoCommand implements CommandExecutor, TabCompleter {
         String subcommand = args[0].toLowerCase(Locale.ROOT);
         if (subcommand.equals("team")) {
             teams.run(sender, args);
+            return true;
+        }
+        if (subcommand.equals("stats") && args.length <= 2) {
+            showStats(sender, args);
             return true;
         }
         if (!subcommand.equals("start") && args.length != 1) {
@@ -74,6 +86,9 @@ public class BingoCommand implements CommandExecutor, TabCompleter {
         }
         if (args[0].equalsIgnoreCase("team")) {
             return teams.complete(args);
+        }
+        if (args.length == 2 && args[0].equalsIgnoreCase("stats")) {
+            return matching(stats.book().names(), args[1]);
         }
         if (args.length == 2 && admin && args[0].equalsIgnoreCase("start")) {
             return matching(new ArrayList<>(catalogs.get().cards().keySet()), args[1]);
@@ -197,6 +212,40 @@ public class BingoCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage(Texts.get("recarga.error", "error", e.getMessage()));
             sender.sendMessage(Texts.get("recarga.sigue"));
         }
+    }
+
+    // /bingo stats [jugador]: las suyas o las de otro (también de alguien desconectado, por nombre).
+    private void showStats(CommandSender sender, String[] args) {
+        String who;
+        Optional<PlayerStats> found;
+        if (args.length == 2) {
+            who = args[1];
+            found = stats.book().findByName(who);
+        } else if (sender instanceof Player player) {
+            who = player.getName();
+            found = stats.book().get(player.getUniqueId().toString());
+        } else {
+            sender.sendMessage(Texts.get("estadisticas.uso_consola"));
+            return;
+        }
+        if (found.isEmpty() || found.get().games() == 0) {
+            sender.sendMessage(Texts.get("estadisticas.sin_datos", "jugador", who));
+            return;
+        }
+        statsLines(found.get()).forEach(sender::sendMessage);
+    }
+
+    static List<String> statsLines(PlayerStats player) {
+        List<String> lines = new ArrayList<>();
+        lines.add(Texts.get("estadisticas.titulo", "jugador", player.name()));
+        lines.add(Texts.get("estadisticas.partidas", "partidas", player.games(), "victorias", player.wins(),
+                "porcentaje", player.winPercent()));
+        lines.add(Texts.get("estadisticas.casillas", "casillas", player.cells(),
+                "promedio", String.format(SPANISH, "%.1f", player.cellsPerGame())));
+        lines.add(player.hasWon()
+                ? Texts.get("estadisticas.mejor_tiempo", "tiempo", GameBossBar.clock(player.bestWinSeconds()))
+                : Texts.get("estadisticas.sin_victorias"));
+        return lines;
     }
 
     private void openCard(CommandSender sender) {
