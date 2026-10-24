@@ -1,0 +1,36 @@
+package com.shyNkindguy.bingo.core.progress;
+
+import com.shyNkindguy.bingo.core.card.BingoCard;
+import com.shyNkindguy.bingo.core.card.BingoCell;
+import com.shyNkindguy.bingo.core.event.TaskEvent;
+import com.shyNkindguy.bingo.core.task.Task;
+
+import java.util.ArrayList;
+import java.util.List;
+
+// Aplica un evento a todas las casillas pendientes de una cartilla (más adelante, la de un equipo).
+public final class ProgressTracker {
+
+    private ProgressTracker() {
+    }
+
+    public static ProgressResult apply(BingoCard card, TaskEvent event) {
+        List<BingoCell> advanced = new ArrayList<>();
+        List<Task> completed = new ArrayList<>();
+
+        for (BingoCell[] row : card.getGrid()) {
+            for (BingoCell cell : row) {
+                if (cell.isCompleted()) continue;
+
+                TaskProgress before = cell.getProgress();
+                TaskProgress after = cell.getTask().apply(event, before);
+                if (after.equals(before)) continue;
+
+                cell.setProgress(after);
+                advanced.add(cell);
+                if (after.isComplete()) completed.add(cell.getTask());
+            }
+        }
+        return advanced.isEmpty() ? ProgressResult.NONE : new ProgressResult(advanced, completed);
+    }
+}

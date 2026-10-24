@@ -44,7 +44,7 @@ cuando quieras (no tienen nada que no esté en `master`).
 | 7 | El mapa reemplaza la mano izquierda (borra escudo/tótem) y se cae al morir | `BingoMapManager.giveMap` | 0.4 ✔ |
 | 8 | Objetivos con id/nombre/ítem que no coinciden ("Diamante" → `POLISHED_DIORITE_SLAB`, "Barca de Acacia" → `WHITE_WOOL`…) y sin pool | `ObjectiveFactory` | 0.5 ✔ |
 | 9 | Dos sistemas de íconos en paralelo; `rendered` nunca se usa (redibuja 128×128 cada tick) | `game/MapIconRegistry`, `icon/`, `BingoMapRenderer` | 0.5 ✔ |
-| 10 | `ObjectiveType` sin usar; todo es `Material` | `game/` | 1.2 |
+| 10 | `ObjectiveType` sin usar; todo es `Material` | `game/` | 1.2 ✔ |
 | 11 | `pom.xml`: `java.version 17` pero compilaba a 16, sin tests ni CI | `pom.xml` | 0.1 ✔ |
 
 ## 4. Referencias (repos con esto ya hecho)

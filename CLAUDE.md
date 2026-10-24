@@ -13,9 +13,16 @@ viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
   `AdaptiveBingo`; `maven-shade-plugin` mete las clases de `core` en su `.jar`). La versión sale solo del
   `pom` padre (el `plugin.yml` usa `${project.version}` con resource filtering; el CI revisa que quede
   reemplazada y que el `.jar` traiga `core`).
-- `core`: `card/` (`BingoCard` N×N, `BingoCell`, `BingoObjective` con la **clave del ítem**
-  `"minecraft:diamond"`, `ObjectivePool` con los 43 candidatos y el sorteo `draw`) y `win/`
-  (`WinConditionChecker`, `TimeLimitWinners`). Nada de `org.bukkit` ahí.
+- `core` (nada de `org.bukkit` ahí):
+  - `task/`: `Task` (`id`, `displayName`, `icon` = clave del ítem a dibujar, `target`, `apply(evento,
+    progreso)`) e `ItemTask(id, nombre, ítem, cantidad)`, que cuenta el máximo que el jugador llegó a tener
+    a la vez.
+  - `event/`: `TaskEvent` sellado; por ahora solo `ItemObtained(ítem, total)`.
+  - `progress/`: `TaskProgress(current, target)` inmutable que solo sube, y `ProgressTracker.apply(cartilla,
+    evento)` → `ProgressResult` (casillas que avanzaron y tareas completadas).
+  - `card/`: `BingoCard` N×N de `BingoCell` (tarea + progreso) y `ObjectivePool` (43 candidatos con
+    cantidad, `draw`).
+  - `win/`: `WinConditionChecker` y `TimeLimitWinners`.
 - `plugin`: `adapter/Keys` traduce `Material` ↔ clave; el resto como abajo.
 - `plugin.yml` clásico de Bukkit (no `paper-plugin.yml`). Main: `com.shyNkindguy.bingo.AdaptiveBingo`.
 - Paquete `com.shyNkindguy.bingo` del plugin: `commands/` (`/bingo start|stop|map`), `events/`
@@ -26,13 +33,15 @@ viabilidad en `docs/ANALISIS.md`, orden de trabajo en `docs/PLAN.md`.
 
 ## Cómo se juega hoy
 `/bingo start` (permiso `bingo.admin`, ops por defecto; también desde la consola) crea una cartilla 5×5
-por jugador conectado con 25 objetivos sorteados **una vez por partida** de los 43 de `ObjectivePool`
-(nombre del ítem + nombre en español; el id se deriva del ítem), los mismos para todos en distinto orden;
+por jugador conectado con 25 tareas sorteadas **una vez por partida** de las 43 de `ObjectivePool`
+(ítem + nombre en español + cantidad, p. ej. "16 × Tronco de roble"; el id se deriva del ítem), las mismas
+para todos en distinto orden;
 da el mapa y el scoreboard. El mapa usa un renderer contextual (cada jugador ve su cartilla) que solo
 redibuja tras `invalidate()`. Una casilla se completa cuando el ítem está **en el inventario del jugador**: recoger, clic,
 arrastrar, cerrar el inventario, craftear, horno o balde piden revisar el inventario un tick después
 (`ObjectiveListener.requestScan`; `ScanQueue` junta los pedidos del mismo tick), nunca se mira el ítem
-del evento. La cartilla es un mapa marcado con PDC `adaptivebingo:cartilla` (`BingoMapManager.isBingoMap`):
+del evento; el escaneo suma cuántos tiene de cada ítem y manda `ItemObtained(ítem, total)` a la cartilla.
+En el mapa, las tareas de varias unidades muestran la cantidad pedida y una barra de avance. La cartilla es un mapa marcado con PDC `adaptivebingo:cartilla` (`BingoMapManager.isBingoMap`):
 no pisa la mano izquierda (lo que había pasa al inventario o se suelta), no se duplica, no cae al morir y
 no se puede tirar. Gana la primera línea (`WinConditionChecker`); a los 20 min (`MAX_TIME`), el que tenga más casillas o empate
 entre los que más tengan (`TimeLimitWinners`). `/bingo stop` la detiene. Toda partida termina por

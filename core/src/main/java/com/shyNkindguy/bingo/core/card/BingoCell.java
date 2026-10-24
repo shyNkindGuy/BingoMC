@@ -1,23 +1,35 @@
 package com.shyNkindguy.bingo.core.card;
 
-public class BingoCell {
-    private final BingoObjective objective;
-    private boolean completed;
+import com.shyNkindguy.bingo.core.progress.TaskProgress;
+import com.shyNkindguy.bingo.core.task.Task;
 
-    public BingoCell(BingoObjective objective){
-        this.objective = objective;
-        this.completed = false;
+public class BingoCell {
+    private final Task task;
+    private TaskProgress progress;
+
+    public BingoCell(Task task){
+        this.task = task;
+        this.progress = TaskProgress.start(task.target());
     }
 
-    public BingoObjective getObjective(){
-        return objective;
+    public Task getTask(){
+        return task;
+    }
+
+    public TaskProgress getProgress(){
+        return progress;
+    }
+
+    public void setProgress(TaskProgress progress){
+        this.progress = progress;
     }
 
     public boolean isCompleted(){
-        return completed;
+        return progress.isComplete();
     }
 
-    public void setCompleted(boolean completed){
-        this.completed = completed;
+    // Marca la casilla como hecha sin pasar por un evento (tests y, más adelante, comandos de admin).
+    public void complete(){
+        this.progress = TaskProgress.done(task.target());
     }
 }

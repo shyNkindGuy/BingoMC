@@ -3,6 +3,7 @@ package com.shyNkindguy.bingo.ui;
 import com.shyNkindguy.bingo.adapter.Keys;
 import com.shyNkindguy.bingo.core.card.BingoCard;
 import com.shyNkindguy.bingo.core.card.BingoCell;
+import com.shyNkindguy.bingo.core.progress.TaskProgress;
 import com.shyNkindguy.bingo.game.BingoGame;
 import com.shyNkindguy.bingo.icon.IconDefinition;
 import com.shyNkindguy.bingo.icon.IconRegistry;
@@ -78,13 +79,18 @@ public class BingoMapRenderer extends MapRenderer {
                     canvas.setPixel(x + cellSize - 1, y + i, border);
                 }
 
-                Material material = Keys.toMaterial(cell.getObjective().getItem());
+                Material material = Keys.toMaterial(cell.getTask().icon());
                 if (material != null) {
                     IconDefinition icon = IconRegistry.get(material);
                     if (icon == null) {
                         icon = IconRegistry.getFallback(material);
                     }
                     IconRenderer.drawInCell(canvas, x, y, cellSize, icon, cell.isCompleted());
+                }
+
+                TaskProgress progress = cell.getProgress();
+                if (!cell.isCompleted() && progress.target() > 1) {
+                    drawAmount(canvas, x, y, cellSize, progress);
                 }
 
                 if (cell.isCompleted()) {
@@ -95,6 +101,21 @@ public class BingoMapRenderer extends MapRenderer {
                 }
 
             }
+        }
+    }
+
+    // Tareas de varias unidades: la cantidad pedida arriba a la derecha y una barra de avance abajo.
+    private void drawAmount(MapCanvas canvas, int x, int y, int cellSize, TaskProgress progress) {
+        String amount = String.valueOf(progress.target());
+        int textX = x + cellSize - 2 - MinecraftFont.Font.getWidth(amount);
+        canvas.drawText(textX, y + 2, MinecraftFont.Font, amount);
+
+        int barX = x + 2;
+        int barY = y + cellSize - 3;
+        int barWidth = cellSize - 4;
+        int filled = progress.scaledTo(barWidth);
+        for (int i = 0; i < barWidth; i++) {
+            canvas.setPixel(barX + i, barY, i < filled ? MapPalette.DARK_GREEN : MapPalette.GRAY_1);
         }
     }
 

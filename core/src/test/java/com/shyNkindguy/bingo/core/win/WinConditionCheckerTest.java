@@ -1,7 +1,8 @@
 package com.shyNkindguy.bingo.core.win;
 
 import com.shyNkindguy.bingo.core.card.BingoCard;
-import com.shyNkindguy.bingo.core.card.BingoObjective;
+import com.shyNkindguy.bingo.core.task.ItemTask;
+import com.shyNkindguy.bingo.core.task.Task;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,16 +22,16 @@ class WinConditionCheckerTest {
         card = new BingoCard(objetivos(25));
     }
 
-    private static List<BingoObjective> objetivos(int cantidad) {
-        List<BingoObjective> objetivos = new ArrayList<>();
+    private static List<Task> objetivos(int cantidad) {
+        List<Task> objetivos = new ArrayList<>();
         for (int i = 0; i < cantidad; i++) {
-            objetivos.add(new BingoObjective("T" + i, "Tarea " + i, "minecraft:item_" + i));
+            objetivos.add(new ItemTask("T" + i, "Tarea " + i, "minecraft:item_" + i, 1));
         }
         return objetivos;
     }
 
     private void completar(int fila, int columna) {
-        card.getGrid()[fila][columna].setCompleted(true);
+        card.getGrid()[fila][columna].complete();
     }
 
     @Test

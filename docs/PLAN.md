@@ -34,7 +34,7 @@ Leyenda: `[ ]` pendiente · `[x]` hecha (se marca dentro del PR que la resuelve)
 - [x] **1.1 Módulo `core` puro.** Maven multi-módulo: `core` (sin Bukkit) y `plugin` (Paper). Al core:
   cartilla N×N, casilla, victoria y generador, con claves `"minecraft:diamond"` en vez de `Material`.
   `mvn -pl core verify` corre sin `paper-api` (también en el contenedor de Claude).
-- [ ] **1.2 Modelo de tareas.** Interfaz `Task`, `TaskEvent` (sealed), `TaskProgress` (n/m),
+- [x] **1.2 Modelo de tareas.** Interfaz `Task`, `TaskEvent` (sealed), `TaskProgress` (n/m),
   `ItemTask` con cantidad ("16 troncos"), `ProgressTracker`; los listeners traducen eventos de Paper a
   `TaskEvent`. Tests de progreso.
 - [ ] **1.3 Tareas en YAML.** `tasks/*.yml` (listas con tier S–D) y `cards.yml` (mín/máx por lista),

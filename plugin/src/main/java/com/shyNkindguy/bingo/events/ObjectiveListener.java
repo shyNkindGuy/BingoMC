@@ -1,7 +1,9 @@
 package com.shyNkindguy.bingo.events;
 
 import com.shyNkindguy.bingo.adapter.Keys;
-import com.shyNkindguy.bingo.core.card.BingoObjective;
+import com.shyNkindguy.bingo.core.event.ItemObtained;
+import com.shyNkindguy.bingo.core.progress.ProgressResult;
+import com.shyNkindguy.bingo.core.task.Task;
 import com.shyNkindguy.bingo.game.BingoGame;
 import com.shyNkindguy.bingo.ui.BingoMapManager;
 import com.shyNkindguy.bingo.ui.BingoScoreBoard;
@@ -23,8 +25,8 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 // Una casilla cuenta solo si el ítem está de verdad en el inventario del jugador: cada evento pide
@@ -44,19 +46,6 @@ public class ObjectiveListener implements Listener {
         this.scoreboard = scoreboard;
         this.mapManager = mapManager;
     }
-    private void handleProgress(Player player, Material mat) {
-        BingoObjective completed = game.completePickup(player, Keys.of(mat));
-
-        if (completed == null) return;
-
-        player.sendMessage("§a✔ Objetivo completado: §f" + completed.getDisplayName());
-        scoreboard.update(player);
-        mapManager.invalidate(player);
-
-        if (game.checkWin(player)) {
-            game.end(player);
-        }
-    }
     private void requestScan(Player player) {
         if (!game.isRunning()) return;
         if (!scanQueue.request(player.getUniqueId())) return;
@@ -68,14 +57,28 @@ public class ObjectiveListener implements Listener {
             }
         });
     }
+    // Cuenta cuántos tiene de cada ítem y se lo pasa a la cartilla como ItemObtained(ítem, total).
     private void scanInventory(Player player) {
-        Set<Material> seen = new HashSet<>();
+        Map<Material, Integer> totals = new HashMap<>();
         for (ItemStack item : player.getInventory().getContents()) {
             if (item == null || item.getType().isAir() || mapManager.isBingoMap(item)) continue;
-            if (!seen.add(item.getType())) continue;
+            totals.merge(item.getType(), item.getAmount(), Integer::sum);
+        }
 
-            handleProgress(player, item.getType());
-            if (!game.isRunning()) return; // ganó con este ítem
+        boolean changed = false;
+        for (Map.Entry<Material, Integer> total : totals.entrySet()) {
+            ProgressResult result = game.applyEvent(player, new ItemObtained(Keys.of(total.getKey()), total.getValue()));
+            changed |= result.changed();
+            for (Task task : result.completed()) {
+                player.sendMessage("§a✔ Objetivo completado: §f" + task.displayName());
+            }
+        }
+        if (!changed) return;
+
+        scoreboard.update(player);
+        mapManager.invalidate(player);
+        if (game.checkWin(player)) {
+            game.end(player);
         }
     }
     @EventHandler
